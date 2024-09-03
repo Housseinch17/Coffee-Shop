@@ -1,0 +1,114 @@
+package com.example.coffeeshop.ui.screen.signup
+
+import android.util.Log
+import android.util.Patterns
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.coffeeshop.domain.usecase.firebaseUsecase.SignUpUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@HiltViewModel
+class SignUpViewModel @Inject constructor(
+    private val signUpUseCase: SignUpUseCase
+) : ViewModel() {
+    private val _signupUiState: MutableStateFlow<SignUpUiState> = MutableStateFlow(SignUpUiState())
+    val signupUiState: StateFlow<SignUpUiState> = _signupUiState.asStateFlow()
+
+    private val _signUpSharedFlow: MutableSharedFlow<String> = MutableSharedFlow()
+    val signUpSharedFlow: SharedFlow<String> = _signUpSharedFlow.asSharedFlow()
+
+    override fun onCleared() {
+        super.onCleared()
+        Log.d("MyTag", "SIgnUp cleared")
+    }
+
+    private fun emitError(message: String) {
+        viewModelScope.launch {
+            _signUpSharedFlow.emit(message)
+        }
+    }
+
+    fun signUp(email: String, password: String) {
+        viewModelScope.launch {
+            _signupUiState.update { newState ->
+                newState.copy(accountStatus = AccountStatus.Loading)
+            }
+            if (email.isEmpty() || password.isEmpty()) {
+                emitError("Email and Password can't be empty")
+            } else {
+                if (Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                    val response = signUpUseCase.signUp(email, password)
+                    if (response is AccountStatus.Error) {
+                        emitError(response.error)
+                    } else if (response is AccountStatus.IsCreated) {
+                        emitError(response.message)
+                    }
+                    _signupUiState.update { newState ->
+                        newState.copy(accountStatus = response)
+                    }
+                    return@launch
+                } else {
+                    emitError("Please use a valid email account!")
+                }
+            }
+            _signupUiState.update { newState ->
+                newState.copy(accountStatus = AccountStatus.NotCreated)
+            }
+        }
+    }
+
+    fun setEmail(email: String) {
+        viewModelScope.launch {
+            _signupUiState.update { newState ->
+                newState.copy(email = email)
+            }
+        }
+    }
+
+    fun setPassword(password: String) {
+        viewModelScope.launch {
+            _signupUiState.update { newState ->
+                newState.copy(password = password)
+            }
+        }
+    }
+
+    fun setShowPassword() {
+        viewModelScope.launch {
+            _signupUiState.update { newState ->
+                newState.copy(
+                    showPassword = !newState.showPassword,
+                )
+            }
+        }
+    }
+
+    fun getIconVisibility(): ImageVector {
+        val showPassword = _signupUiState.value.showPassword
+        return if (showPassword) {
+            Icons.Filled.Visibility
+        } else {
+            Icons.Filled.VisibilityOff
+        }
+    }
+}
+
+sealed interface AccountStatus {
+    data class IsCreated(val message: String) : AccountStatus
+    data class Error(val error: String) : AccountStatus
+    data object Loading : AccountStatus
+    data object NotCreated : AccountStatus
+}

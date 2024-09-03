@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Coffee Shop</string>
+    <string name="login">LogIn</string>
+    <string name="page">Page</string>
+    <string name="signup">SignUp</string>
+    <string name="create_account">Create Account</string>
+    <string name="visibility">Visibility</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="empty_email_password">Email and Password can\'t be empty</string>
+    <string name="account_created">Account is created</string>
+</resources>
