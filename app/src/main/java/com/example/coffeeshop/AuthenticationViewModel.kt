@@ -1,43 +1,74 @@
 package com.example.coffeeshop
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.coffeeshop.domain.usecase.firebaseUsecase.CheckStatusUseCase
 import com.example.coffeeshop.domain.usecase.firebaseUsecase.SignOutUseCase
+import com.example.coffeeshop.domain.usecase.sharedprefrenceUsecase.GetSharedPrefUsernameUseCase
+import com.example.coffeeshop.domain.usecase.sharedprefrenceUsecase.SaveSharedPrefUsernameUseCse
+import com.example.coffeeshop.ui.AuthenticationUiState
+import com.example.coffeeshop.ui.navigation.CurrentDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class AuthenticationViewModel @Inject constructor(
-    private val checkStatusUseCase: CheckStatusUseCase,
     private val signOutUseCase: SignOutUseCase,
-): ViewModel() {
-    private val _status: MutableStateFlow<AuthState> = MutableStateFlow(AuthState.Loading)
-    val status: StateFlow<AuthState> = _status.asStateFlow()
+    private val saveSharedPrefUsernameUseCse: SaveSharedPrefUsernameUseCse,
+    private val getSharedPrefUsernameUseCase: GetSharedPrefUsernameUseCase,
+
+    ) : ViewModel() {
+    private val _authenticationUiState: MutableStateFlow<AuthenticationUiState> =
+        MutableStateFlow(AuthenticationUiState())
+    val authenticationUiState: StateFlow<AuthenticationUiState> = _authenticationUiState.asStateFlow()
 
     init {
-        checkStatus()
+        checkSharedPreferUsername()
     }
 
-    private fun checkStatus(){
-        viewModelScope.launch {
-            _status.value = checkStatusUseCase.checkStatus()
+    fun updateDestination(currentDestination: CurrentDestination){
+        _authenticationUiState.update { newState->
+            newState.copy(startDestination = currentDestination)
         }
     }
-    fun signOut(){
+
+    private suspend fun getCurrentUserName(): String?{
+        return getSharedPrefUsernameUseCase.getUsername()
+    }
+
+    private fun checkSharedPreferUsername() {
         viewModelScope.launch {
-            _status.value = signOutUseCase.signOut()
+            val currentUsername = getCurrentUserName()
+            if (currentUsername == null) {
+                _authenticationUiState.update { newState->
+                    newState.copy(authenticationStatus = AuthenticationStatus.UnAuthenticated)
+                }
+            } else {
+                Log.d("aff","EnteredHere")
+                _authenticationUiState.update { newState->
+                    newState.copy(authenticationStatus = AuthenticationStatus.Authenticated)
+                }
+                saveSharedPrefUsernameUseCse.saveUsername(currentUsername)
+            }
+        }
+    }
+
+    fun signOut() {
+        viewModelScope.launch {
+            _authenticationUiState.update { newState->
+                newState.copy(authenticationStatus = signOutUseCase.signOut())
+            }
+            saveSharedPrefUsernameUseCse.saveUsername(null)
         }
     }
 }
 
-sealed interface AuthState{
-    data object Authenticated: AuthState
-    data object UnAuthenticated: AuthState
-    data object Loading: AuthState
-    data class Error(val message: String): AuthState
+sealed interface AuthenticationStatus {
+    data object Authenticated : AuthenticationStatus
+    data object UnAuthenticated : AuthenticationStatus
 }

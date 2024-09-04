@@ -7,9 +7,9 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.coffeeshop.AuthState
-import com.example.coffeeshop.domain.usecase.firebaseUsecase.GetUsernameUseCase
+import com.example.coffeeshop.domain.usecase.firebaseUsecase.GetCurrentUserUseCase
 import com.example.coffeeshop.domain.usecase.firebaseUsecase.LogInUseCase
+import com.example.coffeeshop.domain.usecase.sharedprefrenceUsecase.SaveSharedPrefUsernameUseCse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +24,8 @@ import javax.inject.Inject
 @HiltViewModel
 class LogInViewModel @Inject constructor(
     private val logInUseCase: LogInUseCase,
-    private val getUsernameUseCase: GetUsernameUseCase,
+    private val saveSharedPrefUsernameUseCse: SaveSharedPrefUsernameUseCse,
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
 ) : ViewModel() {
     private val _logInUiState: MutableStateFlow<LogInUiState> = MutableStateFlow(LogInUiState())
     val logInUiState: StateFlow<LogInUiState> = _logInUiState.asStateFlow()
@@ -32,25 +33,22 @@ class LogInViewModel @Inject constructor(
     private val _sharedFlow: MutableSharedFlow<String> = MutableSharedFlow()
     val sharedFlow: SharedFlow<String> = _sharedFlow.asSharedFlow()
 
+    init {
+        Log.d("MyTag", "Entered LogIn")
+    }
+
     override fun onCleared() {
         super.onCleared()
         Log.d("MyTag", "LogIn destroyed")
     }
 
 
-    private fun emitSharedFlow(error: String){
+    private fun emitSharedFlow(error: String) {
         viewModelScope.launch {
             _sharedFlow.emit(error)
         }
     }
 
-    fun getUsername(){
-        viewModelScope.launch {
-            _logInUiState.update { newState->
-                newState.copy(userName = getUsernameUseCase.getUsername())
-            }
-        }
-    }
 
     fun logIn(email: String, password: String) {
         viewModelScope.launch {
@@ -59,17 +57,19 @@ class LogInViewModel @Inject constructor(
             }
             if (email.isEmpty() || password.isEmpty()) {
                 emitSharedFlow("Email and Password can't be empty")
-                _logInUiState.update { newState->
-                    newState.copy(authState = AuthState.UnAuthenticated)
+                _logInUiState.update { newState ->
+                    newState.copy(authState = AuthState.NotLoggedIn)
                 }
-            }
-            else{
-                val response = logInUseCase.logIn(email,password)
-                if(response is AuthState.Error){
+            } else {
+                val response = logInUseCase.logIn(email, password)
+                if (response is AuthState.Error) {
                     emitSharedFlow(response.message)
-                }
-                _logInUiState.update { newState->
-                    newState.copy(authState = response)
+                } else if (response is AuthState.LoggedIn) {
+                    _logInUiState.update { newState ->
+                        newState.copy(authState = response)
+                    }
+                    val currentUsername = getCurrentUserUseCase.getCurrentUser()
+                    saveSharedPrefUsernameUseCse.saveUsername(currentUsername)
                 }
             }
         }
@@ -109,5 +109,11 @@ class LogInViewModel @Inject constructor(
             Icons.Filled.VisibilityOff
         }
     }
+}
 
+sealed interface AuthState {
+    data object LoggedIn : AuthState
+    data object NotLoggedIn : AuthState
+    data object Loading : AuthState
+    data class Error(val message: String) : AuthState
 }

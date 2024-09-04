@@ -11,7 +11,7 @@ class SharedPreferencesManagerImpl @Inject constructor(
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO
 ): SharedPreferencesManager {
 
-    override suspend fun saveUsername(username: String) = withContext(coroutineDispatcher){
+    override suspend fun saveUsername(username: String?) = withContext(coroutineDispatcher){
         sharedPreferences.edit().putString("username", username).apply()
     }
 

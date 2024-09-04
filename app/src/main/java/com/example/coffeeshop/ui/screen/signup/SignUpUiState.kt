@@ -1,7 +1,6 @@
 package com.example.coffeeshop.ui.screen.signup
 
 import androidx.compose.runtime.Immutable
-import com.example.coffeeshop.AuthState
 
 @Immutable
 data class SignUpUiState(

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -16,8 +17,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.coffeeshop.AuthState
+import com.example.coffeeshop.AuthenticationStatus
+import com.example.coffeeshop.AuthenticationViewModel
 import com.example.coffeeshop.ui.screen.HomePage
+import com.example.coffeeshop.ui.screen.login.AuthState
 import com.example.coffeeshop.ui.screen.login.LogInScreen
 import com.example.coffeeshop.ui.screen.login.LogInViewModel
 import com.example.coffeeshop.ui.screen.signup.AccountStatus
@@ -32,18 +35,33 @@ fun Navigation(
     modifier: Modifier,
     navController: NavHostController,
 ) {
+    val authenticationViewModel = hiltViewModel<AuthenticationViewModel>()
+    val authenticationUiState by authenticationViewModel.authenticationUiState.collectAsStateWithLifecycle()
+
     val context = LocalContext.current
 
 
+    LaunchedEffect(authenticationUiState.authenticationStatus) {
+        when(authenticationUiState.authenticationStatus){
+            AuthenticationStatus.UnAuthenticated ->{
+                authenticationViewModel.updateDestination(CurrentDestination.LogInPage)
+            }
+            AuthenticationStatus.Authenticated -> {
+                authenticationViewModel.updateDestination(CurrentDestination.HomePage)
+            }
+        }
+    }
+
     NavHost(
-        navController = navController, startDestination = LogInPage,
+        navController = navController, startDestination = authenticationUiState.startDestination,
         modifier = modifier
     ) {
-        composable<LogInPage> {
+        composable<CurrentDestination.LogInPage> {
+            Log.d("BackStack",navController.currentBackStack.value.toString())
             val logInViewModel = hiltViewModel<LogInViewModel>()
             val logInUiState by logInViewModel.logInUiState.collectAsStateWithLifecycle()
 
-            Log.d("MyTag", navController.currentBackStack.value.toString())
+            Log.d("BackStackEntry", navController.currentBackStack.value.toString())
 
             LaunchedEffect(logInViewModel.sharedFlow) {
                 logInViewModel.sharedFlow.collect { error ->
@@ -53,9 +71,9 @@ fun Navigation(
 
             LaunchedEffect(logInUiState.authState) {
                 when(logInUiState.authState){
-                    AuthState.Authenticated -> navController.navigate(HomePage){
+                    AuthState.LoggedIn -> navController.navigate(CurrentDestination.HomePage){
                         //remove LogInPage from backstackentry
-                        popUpTo(LogInPage){
+                        popUpTo(CurrentDestination.LogInPage){
                             inclusive = true
                         }
                     }
@@ -84,16 +102,17 @@ fun Navigation(
                     logInViewModel.logIn(email, password)
                 },
                 onSignUpClick = {
-                    navController.navigate(SignUpPage)
+                    navController.navigate(CurrentDestination.SignUpPage)
                 }
             )
         }
 
-        composable<SignUpPage> {
+        composable<CurrentDestination.SignUpPage> {
+            Log.d("BackStack",navController.currentBackStack.value.toString())
             val signUpViewModel = hiltViewModel<SignUpViewModel>()
             val signUpUiState by signUpViewModel.signupUiState.collectAsStateWithLifecycle()
 
-            Log.d("MyTag", navController.currentBackStack.value.toString())
+            Log.d("BackStackEntry", navController.currentBackStack.value.toString())
 
             LaunchedEffect(signUpViewModel.signUpSharedFlow) {
                 signUpViewModel.signUpSharedFlow.collect { error ->
@@ -103,9 +122,9 @@ fun Navigation(
 
             LaunchedEffect(signUpUiState.accountStatus) {
                 when (signUpUiState.accountStatus) {
-                    is AccountStatus.IsCreated -> navController.navigate(LogInPage){
+                    is AccountStatus.IsCreated -> navController.navigate(CurrentDestination.LogInPage){
                         //inclusive = true to remove SignUpPage from backstackentry
-                        popUpTo(LogInPage){
+                        popUpTo(CurrentDestination.LogInPage){
                             inclusive = true
                         }
                     }
@@ -138,21 +157,32 @@ fun Navigation(
                 }
             )
         }
-        composable<HomePage> {
-            Log.d("MyTag", navController.currentBackStack.value.toString())
+        composable<CurrentDestination.HomePage> {
+            Log.d("BackStack",navController.currentBackStack.value.toString())
+            rememberCoroutineScope()
+            Log.d("BackStackEntry", navController.currentBackStack.value.toString())
             HomePage(modifier = Modifier.fillMaxSize(), username = "userName.toString") {
+                authenticationViewModel.signOut()
+                navController.navigate(CurrentDestination.LogInPage){
+                    popUpTo(0){
+                        inclusive = true
+                    }
+                }
             }
         }
     }
 }
 
-
 @Serializable
-object LogInPage
+sealed interface CurrentDestination{
+    @Serializable
+    data object LogInPage: CurrentDestination
 
-@Serializable
-object SignUpPage
+    @Serializable
+    data object SignUpPage: CurrentDestination
 
-@Serializable
-object HomePage
+    @Serializable
+    data object HomePage: CurrentDestination
+
+}
 

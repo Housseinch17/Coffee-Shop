@@ -30,10 +30,16 @@ class SignUpViewModel @Inject constructor(
     private val _signUpSharedFlow: MutableSharedFlow<String> = MutableSharedFlow()
     val signUpSharedFlow: SharedFlow<String> = _signUpSharedFlow.asSharedFlow()
 
+
+    init {
+        Log.d("MyTag", "Entered SignUp")
+    }
+
     override fun onCleared() {
         super.onCleared()
-        Log.d("MyTag", "SIgnUp cleared")
+        Log.d("MyTag", "SignUp cleared")
     }
+
 
     private fun emitError(message: String) {
         viewModelScope.launch {
@@ -108,7 +114,7 @@ class SignUpViewModel @Inject constructor(
 
 sealed interface AccountStatus {
     data class IsCreated(val message: String) : AccountStatus
+    data object NotCreated : AccountStatus
     data class Error(val error: String) : AccountStatus
     data object Loading : AccountStatus
-    data object NotCreated : AccountStatus
 }

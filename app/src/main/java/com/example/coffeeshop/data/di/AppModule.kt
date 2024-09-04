@@ -1,6 +1,5 @@
 package com.example.coffeeshop.data.di
 
-import android.content.SharedPreferences
 import com.example.coffeeshop.data.datasource.firebase.FirebaseRemoteDataSource
 import com.example.coffeeshop.data.datasource.firebase.FirebaseRemoteDataSourceImpl
 import com.example.coffeeshop.data.datasource.firebase.FirebaseRepositoryImpl
