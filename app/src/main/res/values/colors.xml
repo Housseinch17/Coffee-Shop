@@ -7,4 +7,12 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <string name="orange">#FF902A</string>
+    <string name="yellow">#FFC106</string>
+    <string name="dark_gray">#4E4E4E</string>
+    <string name="gray">#8D8D8D</string>
+    <string name="dark_brown">#34190E</string>
+    <string name="light_orange">#E6C59E</string>
+    <string name="light_yellow">#F2E8DB</string>
+
 </resources>

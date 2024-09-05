@@ -18,6 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
@@ -25,6 +27,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.coffeeshop.R
 
 @Composable
@@ -70,6 +74,23 @@ fun SharedScreen(
     }
 }
 
+
+@Composable
+fun CoffeeImage(modifier: Modifier, imageUrl: String?) {
+    if (imageUrl != null) {
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(imageUrl)
+                .crossfade(true)
+                .error(R.drawable.connectionerror)
+                .build(),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = modifier)
+    }
+}
+
+
 @Composable
 fun TrailingIcon(imageVector: ImageVector, onIconClick: () -> Unit) {
     IconButton(onClick = onIconClick, modifier = Modifier) {
@@ -113,17 +134,15 @@ fun EmailAndPassword(
     trailingIcon: @Composable () -> Unit,
 ) {
     Column(modifier) {
-        ValueTextField(
+        EmailTextField(
             modifier = modifier, label = stringResource(R.string.email), value = emailValue,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            visualTransformation = VisualTransformation.None,
             onValueChange = { newEmail ->
                 onEmailChange(newEmail)
             },
-            trailingIcon = {}
         )
         Spacer(Modifier.height(16.dp))
-        ValueTextField(
+        PasswordTextField(
             modifier = modifier,
             label = stringResource(R.string.password), value = passwordValue,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -137,7 +156,7 @@ fun EmailAndPassword(
 }
 
 @Composable
-fun ValueTextField(
+fun PasswordTextField(
     modifier: Modifier, label: String,
     value: String, keyboardOptions: KeyboardOptions,
     visualTransformation: VisualTransformation, onValueChange: (String) -> Unit,
@@ -158,6 +177,28 @@ fun ValueTextField(
         keyboardOptions = keyboardOptions,
         visualTransformation = visualTransformation,
         trailingIcon = trailingIcon
+    )
+}
+
+@Composable
+fun EmailTextField(
+    modifier: Modifier, label: String,
+    value: String, keyboardOptions: KeyboardOptions,
+    onValueChange: (String) -> Unit,
+) {
+    OutlinedTextField(
+        maxLines = 1,
+        textStyle = TextStyle.Default.copy(fontSize = 12.sp),
+        value = value,
+        onValueChange = { newValue ->
+            onValueChange(newValue)
+        },
+        singleLine = true,
+        modifier = modifier,
+        label = {
+            Text(text = label)
+        },
+        keyboardOptions = keyboardOptions,
     )
 }
 

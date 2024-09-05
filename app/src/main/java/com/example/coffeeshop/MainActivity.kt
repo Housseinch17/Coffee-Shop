@@ -1,6 +1,8 @@
 package com.example.coffeeshop
 
+import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -15,13 +17,18 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @SuppressLint("CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
+        val startTime = System.currentTimeMillis()
+        Log.d("MainActivity", "onCreate started")
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             CoffeeShopTheme {
+                Log.d("MainActivity", "onCreate finished in ${System.currentTimeMillis() - startTime} ms")
+
                 val navController = rememberNavController()
-                    Scaffold() { innerPadding ->
+                    Scaffold { innerPadding ->
                         Navigation(
                             modifier = Modifier
                                 .fillMaxSize()

@@ -57,7 +57,7 @@ fun Navigation(
         modifier = modifier
     ) {
         composable<CurrentDestination.LogInPage> {
-            Log.d("BackStack",navController.currentBackStack.value.toString())
+            Log.d("BackStack",navController.currentBackStack.   value.toString())
             val logInViewModel = hiltViewModel<LogInViewModel>()
             val logInUiState by logInViewModel.logInUiState.collectAsStateWithLifecycle()
 

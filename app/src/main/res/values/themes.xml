@@ -2,4 +2,11 @@
 <resources>
 
     <style name="Theme.CoffeeShop" parent="android:Theme.Material.Light.NoActionBar" />
+
+
+    <style name="Theme.Splash" parent="Theme.SplashScreen">
+        <!-- Use a transparent background -->
+        <item name="windowSplashScreenBackground">@android:color/transparent</item>
+    </style>
+
 </resources>

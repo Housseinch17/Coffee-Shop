@@ -110,6 +110,13 @@ dependencies {
     //add icons
     implementation (libs.androidx.material.icons.extended) // Or the latest version
 
+
+    //splashScreen
+    implementation (libs.androidx.core.splashscreen)
+
+    //coil to display images as url
+    implementation(libs.coil.compose)
+
 }
 
 // Allow references to generated code

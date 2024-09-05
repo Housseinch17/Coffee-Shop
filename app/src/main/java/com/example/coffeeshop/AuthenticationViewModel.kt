@@ -9,6 +9,7 @@ import com.example.coffeeshop.domain.usecase.sharedprefrenceUsecase.SaveSharedPr
 import com.example.coffeeshop.ui.AuthenticationUiState
 import com.example.coffeeshop.ui.navigation.CurrentDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
