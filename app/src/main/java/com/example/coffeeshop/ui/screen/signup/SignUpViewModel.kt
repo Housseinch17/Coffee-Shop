@@ -40,6 +40,12 @@ class SignUpViewModel @Inject constructor(
         Log.d("MyTag", "SignUp cleared")
     }
 
+    fun setAlreadyHaveAccountButton(alreadyHaveAccountButton: Boolean){
+        _signupUiState.update { newState->
+            newState.copy(alreadyHaveAccountButton = alreadyHaveAccountButton)
+        }
+    }
+
 
     private fun emitError(message: String) {
         viewModelScope.launch {

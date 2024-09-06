@@ -19,7 +19,8 @@ fun LogInScreen(
     onPasswordChange: (String) -> Unit,
     buttonText: String,
     accountTextButton: String,
-    enabled: Boolean,
+    logInEnabled: Boolean,
+    signUpEnabled: Boolean,
     onLogInClick: (email: String, password: String) -> Unit,
     onSignUpClick: () -> Unit
 ) {
@@ -35,7 +36,8 @@ fun LogInScreen(
         onPasswordChange = onPasswordChange,
         button = buttonText,
         textButton = accountTextButton,
-        enabled = enabled,
+        buttonEnabled = logInEnabled,
+        textButtonEnabled = signUpEnabled,
         onButtonClick = { email, password ->
             onLogInClick(email, password)
         },

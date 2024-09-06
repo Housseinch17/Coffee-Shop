@@ -7,5 +7,6 @@ data class SignUpUiState(
     val email: String = "",
     val password: String = "",
     val showPassword: Boolean = false,
-    val accountStatus: AccountStatus = AccountStatus.NotCreated
+    val accountStatus: AccountStatus = AccountStatus.NotCreated,
+    val alreadyHaveAccountButton: Boolean = false,
 )

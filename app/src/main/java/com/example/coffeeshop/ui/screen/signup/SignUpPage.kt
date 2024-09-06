@@ -18,7 +18,8 @@ fun SignUpScreen(
     onPasswordChange: (String) -> Unit,
     buttonText: String,
     accountTextButton: String,
-    enabled: Boolean,
+    createAccountEnabled: Boolean,
+    alreadyExistingEnabled: Boolean,
     onCreateAccount: (email: String, password: String) -> Unit,
     onExistingAccount: () -> Unit
 ) {
@@ -34,7 +35,8 @@ fun SignUpScreen(
         onPasswordChange = onPasswordChange,
         button = buttonText,
         textButton = accountTextButton,
-        enabled = enabled,
+        buttonEnabled = createAccountEnabled,
+        textButtonEnabled = alreadyExistingEnabled,
         onButtonClick = { email, password ->
             onCreateAccount(email, password)
         },

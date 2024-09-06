@@ -44,7 +44,8 @@ fun SharedScreen(
     onPasswordChange: (String) -> Unit,
     button: String,
     textButton: String,
-    enabled: Boolean,
+    buttonEnabled: Boolean,
+    textButtonEnabled: Boolean,
     onButtonClick: (email: String, password: String) -> Unit,
     onTextButtonClick: () -> Unit
 ) {
@@ -66,11 +67,11 @@ fun SharedScreen(
             TrailingIcon(imageVector, onIconClick = onIconClick)
         }
         Spacer(Modifier.height(16.dp))
-        AccountButton(Modifier, button,enabled = enabled) {
+        AccountButton(Modifier, button,buttonEnabled = buttonEnabled) {
             onButtonClick(emailValue, passwordValue)
         }
         Spacer(Modifier.height(24.dp))
-        AccountTextButton(Modifier, text = textButton, onTextButtonClick)
+        AccountTextButton(Modifier, text = textButton, textButtonEnabled = textButtonEnabled, onSignUpClick = onTextButtonClick)
     }
 }
 
@@ -102,22 +103,24 @@ fun TrailingIcon(imageVector: ImageVector, onIconClick: () -> Unit) {
 fun AccountTextButton(
     modifier: Modifier,
     text: String,
+    textButtonEnabled: Boolean,
     onSignUpClick: () -> Unit
 ) {
     TextButton(
         modifier = modifier,
         onClick = onSignUpClick,
+        enabled = textButtonEnabled
     ) {
         Text(text)
     }
 }
 
 @Composable
-fun AccountButton(modifier: Modifier, text: String, enabled: Boolean,onLogInClick: () -> Unit) {
+fun AccountButton(modifier: Modifier, text: String, buttonEnabled: Boolean,onLogInClick: () -> Unit) {
     Button(
         modifier = modifier,
         onClick = onLogInClick,
-        enabled = enabled
+        enabled = buttonEnabled
     ) {
         Text(text = text)
     }

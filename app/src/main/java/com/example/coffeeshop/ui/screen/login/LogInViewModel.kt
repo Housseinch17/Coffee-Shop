@@ -39,9 +39,15 @@ class LogInViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        Log.d("MyTag", "LogIn destroyed")
+        Log.d("MyTag", "LogIn Cleared")
     }
 
+
+    fun setSignUpButton(signUpEnabled: Boolean){
+        _logInUiState.update { newState->
+            newState.copy(signUpEnabled = signUpEnabled)
+        }
+    }
 
     private fun emitSharedFlow(error: String) {
         viewModelScope.launch {

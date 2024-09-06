@@ -4,9 +4,9 @@
     <style name="Theme.CoffeeShop" parent="android:Theme.Material.Light.NoActionBar" />
 
 
-    <style name="Theme.Splash" parent="Theme.SplashScreen">
-        <!-- Use a transparent background -->
-        <item name="windowSplashScreenBackground">@android:color/transparent</item>
+    <style name="Theme.Splash" parent="Theme.CoffeeShop">
+        <!-- Customize your theme here -->
+        <item name="android:windowBackground">@drawable/intro_pic</item>
     </style>
 
 </resources>
