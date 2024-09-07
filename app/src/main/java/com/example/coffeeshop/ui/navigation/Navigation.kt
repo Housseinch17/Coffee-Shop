@@ -206,8 +206,16 @@ fun Navigation(
             val homePageUiState by homePageViewModel.homePageUiState.collectAsStateWithLifecycle()
 
             Log.d("BackStack", navController.currentBackStack.value.toString())
-            HomePage(modifier = Modifier.fillMaxSize()) {
+            HomePage(modifier = Modifier.fillMaxSize(), onClick = {
                 Log.d("CheckResponse",homePageUiState.response.toString())
+            }) {
+                //sign out and navigate to login page and clear all backstack entry
+                authenticationViewModel.signOut()
+                navController.navigate(CurrentDestination.LogInPage){
+                    popUpTo(0){
+                        inclusive = true
+                    }
+                }
             }
         }
     }

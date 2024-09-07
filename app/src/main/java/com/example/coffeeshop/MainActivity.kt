@@ -60,15 +60,14 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
 
                 val backStackEntry by navController.currentBackStackEntryAsState()
-                Log.d("currentScreen", "ff ${backStackEntry?.destination}")
                 //get current screen
                 val currentScreen = backStackEntry?.destination?.route
                 //get current screen route without (com.example.coffee...)
                 val currentScreenRoute = getScreenName(currentScreen)
 
-                //not hideBottomBar
-                val showBottomBar = !(hideBottomBar(status,currentScreenRoute))
 
+                //not hideBottomBar
+                val showBottomBar = !(hideBottomBar(currentScreenRoute))
 
                 if (status != CurrentDestination.Loading) {
                     Scaffold(
@@ -122,16 +121,11 @@ fun BottomBar(modifier: Modifier, onClick: () -> Unit) {
     }
 }
 
-private fun hideBottomBar(status: CurrentDestination,currentScreenRoute: String): Boolean{
-    if(status == CurrentDestination.LogInPage){
+private fun hideBottomBar(currentScreenRoute: String): Boolean{
         //currentScreenRoute is LogInPage
         //currentScreenRoute is SignUpPage
         //currentScreenRoute is Empty
-        if(currentScreenRoute == CurrentDestination.LogInPage.ROUTE || currentScreenRoute == CurrentDestination.SignUpPage.ROUTE || currentScreenRoute.isEmpty()){
-            return true
-        }
-    }
-    return false
+    return currentScreenRoute == CurrentDestination.LogInPage.ROUTE || currentScreenRoute == CurrentDestination.SignUpPage.ROUTE || currentScreenRoute.isEmpty()
 }
 
 //instead of getting com.example.coffee.LogInPage it will show LogInPage only
