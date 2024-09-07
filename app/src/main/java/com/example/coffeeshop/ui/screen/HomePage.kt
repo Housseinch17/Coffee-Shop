@@ -22,6 +22,5 @@ fun HomePage(modifier: Modifier, username: String,onSignOut: () -> Unit) {
             Color.White
 
         }
-
     }
 }

@@ -1,7 +1,7 @@
 package com.example.coffeeshop.data.di
 
-import com.example.coffeeshop.data.datasource.firebase.FirebaseRemoteDataSource
-import com.example.coffeeshop.data.datasource.firebase.FirebaseRemoteDataSourceImpl
+import com.example.coffeeshop.data.datasource.firebase.FirebaseAuthenticationDataSource
+import com.example.coffeeshop.data.datasource.firebase.FirebaseAuthenticationDataSourceImpl
 import com.example.coffeeshop.data.datasource.firebase.FirebaseRepositoryImpl
 import com.example.coffeeshop.domain.repository.FirebaseRepository
 import com.google.firebase.Firebase
@@ -31,13 +31,13 @@ class AppModule {
     @Singleton
     fun provideFirebaseRemoteDataSource(
         firebaseAuth: FirebaseAuth,
-    ): FirebaseRemoteDataSource {
-        return FirebaseRemoteDataSourceImpl(firebaseAuth)
+    ): FirebaseAuthenticationDataSource {
+        return FirebaseAuthenticationDataSourceImpl(firebaseAuth)
     }
 
     @Provides
     @Singleton
-    fun provideFirebaseRepository(firebaseRemoteDataSourceImpl: FirebaseRemoteDataSourceImpl): FirebaseRepository{
+    fun provideFirebaseRepository(firebaseRemoteDataSourceImpl: FirebaseAuthenticationDataSourceImpl): FirebaseRepository{
         return FirebaseRepositoryImpl(firebaseRemoteDataSourceImpl)
     }
 }

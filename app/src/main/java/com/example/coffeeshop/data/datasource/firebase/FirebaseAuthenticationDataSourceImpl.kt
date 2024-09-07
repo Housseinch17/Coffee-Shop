@@ -1,7 +1,6 @@
 package com.example.coffeeshop.data.datasource.firebase
 
 import android.util.Log
-import com.example.coffeeshop.AuthenticationStatus
 import com.example.coffeeshop.ui.screen.login.AuthState
 import com.example.coffeeshop.ui.screen.signup.AccountStatus
 import com.google.firebase.auth.FirebaseAuth
@@ -12,10 +11,10 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.coroutines.resume
 
-class FirebaseRemoteDataSourceImpl @Inject constructor(
+class FirebaseAuthenticationDataSourceImpl @Inject constructor(
     private val auth: FirebaseAuth,
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
-) : FirebaseRemoteDataSource {
+) : FirebaseAuthenticationDataSource {
 
     override suspend fun getCurrentUser(): String? = withContext(coroutineDispatcher) {
         return@withContext try {
@@ -55,7 +54,8 @@ class FirebaseRemoteDataSourceImpl @Inject constructor(
             }
         }
 
-
+    //firebase signup is asynchronous using suspendCancellableCoroutine ensuring that it has to wait
+    //for  createUserWithEmailAndPassword to complete same as using async await
     override suspend fun signUp(email: String, password: String): AccountStatus =
         withContext(coroutineDispatcher) {
             suspendCancellableCoroutine { continuation ->
@@ -80,9 +80,8 @@ class FirebaseRemoteDataSourceImpl @Inject constructor(
             }
         }
 
-    override suspend fun signOut(): AuthenticationStatus = withContext(coroutineDispatcher) {
+    override suspend fun signOut() = withContext(coroutineDispatcher) {
         auth.signOut()
-        return@withContext AuthenticationStatus.UnAuthenticated
     }
 }
 

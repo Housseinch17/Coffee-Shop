@@ -9,7 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.coffeeshop.domain.usecase.firebaseUsecase.GetCurrentUserUseCase
 import com.example.coffeeshop.domain.usecase.firebaseUsecase.LogInUseCase
-import com.example.coffeeshop.domain.usecase.sharedprefrenceUsecase.SaveSharedPrefUsernameUseCse
+import com.example.coffeeshop.domain.usecase.sharedprefrenceUsecase.SaveSharedPrefUsernameUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +24,7 @@ import javax.inject.Inject
 @HiltViewModel
 class LogInViewModel @Inject constructor(
     private val logInUseCase: LogInUseCase,
-    private val saveSharedPrefUsernameUseCse: SaveSharedPrefUsernameUseCse,
+    private val saveSharedPrefUsernameUseCase: SaveSharedPrefUsernameUseCase,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
 ) : ViewModel() {
     private val _logInUiState: MutableStateFlow<LogInUiState> = MutableStateFlow(LogInUiState())
@@ -74,10 +74,17 @@ class LogInViewModel @Inject constructor(
                     _logInUiState.update { newState ->
                         newState.copy(authState = response)
                     }
-                    val currentUsername = getCurrentUserUseCase.getCurrentUser()
-                    saveSharedPrefUsernameUseCse.saveUsername(currentUsername)
+                    //save the user in sharedPreference if its logged in
+                    getCurrentUserAndSaveIt()
                 }
             }
+        }
+    }
+
+    private fun getCurrentUserAndSaveIt(){
+        viewModelScope.launch {
+            val currentUsername = getCurrentUserUseCase.getCurrentUser()
+            saveSharedPrefUsernameUseCase.saveUsername(currentUsername)
         }
     }
 

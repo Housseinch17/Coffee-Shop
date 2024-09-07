@@ -20,7 +20,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.coffeeshop.AuthenticationStatus
 import com.example.coffeeshop.AuthenticationViewModel
 import com.example.coffeeshop.ui.screen.HomePage
 import com.example.coffeeshop.ui.screen.login.AuthState
@@ -39,27 +38,14 @@ import kotlinx.serialization.Serializable
 fun Navigation(
     modifier: Modifier,
     navController: NavHostController,
+    startDestination: CurrentDestination,
 ) {
     val authenticationViewModel = hiltViewModel<AuthenticationViewModel>()
-    val authenticationUiState by authenticationViewModel.authenticationUiState.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
 
-
-    LaunchedEffect(authenticationUiState.authenticationStatus) {
-        when (authenticationUiState.authenticationStatus) {
-            AuthenticationStatus.UnAuthenticated -> {
-                authenticationViewModel.updateDestination(CurrentDestination.LogInPage)
-            }
-
-            AuthenticationStatus.Authenticated -> {
-                authenticationViewModel.updateDestination(CurrentDestination.HomePage)
-            }
-        }
-    }
-
     NavHost(
-        navController = navController, startDestination = authenticationUiState.startDestination,
+        navController = navController, startDestination = startDestination,
         modifier = modifier
     ) {
         composable<CurrentDestination.LogInPage> {
@@ -83,25 +69,29 @@ fun Navigation(
                             inclusive = true
                         }
                     }
-
                     else -> {}
                 }
             }
-
             //set delay for signup button to avoid spamming it
             val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
             val scope = rememberCoroutineScope()
             DisposableEffect(key1 = lifecycleOwner) {
                 val observer = LifecycleEventObserver { _, event ->
                     when (event) {
-                        Lifecycle.Event.ON_RESUME ->
+                        Lifecycle.Event.ON_RESUME -> {
+                            Log.d("currentScreen", "Resume")
                             scope.launch {
                                 logInViewModel.setSignUpButton(false)
                                 delay(1000L)
                                 logInViewModel.setSignUpButton(true)
                             }
-
-                        else -> {}
+                        }
+                        Lifecycle.Event.ON_START -> Log.d("currentScreen","Start")
+                        Lifecycle.Event.ON_CREATE -> Log.d("currentScreen","Create")
+                        Lifecycle.Event.ON_PAUSE  -> Log.d("currentScreen","Pause")
+                        Lifecycle.Event.ON_STOP -> Log.d("currentScreen","Stop")
+                        Lifecycle.Event.ON_DESTROY -> Log.d("currentScreen","Destroy")
+                        else -> Log.d("currentScreen","Else")
                     }
                 }
                 lifecycleOwner.lifecycle.addObserver(observer)
@@ -175,7 +165,6 @@ fun Navigation(
                                 delay(1000L)
                                 signUpViewModel.setAlreadyHaveAccountButton(true)
                             }
-
                         else -> {}
                     }
                 }
@@ -229,13 +218,19 @@ fun Navigation(
 @Serializable
 sealed interface CurrentDestination {
     @Serializable
-    data object LogInPage : CurrentDestination
+    data object LogInPage : CurrentDestination{
+        const val ROUTE = "LogInPage"
+    }
 
     @Serializable
-    data object SignUpPage : CurrentDestination
+    data object SignUpPage : CurrentDestination{
+        const val ROUTE = "SignUpPage"
+    }
 
     @Serializable
     data object HomePage : CurrentDestination
 
+    @Serializable
+    data object Loading : CurrentDestination
 }
 
