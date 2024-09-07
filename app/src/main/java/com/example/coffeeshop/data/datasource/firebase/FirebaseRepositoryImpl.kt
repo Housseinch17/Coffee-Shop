@@ -1,26 +1,34 @@
 package com.example.coffeeshop.data.datasource.firebase
 
+import com.example.coffeeshop.data.datasource.firebase.firebaseAuthentication.FirebaseAuthenticationDataSourceImpl
+import com.example.coffeeshop.data.datasource.firebase.firebaseReadData.FirebaseReadDataDataSourceImpl
 import com.example.coffeeshop.domain.repository.FirebaseRepository
+import com.example.coffeeshop.ui.screen.homepage.FirebaseResponse
 import com.example.coffeeshop.ui.screen.login.AuthState
 import com.example.coffeeshop.ui.screen.signup.AccountStatus
 import javax.inject.Inject
 
 class FirebaseRepositoryImpl @Inject constructor(
-    private val firebaseAuthenticationRemoteDataSourceImpl: FirebaseAuthenticationDataSourceImpl
+    private val firebaseAuthenticationDataSourceImpl: FirebaseAuthenticationDataSourceImpl,
+    private val firebaseReadDataDataSourceImpl: FirebaseReadDataDataSourceImpl
 ): FirebaseRepository{
     override suspend fun getCurrentUser(): String? {
-        return firebaseAuthenticationRemoteDataSourceImpl.getCurrentUser()
+        return firebaseAuthenticationDataSourceImpl.getCurrentUser()
     }
 
     override suspend fun logIn(email: String, password: String): AuthState {
-        return firebaseAuthenticationRemoteDataSourceImpl.logIn(email,password)
+        return firebaseAuthenticationDataSourceImpl.logIn(email,password)
     }
 
     override suspend fun signUp(email: String, password: String): AccountStatus {
-        return firebaseAuthenticationRemoteDataSourceImpl.signUp(email,password)
+        return firebaseAuthenticationDataSourceImpl.signUp(email,password)
     }
 
     override suspend fun signOut() {
-        firebaseAuthenticationRemoteDataSourceImpl.signOut()
+        firebaseAuthenticationDataSourceImpl.signOut()
+    }
+
+    override suspend fun readDataFromFirebase(): FirebaseResponse {
+        return firebaseReadDataDataSourceImpl.readDataFromFirebase()
     }
 }

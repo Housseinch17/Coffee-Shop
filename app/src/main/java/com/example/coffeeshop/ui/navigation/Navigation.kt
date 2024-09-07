@@ -21,7 +21,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.coffeeshop.AuthenticationViewModel
-import com.example.coffeeshop.ui.screen.HomePage
+import com.example.coffeeshop.ui.screen.homepage.HomePage
+import com.example.coffeeshop.ui.screen.homepage.HomePageViewModel
 import com.example.coffeeshop.ui.screen.login.AuthState
 import com.example.coffeeshop.ui.screen.login.LogInScreen
 import com.example.coffeeshop.ui.screen.login.LogInViewModel
@@ -41,7 +42,6 @@ fun Navigation(
     startDestination: CurrentDestination,
 ) {
     val authenticationViewModel = hiltViewModel<AuthenticationViewModel>()
-
     val context = LocalContext.current
 
     NavHost(
@@ -202,14 +202,12 @@ fun Navigation(
             )
         }
         composable<CurrentDestination.HomePage> {
+            val homePageViewModel = hiltViewModel<HomePageViewModel>()
+            val homePageUiState by homePageViewModel.homePageUiState.collectAsStateWithLifecycle()
+
             Log.d("BackStack", navController.currentBackStack.value.toString())
-            HomePage(modifier = Modifier.fillMaxSize(), username = "userName.toString") {
-                authenticationViewModel.signOut()
-                navController.navigate(CurrentDestination.LogInPage) {
-                    popUpTo(0) {
-                        inclusive = true
-                    }
-                }
+            HomePage(modifier = Modifier.fillMaxSize()) {
+                Log.d("CheckResponse",homePageUiState.response.toString())
             }
         }
     }

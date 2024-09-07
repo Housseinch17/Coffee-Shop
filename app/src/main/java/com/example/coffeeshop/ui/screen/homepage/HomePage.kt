@@ -1,5 +1,6 @@
-package com.example.coffeeshop.ui.screen
+package com.example.coffeeshop.ui.screen.homepage
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Text
@@ -10,17 +11,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 
 @Composable
-fun HomePage(modifier: Modifier, username: String,onSignOut: () -> Unit) {
+fun HomePage(modifier: Modifier,onClick: () -> Unit) {
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
         Column {
-            TextButton(onClick = onSignOut) {
-                Text("You are already Logged in with $username")
+            TextButton(onClick = onClick) {
+                Text("Click for response")
             }
             Color.White
-
         }
     }
 }

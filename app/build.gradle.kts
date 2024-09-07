@@ -104,6 +104,10 @@ dependencies {
     //Firebase Authentication
     implementation(libs.firebase.auth)
 
+    //read data from Firebase
+    implementation (libs.google.firebase.database.ktx)
+
+
     // Kotlin serialization
     implementation(libs.kotlinx.serialization.json)
 

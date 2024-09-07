@@ -1,4 +1,4 @@
-package com.example.coffeeshop.data.datasource.firebase
+package com.example.coffeeshop.data.datasource.firebase.firebaseAuthentication
 
 import com.example.coffeeshop.ui.screen.login.AuthState
 import com.example.coffeeshop.ui.screen.signup.AccountStatus

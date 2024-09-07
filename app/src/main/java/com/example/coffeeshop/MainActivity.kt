@@ -33,6 +33,7 @@ import com.example.coffeeshop.ui.MyAppViewModel
 import com.example.coffeeshop.ui.navigation.CurrentDestination
 import com.example.coffeeshop.ui.navigation.Navigation
 import com.example.coffeeshop.ui.theme.CoffeeShopTheme
+import com.google.firebase.FirebaseApp
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -47,6 +48,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             CoffeeShopTheme {
+                FirebaseApp.initializeApp(this)
                 Log.d(
                     "MainActivity",
                     "onCreate finished in ${System.currentTimeMillis() - startTime} ms"

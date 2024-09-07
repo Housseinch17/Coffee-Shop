@@ -5,7 +5,7 @@ import com.example.coffeeshop.data.model.items.itemslist.coffee.Coffee
 import kotlinx.serialization.Serializable
 
 @Serializable
-@Stable //stable (list is mutable object)
+@Stable
 data class Items(
-    val coffee: List<Coffee>
+    val coffee: List<Coffee> = emptyList()
 )
