@@ -1,15 +1,13 @@
 package com.example.coffeeshop.data.model.menu
 
-import androidx.compose.runtime.Immutable
-import com.example.coffeeshop.data.model.offers.Offer
+import androidx.compose.runtime.Stable
 import com.example.coffeeshop.data.model.category.Category
-import com.example.coffeeshop.data.model.items.Items
+import com.example.coffeeshop.data.model.offers.Offer
 import kotlinx.serialization.Serializable
 
 @Serializable
-@Immutable
+@Stable
 data class Menu(
     val category: Category = Category(),
-    val items: Items = Items(),
     val offers: List<Offer> = emptyList()
 )

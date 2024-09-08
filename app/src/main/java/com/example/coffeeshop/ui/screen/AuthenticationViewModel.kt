@@ -2,7 +2,7 @@ package com.example.coffeeshop
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.coffeeshop.domain.usecase.firebaseUsecase.SignOutUseCase
+import com.example.coffeeshop.domain.usecase.firebaseAuthenticationUseCase.SignOutUseCase
 import com.example.coffeeshop.domain.usecase.sharedprefrenceUsecase.GetSharedPrefUsernameUseCase
 import com.example.coffeeshop.domain.usecase.sharedprefrenceUsecase.SaveSharedPrefUsernameUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel

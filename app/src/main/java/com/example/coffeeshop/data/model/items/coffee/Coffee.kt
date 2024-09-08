@@ -1,4 +1,4 @@
-package com.example.coffeeshop.data.model.items.itemslist.coffee
+package com.example.coffeeshop.data.model.items.coffee
 
 import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable

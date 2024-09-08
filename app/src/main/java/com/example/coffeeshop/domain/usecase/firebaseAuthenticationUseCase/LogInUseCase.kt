@@ -1,4 +1,4 @@
-package com.example.coffeeshop.domain.usecase.firebaseUsecase
+package com.example.coffeeshop.domain.usecase.firebaseAuthenticationUseCase
 
 import com.example.coffeeshop.domain.repository.FirebaseRepository
 import com.example.coffeeshop.ui.screen.login.AuthState

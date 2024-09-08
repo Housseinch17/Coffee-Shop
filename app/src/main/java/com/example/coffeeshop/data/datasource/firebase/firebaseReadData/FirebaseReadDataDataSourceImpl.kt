@@ -11,9 +11,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import javax.inject.Named
 import kotlin.coroutines.resume
 
 class FirebaseReadDataDataSourceImpl @Inject constructor(
+    @Named("menuReference")
     private val databaseReference: DatabaseReference,
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO
 ): FirebaseReadDataDataSource {

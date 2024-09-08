@@ -1,4 +1,4 @@
-package com.example.coffeeshop.ui
+package com.example.coffeeshop.ui.screen.mainpage
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MyAppViewModel @Inject constructor(
+class MainViewModel @Inject constructor(
     private val saveSharedPrefUsernameUseCase: SaveSharedPrefUsernameUseCase,
     private val getSharedPrefUsernameUseCase: GetSharedPrefUsernameUseCase,
 ) : ViewModel() {

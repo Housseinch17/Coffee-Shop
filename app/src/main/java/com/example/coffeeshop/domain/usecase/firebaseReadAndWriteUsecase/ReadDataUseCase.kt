@@ -1,4 +1,4 @@
-package com.example.coffeeshop.domain.usecase.firebaseUsecase
+package com.example.coffeeshop.domain.usecase.firebaseReadAndWriteUsecase
 
 import com.example.coffeeshop.data.datasource.firebase.FirebaseRepositoryImpl
 import com.example.coffeeshop.ui.screen.homepage.FirebaseResponse

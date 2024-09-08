@@ -1,15 +1,19 @@
 package com.example.coffeeshop.data.model.category
 
-import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
+import com.example.coffeeshop.data.model.items.beverages.Beverage
+import com.example.coffeeshop.data.model.items.coffee.Coffee
+import com.example.coffeeshop.data.model.items.dessert.Dessert
+import com.example.coffeeshop.data.model.items.sandwiches.Sandwiche
+import com.example.coffeeshop.data.model.items.snacks.Snack
 import kotlinx.serialization.Serializable
 
-
 @Serializable
-@Immutable
+@Stable
 data class Category(
-    val beverages: String = "",
-    val coffee: String = "",
-    val dessert: String = "",
-    val sandwiches: String = "",
-    val snacks: String = ""
+    val beverages: List<Beverage> = emptyList(),
+    val coffee: List<Coffee> = emptyList(),
+    val dessert: List<Dessert> = emptyList(),
+    val sandwiches: List<Sandwiche> = emptyList(),
+    val snacks: List<Snack> = emptyList()
 )

@@ -15,6 +15,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -35,10 +36,10 @@ class FirebaseModule {
 
     @Provides
     @Singleton
+    @Named("menuReference")
     fun provideDatabaseReference(): DatabaseReference {
         // Return the reference to your specific path or the default database reference
         return FirebaseDatabase.getInstance().getReference("menu")
-
     }
 
     @Provides

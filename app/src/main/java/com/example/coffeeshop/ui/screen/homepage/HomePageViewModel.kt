@@ -3,7 +3,7 @@ package com.example.coffeeshop.ui.screen.homepage
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.coffeeshop.data.model.menu.Menu
-import com.example.coffeeshop.domain.usecase.firebaseUsecase.ReadDataUseCase
+import com.example.coffeeshop.domain.usecase.firebaseReadAndWriteUsecase.ReadDataUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
