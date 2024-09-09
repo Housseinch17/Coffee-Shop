@@ -21,6 +21,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.coffeeshop.ui.screen.AuthenticationViewModel
+import com.example.coffeeshop.ui.screen.SignOut
 import com.example.coffeeshop.ui.screen.homepage.HomePage
 import com.example.coffeeshop.ui.screen.homepage.HomePageViewModel
 import com.example.coffeeshop.ui.screen.login.AuthState
@@ -30,6 +31,7 @@ import com.example.coffeeshop.ui.screen.signup.AccountStatus
 import com.example.coffeeshop.ui.screen.signup.SignUpScreen
 import com.example.coffeeshop.ui.screen.signup.SignUpViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
@@ -42,7 +44,25 @@ fun Navigation(
     startDestination: CurrentDestination,
 ) {
     val authenticationViewModel = hiltViewModel<AuthenticationViewModel>()
+    val signOut by authenticationViewModel.signOut.collectAsStateWithLifecycle()
     val context = LocalContext.current
+
+    LaunchedEffect(signOut) {
+        when(signOut){
+            SignOut.Success -> navController.navigate(CurrentDestination.LogInPage) {
+                popUpTo(0) {
+                    inclusive = true
+                }
+            }
+            else -> {}
+        }
+    }
+
+    LaunchedEffect(authenticationViewModel.showError) {
+        authenticationViewModel.showError.collectLatest { error ->
+            Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+        }
+    }
 
     NavHost(
         navController = navController, startDestination = startDestination,
@@ -86,12 +106,12 @@ fun Navigation(
                                 logInViewModel.setSignUpButton(true)
                             }
                         }
-                        Lifecycle.Event.ON_START -> Log.d("currentScreen","Start")
-                        Lifecycle.Event.ON_CREATE -> Log.d("currentScreen","Create")
-                        Lifecycle.Event.ON_PAUSE  -> Log.d("currentScreen","Pause")
-                        Lifecycle.Event.ON_STOP -> Log.d("currentScreen","Stop")
-                        Lifecycle.Event.ON_DESTROY -> Log.d("currentScreen","Destroy")
-                        else -> Log.d("currentScreen","Else")
+                        Lifecycle.Event.ON_START -> Log.d("currentScreen", "Start")
+                        Lifecycle.Event.ON_CREATE -> Log.d("currentScreen", "Create")
+                        Lifecycle.Event.ON_PAUSE -> Log.d("currentScreen", "Pause")
+                        Lifecycle.Event.ON_STOP -> Log.d("currentScreen", "Stop")
+                        Lifecycle.Event.ON_DESTROY -> Log.d("currentScreen", "Destroy")
+                        else -> Log.d("currentScreen", "Else")
                     }
                 }
                 lifecycleOwner.lifecycle.addObserver(observer)
@@ -165,6 +185,7 @@ fun Navigation(
                                 delay(500L)
                                 signUpViewModel.setAlreadyHaveAccountButton(true)
                             }
+
                         else -> {}
                     }
                 }
@@ -207,15 +228,10 @@ fun Navigation(
 
             Log.d("BackStack", navController.currentBackStack.value.toString())
             HomePage(modifier = Modifier.fillMaxSize(), onClick = {
-                Log.d("CheckResponse",homePageUiState.response.toString())
+                Log.d("CheckResponse", homePageUiState.response.toString())
             }) {
                 //sign out and navigate to login page and clear all backstack entry
                 authenticationViewModel.signOut()
-                navController.navigate(CurrentDestination.LogInPage){
-                    popUpTo(0){
-                        inclusive = true
-                    }
-                }
             }
         }
     }
@@ -224,12 +240,12 @@ fun Navigation(
 @Serializable
 sealed interface CurrentDestination {
     @Serializable
-    data object LogInPage : CurrentDestination{
+    data object LogInPage : CurrentDestination {
         const val ROUTE = "LogInPage"
     }
 
     @Serializable
-    data object SignUpPage : CurrentDestination{
+    data object SignUpPage : CurrentDestination {
         const val ROUTE = "SignUpPage"
     }
 
