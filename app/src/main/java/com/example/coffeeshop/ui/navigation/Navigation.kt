@@ -4,9 +4,7 @@ import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.core.EaseIn
 import androidx.compose.animation.core.EaseOut
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -80,25 +78,11 @@ fun Navigation(
         navController = navController, startDestination = startDestination,
         modifier = modifier,
         enterTransition = {
-            fadeIn(
-                animationSpec = tween(
-                    300, easing = LinearEasing
-                )
-            ) + slideIntoContainer(
-                animationSpec = tween(300, easing = EaseIn),
-                towards = AnimatedContentTransitionScope.SlideDirection.Start
-            )
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up, animationSpec = tween(1000))
         },
         exitTransition = {
-            fadeOut(
-                animationSpec = tween(
-                    300, easing = LinearEasing
-                )
-            ) + slideOutOfContainer(
-                animationSpec = tween(300, easing = EaseOut),
-                towards = AnimatedContentTransitionScope.SlideDirection.End
-            )
-        }
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down, animationSpec = tween(1000))
+        },
     ) {
         composable<CurrentDestination.LogInPage> {
             Log.d("BackStack", navController.currentBackStack.value.toString())

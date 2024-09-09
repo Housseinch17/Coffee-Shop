@@ -1,6 +1,5 @@
 package com.example.coffeeshop.ui.screen.mainpage
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.coffeeshop.domain.usecase.sharedprefrenceUsecase.GetSharedPrefUsernameUseCase
@@ -32,6 +31,7 @@ class MainViewModel @Inject constructor(
 
     private fun checkSharedPreferUsername() {
         viewModelScope.launch {
+            //read username from sharedPreference
             val currentUsername = getCurrentUserName()
             if (currentUsername == null) {
                 _status.value = CurrentDestination.LogInPage

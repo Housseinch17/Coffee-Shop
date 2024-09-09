@@ -41,6 +41,7 @@ class AuthenticationViewModel @Inject constructor(
         return getSharedPrefUsernameUseCase.getUsername()
     }
 
+    //reset state while signing out
     fun resetSignOutState(){
         viewModelScope.launch {
             _signOut.value = SignOut.Loading
