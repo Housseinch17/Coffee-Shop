@@ -4,13 +4,11 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.coffeeshop.MyApp
 import com.example.coffeeshop.domain.usecase.firebaseAuthenticationUseCase.SignOutUseCase
 import com.example.coffeeshop.domain.usecase.sharedprefrenceUsecase.GetSharedPrefUsernameUseCase
 import com.example.coffeeshop.domain.usecase.sharedprefrenceUsecase.SaveSharedPrefUsernameUseCase
 import com.example.coffeeshop.ui.util.isInternetAvailable
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,7 +19,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AuthenticationViewModel @Inject constructor(
-    private val application: Application, // Use Application directly
+    application: Application, // Use Application directly
     private val signOutUseCase: SignOutUseCase,
     private val saveSharedPrefUsernameUseCase: SaveSharedPrefUsernameUseCase,
     private val getSharedPrefUsernameUseCase: GetSharedPrefUsernameUseCase,
@@ -33,7 +31,7 @@ class AuthenticationViewModel @Inject constructor(
     val showError = _showError.asSharedFlow()
 
 
-    private fun emitError(error: String) {
+    private fun emitError(error: String = "No internet connection") {
         viewModelScope.launch {
             _showError.emit(error)
         }
@@ -43,8 +41,16 @@ class AuthenticationViewModel @Inject constructor(
         return getSharedPrefUsernameUseCase.getUsername()
     }
 
+    fun resetSignOutState(){
+        viewModelScope.launch {
+            _signOut.value = SignOut.Loading
+        }
+    }
+
     fun signOut() {
         viewModelScope.launch {
+            _signOut.value = SignOut.Loading
+            Log.d("Entered","first ${_signOut.value}")
             val hasInternet = getApplication<Application>().isInternetAvailable()
             Log.d("hasInternet", "$hasInternet")
             if (hasInternet) {
@@ -53,8 +59,10 @@ class AuthenticationViewModel @Inject constructor(
                 saveSharedPrefUsernameUseCase.saveUsername(null)
             } else {
                 _signOut.value = SignOut.Error
-                emitError("No internet connection")
+                //show error to the user
+                emitError()
             }
+            Log.d("Entered","first ${_signOut.value}")
         }
     }
 }

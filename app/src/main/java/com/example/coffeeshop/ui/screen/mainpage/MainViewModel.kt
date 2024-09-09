@@ -1,5 +1,6 @@
 package com.example.coffeeshop.ui.screen.mainpage
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.coffeeshop.domain.usecase.sharedprefrenceUsecase.GetSharedPrefUsernameUseCase
@@ -36,6 +37,7 @@ class MainViewModel @Inject constructor(
                 _status.value = CurrentDestination.LogInPage
             } else {
                 _status.value = CurrentDestination.HomePage
+                //save the new username
                 saveSharedPrefUsernameUseCase.saveUsername(currentUsername)
             }
         }

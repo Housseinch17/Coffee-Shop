@@ -8,6 +8,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.coffeeshop.ui.screen.mainpage.MainPage
 import com.example.coffeeshop.ui.theme.CoffeeShopTheme
 import com.google.firebase.FirebaseApp
@@ -15,6 +17,7 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    private lateinit var navController: NavHostController
 
     @SuppressLint("CoroutineCreationDuringComposition", "UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,16 +25,26 @@ class MainActivity : ComponentActivity() {
         Log.d("MainActivity", "onCreate started")
         installSplashScreen()
         super.onCreate(savedInstanceState)
+        val restoreState = savedInstanceState?.getBundle("nav_state")
         enableEdgeToEdge()
         setContent {
             CoffeeShopTheme {
                 FirebaseApp.initializeApp(this)
-                MainPage()
+                navController = rememberNavController()
+                navController.restoreState(restoreState)
+                MainPage(navController = navController)
                 Log.d(
                     "MainActivity",
                     "onCreate finished in ${System.currentTimeMillis() - startTime} ms"
                 )
             }
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        if (::navController.isInitialized) {
+            outState.putBundle("nav_state", navController.saveState())
         }
     }
 }

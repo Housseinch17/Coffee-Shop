@@ -1,6 +1,8 @@
 package com.example.coffeeshop.ui.screen.mainpage
 
-import android.widget.Toast
+//noinspection UsingMaterialAndMaterial3Libraries
+//noinspection UsingMaterialAndMaterial3Libraries
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -8,9 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.BottomNavigation
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.TopAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -21,34 +21,31 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
 import com.example.coffeeshop.R
 import com.example.coffeeshop.ui.navigation.CurrentDestination
 import com.example.coffeeshop.ui.navigation.Navigation
 
 @Composable
-fun MainPage() {
+fun MainPage(navController: NavHostController) {
     //initialize viewmodel to check if already logged in via shared preferences
     val mainViewModel = hiltViewModel<MainViewModel>()
     val status by mainViewModel.status.collectAsStateWithLifecycle()
 
-    val navController = rememberNavController()
 
     val backStackEntry by navController.currentBackStackEntryAsState()
     //get current screen
     val currentScreen = backStackEntry?.destination?.route
     //get current screen route without (com.example.coffee...)
     val currentScreenRoute = getScreenName(currentScreen)
-
-    val context = LocalContext.current
+    Log.d("currentScreen",currentScreenRoute)
 
 
     //not hideBottomBar
@@ -81,13 +78,8 @@ fun MainPage() {
                     ) {
                         BottomBar(
                             modifier = Modifier
-
                         ) {
-                            Toast.makeText(
-                                context,
-                                "Bottom navigation CLicked",
-                                Toast.LENGTH_LONG
-                            ).show()
+
                         }
                     }
                 }

@@ -3,6 +3,13 @@ package com.example.coffeeshop.ui.navigation
 import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.EaseIn
+import androidx.compose.animation.core.EaseOut
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -47,13 +54,18 @@ fun Navigation(
     val signOut by authenticationViewModel.signOut.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
+
     LaunchedEffect(signOut) {
-        when(signOut){
-            SignOut.Success -> navController.navigate(CurrentDestination.LogInPage) {
-                popUpTo(0) {
-                    inclusive = true
+        when (signOut) {
+            SignOut.Success -> {
+                authenticationViewModel.resetSignOutState()
+                navController.navigate(CurrentDestination.LogInPage) {
+                    popUpTo(0) {
+                        inclusive = true
+                    }
                 }
             }
+
             else -> {}
         }
     }
@@ -66,7 +78,27 @@ fun Navigation(
 
     NavHost(
         navController = navController, startDestination = startDestination,
-        modifier = modifier
+        modifier = modifier,
+        enterTransition = {
+            fadeIn(
+                animationSpec = tween(
+                    300, easing = LinearEasing
+                )
+            ) + slideIntoContainer(
+                animationSpec = tween(300, easing = EaseIn),
+                towards = AnimatedContentTransitionScope.SlideDirection.Start
+            )
+        },
+        exitTransition = {
+            fadeOut(
+                animationSpec = tween(
+                    300, easing = LinearEasing
+                )
+            ) + slideOutOfContainer(
+                animationSpec = tween(300, easing = EaseOut),
+                towards = AnimatedContentTransitionScope.SlideDirection.End
+            )
+        }
     ) {
         composable<CurrentDestination.LogInPage> {
             Log.d("BackStack", navController.currentBackStack.value.toString())
@@ -89,31 +121,20 @@ fun Navigation(
                             inclusive = true
                         }
                     }
+
                     else -> {}
                 }
             }
             //set delay for signup button to avoid spamming it
             val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
-            val scope = rememberCoroutineScope()
             DisposableEffect(key1 = lifecycleOwner) {
                 val observer = LifecycleEventObserver { _, event ->
                     when (event) {
-                        Lifecycle.Event.ON_RESUME -> {
-                            Log.d("currentScreen", "Resume")
-                            scope.launch {
-                                logInViewModel.setSignUpButton(false)
-                                delay(500L)
-                                logInViewModel.setSignUpButton(true)
-                            }
-                        }
-                        Lifecycle.Event.ON_START -> Log.d("currentScreen", "Start")
-                        Lifecycle.Event.ON_CREATE -> Log.d("currentScreen", "Create")
-                        Lifecycle.Event.ON_PAUSE -> Log.d("currentScreen", "Pause")
-                        Lifecycle.Event.ON_STOP -> Log.d("currentScreen", "Stop")
-                        Lifecycle.Event.ON_DESTROY -> Log.d("currentScreen", "Destroy")
-                        else -> Log.d("currentScreen", "Else")
+                        Lifecycle.Event.ON_RESUME -> logInViewModel.setSignUpButton()
+                        else -> {}
                     }
                 }
+
                 lifecycleOwner.lifecycle.addObserver(observer)
                 onDispose {
                     lifecycleOwner.lifecycle.removeObserver(observer)
@@ -231,6 +252,7 @@ fun Navigation(
                 Log.d("CheckResponse", homePageUiState.response.toString())
             }) {
                 //sign out and navigate to login page and clear all backstack entry
+
                 authenticationViewModel.signOut()
             }
         }

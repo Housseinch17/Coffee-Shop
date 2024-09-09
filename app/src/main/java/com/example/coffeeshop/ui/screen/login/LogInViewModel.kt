@@ -43,10 +43,15 @@ class LogInViewModel @Inject constructor(
         Log.d("MyTag", "LogIn Cleared")
     }
 
-
-    fun setSignUpButton(signUpEnabled: Boolean){
-        _logInUiState.update { newState->
-            newState.copy(signUpEnabled = signUpEnabled)
+    fun setSignUpButton() {
+        viewModelScope.launch {
+            _logInUiState.update { newState ->
+                newState.copy(signUpEnabled = false)
+            }
+            delay(500L)
+            _logInUiState.update { newState ->
+                newState.copy(signUpEnabled = true)
+            }
         }
     }
 
@@ -83,7 +88,7 @@ class LogInViewModel @Inject constructor(
         }
     }
 
-    private fun getCurrentUserAndSaveIt(){
+    private fun getCurrentUserAndSaveIt() {
         viewModelScope.launch {
             val currentUsername = getCurrentUserUseCase.getCurrentUser()
             saveSharedPrefUsernameUseCase.saveUsername(currentUsername)
