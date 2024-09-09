@@ -11,6 +11,7 @@ import com.example.coffeeshop.domain.usecase.firebaseAuthenticationUseCase.GetCu
 import com.example.coffeeshop.domain.usecase.firebaseAuthenticationUseCase.LogInUseCase
 import com.example.coffeeshop.domain.usecase.sharedprefrenceUsecase.SaveSharedPrefUsernameUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -63,6 +64,7 @@ class LogInViewModel @Inject constructor(
             }
             if (email.isEmpty() || password.isEmpty()) {
                 emitSharedFlow("Email and Password can't be empty")
+                delay(500L)
                 _logInUiState.update { newState ->
                     newState.copy(authState = AuthState.NotLoggedIn)
                 }

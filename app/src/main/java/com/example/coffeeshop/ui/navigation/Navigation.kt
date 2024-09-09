@@ -82,7 +82,7 @@ fun Navigation(
                             Log.d("currentScreen", "Resume")
                             scope.launch {
                                 logInViewModel.setSignUpButton(false)
-                                delay(1000L)
+                                delay(500L)
                                 logInViewModel.setSignUpButton(true)
                             }
                         }
@@ -162,7 +162,7 @@ fun Navigation(
                         Lifecycle.Event.ON_RESUME ->
                             scope.launch {
                                 signUpViewModel.setAlreadyHaveAccountButton(false)
-                                delay(1000L)
+                                delay(500L)
                                 signUpViewModel.setAlreadyHaveAccountButton(true)
                             }
                         else -> {}
