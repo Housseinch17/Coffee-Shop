@@ -1,4 +1,4 @@
-package com.example.coffeeshop
+package com.example.coffeeshop.ui.screen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

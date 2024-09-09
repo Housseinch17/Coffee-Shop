@@ -71,11 +71,11 @@ class LogInViewModel @Inject constructor(
                 if (response is AuthState.Error) {
                     emitSharedFlow(response.message)
                 } else if (response is AuthState.LoggedIn) {
-                    _logInUiState.update { newState ->
-                        newState.copy(authState = response)
-                    }
                     //save the user in sharedPreference if its logged in
                     getCurrentUserAndSaveIt()
+                }
+                _logInUiState.update { newState ->
+                    newState.copy(authState = response)
                 }
             }
         }
