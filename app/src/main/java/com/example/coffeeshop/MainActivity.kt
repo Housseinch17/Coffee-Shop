@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.WindowCompat
 import com.example.coffeeshop.ui.screen.mainpage.MainPage
 import com.example.coffeeshop.ui.theme.CoffeeShopTheme
 import com.google.firebase.FirebaseApp

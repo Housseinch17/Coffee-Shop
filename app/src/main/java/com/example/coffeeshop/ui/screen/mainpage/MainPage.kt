@@ -5,7 +5,13 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
+//noinspection UsingMaterialAndMaterial3Libraries
+import androidx.compose.material.BottomNavigation
+//noinspection UsingMaterialAndMaterial3Libraries
+import androidx.compose.material.TopAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -18,6 +24,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -28,7 +35,7 @@ import com.example.coffeeshop.ui.navigation.CurrentDestination
 import com.example.coffeeshop.ui.navigation.Navigation
 
 @Composable
-fun MainPage(){
+fun MainPage() {
     //initialize viewmodel to check if already logged in via shared preferences
     val mainViewModel = hiltViewModel<MainViewModel>()
     val status by mainViewModel.status.collectAsStateWithLifecycle()
@@ -49,18 +56,39 @@ fun MainPage(){
 
     if (status != CurrentDestination.Loading) {
         Scaffold(
+            topBar = {
+                TopAppBar(
+                    modifier = Modifier
+                        .statusBarsPadding()
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    backgroundColor = Color.Green,
+                ) {
+                    Text(
+                        "Anything is here",
+                        textAlign = TextAlign.Center
+                    )
+                }
+            },
             bottomBar = {
                 if (showBottomBar) {
-                    BottomBar(
+                    BottomNavigation(
                         modifier = Modifier
+                            .navigationBarsPadding()
                             .fillMaxWidth()
-                            .height(56.dp)
+                            .height(56.dp),
+                        backgroundColor = Color.Green,
                     ) {
-                        Toast.makeText(
-                            context,
-                            "Bottom navigation CLicked",
-                            Toast.LENGTH_LONG
-                        ).show()
+                        BottomBar(
+                            modifier = Modifier
+
+                        ) {
+                            Toast.makeText(
+                                context,
+                                "Bottom navigation CLicked",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
                     }
                 }
             },
@@ -68,7 +96,9 @@ fun MainPage(){
             Navigation(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding),
+                    .padding(innerPadding)
+                    .statusBarsPadding()
+                    .navigationBarsPadding(),
                 navController = navController,
                 startDestination = status
             )
@@ -82,6 +112,8 @@ fun MainPage(){
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
+                    .statusBarsPadding()
+                    .navigationBarsPadding()
             )
         }
     }
@@ -96,7 +128,7 @@ fun BottomBar(modifier: Modifier, onClick: () -> Unit) {
     }
 }
 
-private fun hideBottomBar(currentScreenRoute: String): Boolean{
+private fun hideBottomBar(currentScreenRoute: String): Boolean {
     //currentScreenRoute is LogInPage
     //currentScreenRoute is SignUpPage
     //currentScreenRoute is Empty
