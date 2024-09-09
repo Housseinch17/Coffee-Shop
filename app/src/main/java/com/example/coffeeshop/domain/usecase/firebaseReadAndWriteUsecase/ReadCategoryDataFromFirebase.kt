@@ -4,8 +4,8 @@ import com.example.coffeeshop.data.datasource.firebase.FirebaseRepositoryImpl
 import com.example.coffeeshop.ui.screen.homepage.FirebaseResponse
 import javax.inject.Inject
 
-class ReadDataUseCase @Inject constructor(
+class ReadCategoryDataFromFirebase @Inject constructor(
     private val firebaseRepositoryImpl: FirebaseRepositoryImpl
 ) {
-    suspend fun readData(): FirebaseResponse = firebaseRepositoryImpl.readDataFromFirebase()
+    suspend fun readData(): FirebaseResponse = firebaseRepositoryImpl.readCategoryDataFromFirebase()
 }

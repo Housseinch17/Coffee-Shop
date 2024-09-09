@@ -25,10 +25,10 @@ class FirebaseRepositoryImpl @Inject constructor(
     }
 
     override suspend fun signOut() {
-        firebaseAuthenticationDataSourceImpl.signOut()
+         firebaseAuthenticationDataSourceImpl.signOut()
     }
 
-    override suspend fun readDataFromFirebase(): FirebaseResponse {
-        return firebaseReadDataDataSourceImpl.readDataFromFirebase()
+    override suspend fun readCategoryDataFromFirebase(): FirebaseResponse {
+        return firebaseReadDataDataSourceImpl.readCategoryDataFromFirebase()
     }
 }

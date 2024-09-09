@@ -9,5 +9,5 @@ interface FirebaseRepository {
     suspend fun logIn(email: String,password: String): AuthState
     suspend fun signUp(email: String,password: String): AccountStatus
     suspend fun signOut()
-    suspend fun readDataFromFirebase(): FirebaseResponse
+    suspend fun readCategoryDataFromFirebase(): FirebaseResponse
 }

@@ -1,11 +1,11 @@
-package com.example.coffeeshop.data.model.items.coffee
+package com.example.coffeeshop.data.model.items
 
 import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable
 
 @Serializable
 @Immutable
-data class Coffee(
+data class CategoryItems(
     val description: String = "",
     val extra: String = "",
     val picUrl: String = "",

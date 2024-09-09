@@ -25,12 +25,6 @@ class MainViewModel @Inject constructor(
         checkSharedPreferUsername()
     }
 
-    fun updateStatus(currentDestination: CurrentDestination) {
-        viewModelScope.launch {
-            _status.value = currentDestination
-        }
-    }
-
     private suspend fun getCurrentUserName(): String? {
         return getSharedPrefUsernameUseCase.getUsername()
     }

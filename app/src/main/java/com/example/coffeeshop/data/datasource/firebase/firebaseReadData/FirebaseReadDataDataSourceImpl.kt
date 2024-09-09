@@ -20,15 +20,15 @@ class FirebaseReadDataDataSourceImpl @Inject constructor(
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO
 ): FirebaseReadDataDataSource {
 
-    override suspend fun readDataFromFirebase(): FirebaseResponse = withContext(coroutineDispatcher){
+    override suspend fun readCategoryDataFromFirebase(): FirebaseResponse = withContext(coroutineDispatcher){
         suspendCancellableCoroutine{ continuation->
             try{
                 databaseReference.addValueEventListener(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
-                        val menuData = snapshot.getValue(Menu::class.java)
-                        if (menuData != null) {
+                        val categoryHashMap = snapshot.getValue(Menu::class.java)?.category?.toHashMap()
+                        if (categoryHashMap != null) {
                             if (continuation.isActive) {
-                                continuation.resume(FirebaseResponse.Success(menuData))
+                                continuation.resume(FirebaseResponse.Success(categoryHashMap))
                             }
                             else {
                                 continuation.resume(FirebaseResponse.Error("Data is null"))
@@ -50,4 +50,5 @@ class FirebaseReadDataDataSourceImpl @Inject constructor(
             }
         }
     }
+
 }
