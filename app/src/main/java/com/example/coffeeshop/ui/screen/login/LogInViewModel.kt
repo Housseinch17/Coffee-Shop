@@ -35,7 +35,7 @@ class LogInViewModel @Inject constructor(
     val sharedFlow: SharedFlow<String> = _sharedFlow.asSharedFlow()
 
     init {
-        Log.d("MyTag", "Entered LogIn")
+        showLoader()
     }
 
     override fun onCleared() {
@@ -43,12 +43,24 @@ class LogInViewModel @Inject constructor(
         Log.d("MyTag", "LogIn Cleared")
     }
 
+    private fun showLoader(){
+        viewModelScope.launch {
+            _logInUiState.update { newState->
+                newState.copy(isLoading = true)
+            }
+            delay(1000L)
+            _logInUiState.update { newState->
+                newState.copy(isLoading = false)
+            }
+        }
+    }
+
     fun setSignUpButton() {
         viewModelScope.launch {
             _logInUiState.update { newState ->
                 newState.copy(signUpEnabled = false)
             }
-            delay(500L)
+            delay(200L)
             _logInUiState.update { newState ->
                 newState.copy(signUpEnabled = true)
             }

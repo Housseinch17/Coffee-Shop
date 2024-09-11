@@ -4,20 +4,15 @@ import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.core.EaseOut
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -25,6 +20,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.coffeeshop.R
 import com.example.coffeeshop.ui.screen.AuthenticationViewModel
 import com.example.coffeeshop.ui.screen.SignOut
 import com.example.coffeeshop.ui.screen.homepage.HomePage
@@ -32,12 +28,14 @@ import com.example.coffeeshop.ui.screen.homepage.HomePageViewModel
 import com.example.coffeeshop.ui.screen.login.AuthState
 import com.example.coffeeshop.ui.screen.login.LogInScreen
 import com.example.coffeeshop.ui.screen.login.LogInViewModel
+import com.example.coffeeshop.ui.screen.myorderspage.MyOrdersPage
+import com.example.coffeeshop.ui.screen.profilepage.ProfilePage
+import com.example.coffeeshop.ui.screen.settingspage.SettingsPage
+import com.example.coffeeshop.ui.screen.shoppingcartpage.ShoppingCartPage
 import com.example.coffeeshop.ui.screen.signup.AccountStatus
 import com.example.coffeeshop.ui.screen.signup.SignUpScreen
 import com.example.coffeeshop.ui.screen.signup.SignUpViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
 
@@ -51,7 +49,6 @@ fun Navigation(
     val authenticationViewModel = hiltViewModel<AuthenticationViewModel>()
     val signOut by authenticationViewModel.signOut.collectAsStateWithLifecycle()
     val context = LocalContext.current
-
 
     LaunchedEffect(signOut) {
         when (signOut) {
@@ -78,14 +75,19 @@ fun Navigation(
         navController = navController, startDestination = startDestination,
         modifier = modifier,
         enterTransition = {
-            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up, animationSpec = tween(1000))
+            slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.Up,
+                animationSpec = tween(1000)
+            )
         },
         exitTransition = {
-            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down, animationSpec = tween(1000))
+            slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.Down,
+                animationSpec = tween(1000)
+            )
         },
     ) {
         composable<CurrentDestination.LogInPage> {
-            Log.d("BackStack", navController.currentBackStack.value.toString())
             val logInViewModel = hiltViewModel<LogInViewModel>()
             val logInUiState by logInViewModel.logInUiState.collectAsStateWithLifecycle()
 
@@ -96,7 +98,6 @@ fun Navigation(
                     Toast.makeText(context, error, Toast.LENGTH_LONG).show()
                 }
             }
-
             LaunchedEffect(logInUiState.authState) {
                 when (logInUiState.authState) {
                     AuthState.LoggedIn -> navController.navigate(CurrentDestination.HomePage) {
@@ -114,11 +115,13 @@ fun Navigation(
             DisposableEffect(key1 = lifecycleOwner) {
                 val observer = LifecycleEventObserver { _, event ->
                     when (event) {
-                        Lifecycle.Event.ON_RESUME -> logInViewModel.setSignUpButton()
+                        Lifecycle.Event.ON_RESUME -> {
+                            logInViewModel.setSignUpButton()
+                        }
+
                         else -> {}
                     }
                 }
-
                 lifecycleOwner.lifecycle.addObserver(observer)
                 onDispose {
                     lifecycleOwner.lifecycle.removeObserver(observer)
@@ -126,8 +129,8 @@ fun Navigation(
             }
 
             LogInScreen(
-                modifier = modifier.padding(horizontal = 20.dp, vertical = 10.dp),
-                textPage = "Login Page",
+                modifier = Modifier.fillMaxSize(),
+                textPage = stringResource(R.string.welcome_back),
                 emailValue = logInUiState.emailValue,
                 onEmailChange = { newEmail ->
                     logInViewModel.setEmail(newEmail)
@@ -143,6 +146,7 @@ fun Navigation(
                 "Don't have an account, SignUp!",
                 logInEnabled = logInUiState.authState != AuthState.Loading,
                 signUpEnabled = logInUiState.signUpEnabled,
+                isLoading = logInUiState.isLoading,
                 onLogInClick = { email, password ->
                     logInViewModel.logIn(email, password)
                 },
@@ -167,30 +171,17 @@ fun Navigation(
 
             LaunchedEffect(signUpUiState.accountStatus) {
                 when (signUpUiState.accountStatus) {
-                    is AccountStatus.IsCreated -> navController.navigate(CurrentDestination.LogInPage) {
-                        //inclusive = true to remove SignUpPage from currentBackStack
-                        popUpTo(CurrentDestination.LogInPage) {
-                            inclusive = true
-                        }
-                    }
-
+                    is AccountStatus.IsCreated -> navController.navigate(CurrentDestination.LogInPage)
                     else -> {}
                 }
             }
 
             //set delay for signup button to avoid spamming it
             val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
-            val scope = rememberCoroutineScope()
             DisposableEffect(key1 = lifecycleOwner) {
                 val observer = LifecycleEventObserver { _, event ->
                     when (event) {
-                        Lifecycle.Event.ON_RESUME ->
-                            scope.launch {
-                                signUpViewModel.setAlreadyHaveAccountButton(false)
-                                delay(500L)
-                                signUpViewModel.setAlreadyHaveAccountButton(true)
-                            }
-
+                        Lifecycle.Event.ON_RESUME -> signUpViewModel.setAlreadyHaveAccountButton()
                         else -> {}
                     }
                 }
@@ -200,9 +191,8 @@ fun Navigation(
                     lifecycleOwner.lifecycle.removeObserver(observer)
                 }
             }
-
             SignUpScreen(
-                modifier.padding(horizontal = 20.dp, vertical = 10.dp),
+                Modifier.fillMaxSize(),
                 textPage = "SignUp Page",
                 emailValue = signUpUiState.email,
                 onEmailChange = { newEmail ->
@@ -240,6 +230,22 @@ fun Navigation(
                 authenticationViewModel.signOut()
             }
         }
+
+        composable<CurrentDestination.SettingsPage> {
+            SettingsPage(modifier = Modifier.fillMaxSize())
+        }
+
+        composable<CurrentDestination.ProfilePage> {
+            ProfilePage(modifier = Modifier.fillMaxSize())
+        }
+
+        composable<CurrentDestination.ShoppingCartPage> {
+            ShoppingCartPage(modifier = Modifier.fillMaxSize())
+        }
+
+        composable<CurrentDestination.MyOrders> {
+            MyOrdersPage(modifier = Modifier.fillMaxSize())
+        }
     }
 }
 
@@ -256,7 +262,29 @@ sealed interface CurrentDestination {
     }
 
     @Serializable
-    data object HomePage : CurrentDestination
+    data object HomePage : CurrentDestination{
+        const val ROUTE = "HomePage"
+    }
+
+    @Serializable
+    data object ProfilePage : CurrentDestination{
+        const val ROUTE = "ProfilePage"
+    }
+
+    @Serializable
+    data object ShoppingCartPage : CurrentDestination{
+        const val ROUTE = "ShoppingCartPage"
+    }
+
+    @Serializable
+    data object SettingsPage : CurrentDestination{
+        const val ROUTE = "SettingsPage"
+    }
+
+    @Serializable
+    data object MyOrders : CurrentDestination{
+        const val ROUTE = ""
+    }
 
     @Serializable
     data object Loading : CurrentDestination

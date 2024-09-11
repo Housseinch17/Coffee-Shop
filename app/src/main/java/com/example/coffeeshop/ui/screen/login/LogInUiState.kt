@@ -9,5 +9,6 @@ data class LogInUiState(
     val showPassword: Boolean = false,
     val authState: AuthState = AuthState.NotLoggedIn,
     val signUpEnabled: Boolean = false,
-    val userName: String? = null
+    val userName: String? = null,
+    val isLoading: Boolean = true,
 )

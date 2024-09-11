@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.coffeeshop.domain.usecase.firebaseAuthenticationUseCase.SignUpUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -40,9 +41,15 @@ class SignUpViewModel @Inject constructor(
         Log.d("MyTag", "SignUp cleared")
     }
 
-    fun setAlreadyHaveAccountButton(alreadyHaveAccountButton: Boolean){
-        _signupUiState.update { newState->
-            newState.copy(alreadyHaveAccountButton = alreadyHaveAccountButton)
+    fun setAlreadyHaveAccountButton() {
+        viewModelScope.launch {
+            _signupUiState.update { newState ->
+                newState.copy(alreadyHaveAccountButton = false)
+            }
+            delay(200L)
+            _signupUiState.update { newState ->
+                newState.copy(alreadyHaveAccountButton = true)
+            }
         }
     }
 

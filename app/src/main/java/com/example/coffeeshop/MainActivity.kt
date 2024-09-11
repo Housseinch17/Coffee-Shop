@@ -9,7 +9,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.example.coffeeshop.ui.screen.mainpage.MainPage
+import com.example.coffeeshop.ui.MainPage
 import com.example.coffeeshop.ui.theme.CoffeeShopTheme
 import com.google.firebase.FirebaseApp
 import dagger.hilt.android.AndroidEntryPoint

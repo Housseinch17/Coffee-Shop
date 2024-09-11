@@ -84,9 +84,10 @@ dependencies {
     kapt (libs.androidx.room.compiler)
     implementation (libs.androidx.room.ktx)
 
+
     //NavHost()
     implementation(libs.androidx.navigation.compose)
-    //bottom navigation
+    //bottom navigation material not material3 to use BottomNavigation and docked for floating button
     implementation(libs.androidx.material)
 
     //Hilt
