@@ -49,7 +49,10 @@ fun Navigation(
     val authenticationViewModel = hiltViewModel<AuthenticationViewModel>()
     val authenticationUiState by authenticationViewModel.authenticationUiState.collectAsStateWithLifecycle()
     val signOut = authenticationUiState.signOut
+
     val currentUsername = authenticationUiState.username
+
+    Log.d("currentUsername",currentUsername.toString())
 
     val context = LocalContext.current
 
@@ -217,6 +220,9 @@ fun Navigation(
         composable<CurrentDestination.HomePage> {
             val homePageViewModel = hiltViewModel<HomePageViewModel>()
             val homePageUiState by homePageViewModel.homePageUiState.collectAsStateWithLifecycle()
+
+            //update currentUsername
+            authenticationViewModel.getCurrentUserName()
 
             LaunchedEffect(homePageViewModel.responseError) {
                 homePageViewModel.responseError.collect { error ->

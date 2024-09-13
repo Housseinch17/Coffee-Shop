@@ -58,7 +58,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.example.coffeeshop.R
@@ -273,7 +272,7 @@ fun OffersItem(offers: Offers,onOffersClick: () -> Unit) {
                     maxLines = 1
                 )
                 Text(
-                    text = (stringResource(R.string.price) + ": " + offers.price),
+                    text = (stringResource(R.string.price) + ": " + offers.price+"$"),
                     style = BodyTypography,
                     maxLines = 1
                 )

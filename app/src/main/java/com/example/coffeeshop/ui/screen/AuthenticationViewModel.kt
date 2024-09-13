@@ -44,7 +44,7 @@ class AuthenticationViewModel @Inject constructor(
         }
     }
 
-    private fun getCurrentUserName() {
+    fun getCurrentUserName() {
         viewModelScope.launch {
             val currentUsername = getSharedPrefUsernameUseCase.getUsername()
             _authenticationUiState.update { newState ->
