@@ -20,11 +20,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.coffeeshop.R
-import com.example.coffeeshop.ui.sharedcomponent.AccountButton
-import com.example.coffeeshop.ui.sharedcomponent.AccountTextButton
-import com.example.coffeeshop.ui.sharedcomponent.EmailAndPassword
-import com.example.coffeeshop.ui.sharedcomponent.ShimmerEffect
-import com.example.coffeeshop.ui.sharedcomponent.TrailingIcon
+import com.example.coffeeshop.ui.util.AccountButton
+import com.example.coffeeshop.ui.util.AccountTextButton
+import com.example.coffeeshop.ui.util.EmailAndPassword
+import com.example.coffeeshop.ui.util.ShimmerEffect
+import com.example.coffeeshop.ui.util.TrailingIcon
 
 
 @Composable
@@ -67,36 +67,32 @@ fun LogInScreen(
                 ShimmerEffect(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(36.dp), color = Color.White
+                        .height(36.dp)
                 )
                 Spacer(Modifier.height(16.dp))
                 // Shimmer for email field
                 ShimmerEffect(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp),
-                    color = Color.White
+                        .height(56.dp)
                 )
                 Spacer(Modifier.height(16.dp))
                 // Shimmer for password field
                 ShimmerEffect(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp), color = Color.White
                 )
                 Spacer(Modifier.height(16.dp))
                 // Shimmer for button
                 ShimmerEffect(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp), color = Color.White
                 )
                 Spacer(Modifier.height(24.dp))
                 // Shimmer for text button
                 ShimmerEffect(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(30.dp), color = Color.White
                 )
             } else {
                 Text(textPage, style = MaterialTheme.typography.titleLarge, color = Color.White)

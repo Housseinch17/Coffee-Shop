@@ -1,4 +1,4 @@
-package com.example.coffeeshop.ui.sharedcomponent
+package com.example.coffeeshop.ui.util
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -12,21 +12,25 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachEmail
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -52,7 +56,7 @@ fun ShimmerEffect(
     widthOfShadowBrush: Int = 500,
     angleOfAxisY: Float = 270f,
     durationMillis: Int = 1000,
-    color: Color,
+    color: Color = Color.White,
 ) {
     val shimmerColors = listOf(
         color.copy(alpha = 0.3f),  // Light grey
@@ -98,6 +102,7 @@ fun CoffeeImage(modifier: Modifier, imageUrl: String?) {
             model = ImageRequest.Builder(LocalContext.current)
                 .data(imageUrl)
                 .crossfade(true)
+                .placeholder(R.drawable.loading)
                 .error(R.drawable.connectionerror)
                 .build(),
             contentDescription = null,
@@ -291,3 +296,36 @@ fun getPasswordVisualTransformation(showValue: Boolean): VisualTransformation {
         PasswordVisualTransformation()
     }
 }
+
+
+@Composable
+fun ShowDialog(showDialog: Boolean, error: String, onDismissButton: () -> Unit) {
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = {},
+            confirmButton = {},
+            dismissButton = {
+                Button(onClick = onDismissButton) {
+                    Text("Dismiss", color = Orange)
+                }
+            },
+            modifier = Modifier
+                .size(200.dp)
+                .background(Color.White)
+                .clip(RoundedCornerShape(25.dp)),
+            title = {
+                Text(
+                    "No internet connection",
+                    style = MaterialTheme.typography.titleLarge.copy(color = Orange)
+                )
+            },
+            text = {
+                Text(
+                    text = error,
+                    style = MaterialTheme.typography.titleMedium.copy(Color.Black)
+                )
+            }
+        )
+    }
+}
+

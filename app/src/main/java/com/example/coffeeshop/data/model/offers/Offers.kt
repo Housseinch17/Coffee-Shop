@@ -5,8 +5,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 @Immutable
-data class Offer(
-    val picUrl: String = "",
+data class Offers(
+    val title: String = "",
     val price: Int = 0,
-    val title: String = ""
+    val discount: Int = 0,
+    val picUrl: String = "",
 )

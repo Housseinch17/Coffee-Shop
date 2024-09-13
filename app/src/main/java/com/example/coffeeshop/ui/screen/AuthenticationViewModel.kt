@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -24,8 +25,14 @@ class AuthenticationViewModel @Inject constructor(
     private val saveSharedPrefUsernameUseCase: SaveSharedPrefUsernameUseCase,
     private val getSharedPrefUsernameUseCase: GetSharedPrefUsernameUseCase,
 ) : AndroidViewModel(application = application) {
-    private val _signOut: MutableStateFlow<SignOut> = MutableStateFlow(SignOut.Loading)
-    val signOut: StateFlow<SignOut> = _signOut.asStateFlow()
+    private val _authenticationUiState: MutableStateFlow<AuthenticationUiState> =
+        MutableStateFlow(AuthenticationUiState())
+    val authenticationUiState: StateFlow<AuthenticationUiState> =
+        _authenticationUiState.asStateFlow()
+
+    init {
+        getCurrentUserName()
+    }
 
     private val _showError = MutableSharedFlow<String>()
     val showError = _showError.asSharedFlow()
@@ -37,40 +44,51 @@ class AuthenticationViewModel @Inject constructor(
         }
     }
 
-    private suspend fun getCurrentUserName(): String? {
-        return getSharedPrefUsernameUseCase.getUsername()
+    private fun getCurrentUserName() {
+        viewModelScope.launch {
+            val currentUsername = getSharedPrefUsernameUseCase.getUsername()
+            _authenticationUiState.update { newState ->
+                newState.copy(username = currentUsername)
+            }
+        }
     }
 
     //reset state while signing out
-    fun resetSignOutState(){
+    fun resetSignOutState() {
         viewModelScope.launch {
-            _signOut.value = SignOut.Loading
+            _authenticationUiState.update { newState ->
+                newState.copy(signOut = SignOutResponse.Loading)
+            }
         }
     }
 
     fun signOut() {
         viewModelScope.launch {
-            _signOut.value = SignOut.Loading
-            Log.d("Entered","first ${_signOut.value}")
+            _authenticationUiState.update { newState ->
+                newState.copy(signOut = SignOutResponse.Loading)
+            }
             val hasInternet = getApplication<Application>().isInternetAvailable()
             Log.d("hasInternet", "$hasInternet")
             if (hasInternet) {
                 signOutUseCase.signOut()
-                _signOut.value = SignOut.Success
+                _authenticationUiState.update { newState ->
+                    newState.copy(signOut = SignOutResponse.Success)
+                }
                 saveSharedPrefUsernameUseCase.saveUsername(null)
             } else {
-                _signOut.value = SignOut.Error
+                _authenticationUiState.update { newState ->
+                    newState.copy(signOut = SignOutResponse.Error)
+                }
                 //show error to the user
                 emitError()
             }
-            Log.d("Entered","first ${_signOut.value}")
         }
     }
 }
 
-sealed interface SignOut {
-    data object Loading : SignOut
-    data object Success : SignOut
-    data object Error : SignOut
+sealed interface SignOutResponse {
+    data object Loading : SignOutResponse
+    data object Success : SignOutResponse
+    data object Error : SignOutResponse
 
 }

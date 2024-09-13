@@ -13,4 +13,12 @@
     <string name="splash_screen">Splash Screen</string>
     <string name="background_image">Background Image</string>
     <string name="welcome_back">Welcome Back</string>
+    <string name="search">Search anything</string>
+    <string name="good_morning">Good Morning</string>
+    <string name="grab_your_items">Grab your items in this morning</string>
+    <string name="popular">Popular</string>
+    <string name="see_all">See All</string>
+    <string name="discount">Discount</string>
+    <string name="price">Price</string>
+    <string name="available_offers">Available Offers</string>
 </resources>

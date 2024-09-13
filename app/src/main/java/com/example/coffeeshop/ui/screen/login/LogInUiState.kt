@@ -11,4 +11,5 @@ data class LogInUiState(
     val signUpEnabled: Boolean = false,
     val userName: String? = null,
     val isLoading: Boolean = true,
+    
 )

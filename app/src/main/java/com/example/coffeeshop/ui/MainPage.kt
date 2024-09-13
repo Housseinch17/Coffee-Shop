@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -100,8 +101,10 @@ fun MainPage(navController: NavHostController) {
         ) { innerPadding ->
             //we  use innerPadding because we added statusBarsPadding() and navigationBarsPadding()
             // to topBar and bottomBar
+            //but here i removed topBar so i had to add statusBarsPadding() to show status bar color
             Navigation(
                 modifier = Modifier
+                    .statusBarsPadding()
                     .padding(innerPadding)
                     .fillMaxSize(),
                 navController = navController,

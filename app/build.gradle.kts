@@ -122,6 +122,10 @@ dependencies {
     //coil to display images as url
     implementation(libs.coil.compose)
 
+    //Constraint Layout in Compose
+    implementation (libs.androidx.constraintlayout.compose)
+
+
 }
 
 // Allow references to generated code

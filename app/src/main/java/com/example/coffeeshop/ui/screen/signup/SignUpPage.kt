@@ -20,10 +20,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.coffeeshop.R
-import com.example.coffeeshop.ui.sharedcomponent.AccountButton
-import com.example.coffeeshop.ui.sharedcomponent.AccountTextButton
-import com.example.coffeeshop.ui.sharedcomponent.EmailAndPassword
-import com.example.coffeeshop.ui.sharedcomponent.TrailingIcon
+import com.example.coffeeshop.ui.util.AccountButton
+import com.example.coffeeshop.ui.util.AccountTextButton
+import com.example.coffeeshop.ui.util.EmailAndPassword
+import com.example.coffeeshop.ui.util.TrailingIcon
 
 @Composable
 fun SignUpScreen(
@@ -57,7 +57,7 @@ fun SignUpScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(textPage, style = MaterialTheme.typography.titleMedium, color = Color.Black)
+            Text(textPage, style = MaterialTheme.typography.titleLarge, color = Color.White)
             Spacer(Modifier.height(16.dp))
             EmailAndPassword(
                 Modifier.fillMaxWidth(),

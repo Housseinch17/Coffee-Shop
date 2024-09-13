@@ -5,11 +5,12 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 @Immutable
+//Single class All categories has same parameters
 data class CategoryItems(
+    val title: String = "",
     val description: String = "",
     val extra: String = "",
-    val picUrl: String = "",
-    val price: Int = 0,
+    val price: Double = 0.0,
     val rating: Double = 0.0,
-    val title: String = ""
+    val picUrl: String = "",
 )

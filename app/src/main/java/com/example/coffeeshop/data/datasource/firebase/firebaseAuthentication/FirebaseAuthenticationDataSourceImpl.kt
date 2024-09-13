@@ -24,7 +24,6 @@ class FirebaseAuthenticationDataSourceImpl @Inject constructor(
         }
     }
 
-
     //firebase login is asynchronous using suspendCancellableCoroutine ensuring that it has to wait
     //for  signInWithEmailAndPassword to complete same as using async await
     override suspend fun logIn(email: String, password: String): AuthState =

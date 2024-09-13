@@ -22,7 +22,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.coffeeshop.R
 import com.example.coffeeshop.ui.screen.AuthenticationViewModel
-import com.example.coffeeshop.ui.screen.SignOut
+import com.example.coffeeshop.ui.screen.SignOutResponse
 import com.example.coffeeshop.ui.screen.homepage.HomePage
 import com.example.coffeeshop.ui.screen.homepage.HomePageViewModel
 import com.example.coffeeshop.ui.screen.login.AuthState
@@ -47,12 +47,15 @@ fun Navigation(
     startDestination: CurrentDestination,
 ) {
     val authenticationViewModel = hiltViewModel<AuthenticationViewModel>()
-    val signOut by authenticationViewModel.signOut.collectAsStateWithLifecycle()
+    val authenticationUiState by authenticationViewModel.authenticationUiState.collectAsStateWithLifecycle()
+    val signOut = authenticationUiState.signOut
+    val currentUsername = authenticationUiState.username
+
     val context = LocalContext.current
 
     LaunchedEffect(signOut) {
         when (signOut) {
-            SignOut.Success -> {
+            SignOutResponse.Success -> {
                 authenticationViewModel.resetSignOutState()
                 navController.navigate(CurrentDestination.LogInPage) {
                     popUpTo(0) {
@@ -76,14 +79,12 @@ fun Navigation(
         modifier = modifier,
         enterTransition = {
             slideIntoContainer(
-                AnimatedContentTransitionScope.SlideDirection.Up,
-                animationSpec = tween(1000)
+                AnimatedContentTransitionScope.SlideDirection.Up, animationSpec = tween(1000)
             )
         },
         exitTransition = {
             slideOutOfContainer(
-                AnimatedContentTransitionScope.SlideDirection.Down,
-                animationSpec = tween(1000)
+                AnimatedContentTransitionScope.SlideDirection.Down, animationSpec = tween(1000)
             )
         },
     ) {
@@ -128,8 +129,7 @@ fun Navigation(
                 }
             }
 
-            LogInScreen(
-                modifier = Modifier.fillMaxSize(),
+            LogInScreen(modifier = Modifier.fillMaxSize(),
                 textPage = stringResource(R.string.welcome_back),
                 emailValue = logInUiState.emailValue,
                 onEmailChange = { newEmail ->
@@ -152,8 +152,7 @@ fun Navigation(
                 },
                 onSignUpClick = {
                     navController.navigate(CurrentDestination.SignUpPage)
-                }
-            )
+                })
         }
 
         composable<CurrentDestination.SignUpPage> {
@@ -191,8 +190,7 @@ fun Navigation(
                     lifecycleOwner.lifecycle.removeObserver(observer)
                 }
             }
-            SignUpScreen(
-                Modifier.fillMaxSize(),
+            SignUpScreen(Modifier.fillMaxSize(),
                 textPage = "SignUp Page",
                 emailValue = signUpUiState.email,
                 onEmailChange = { newEmail ->
@@ -214,23 +212,47 @@ fun Navigation(
                 },
                 onExistingAccount = {
                     navController.navigateUp()
-                }
-            )
+                })
         }
         composable<CurrentDestination.HomePage> {
             val homePageViewModel = hiltViewModel<HomePageViewModel>()
             val homePageUiState by homePageViewModel.homePageUiState.collectAsStateWithLifecycle()
 
-            Log.d("BackStack", navController.currentBackStack.value.toString())
-            HomePage(modifier = Modifier.fillMaxSize(), onClick = {
-                Log.d("CheckResponse", homePageUiState.response.toString())
-            }) {
-                //sign out and navigate to login page and clear all backstack entry
-
-                authenticationViewModel.signOut()
+            LaunchedEffect(homePageViewModel.responseError) {
+                homePageViewModel.responseError.collect { error ->
+                    Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+                }
             }
-        }
 
+            Log.d("BackStack", navController.currentBackStack.value.toString())
+            HomePage(modifier = Modifier
+                .fillMaxSize(),
+                isLoading = homePageUiState.isLoading,
+                searchText = homePageUiState.searchText,
+                onSearch = { newText ->
+                    homePageViewModel.onSearchTextChange(newText)
+                },
+                username = currentUsername,
+                categoriesKey = homePageUiState.categoriesKey,
+                onCategoryClick = { newKey ->
+                    homePageViewModel.setCurrentCategory(newKey)
+                },
+                currentCategory = homePageUiState.filteredCategoryList,
+                onFirstSeeAllClick = {categoryItemsList->
+                    Log.d("CheckUi", categoryItemsList.toString())
+                },
+                onItemClick = {categoryItem->
+                    Log.d("CheckUi", categoryItem.toString())
+                },
+                offersList = homePageUiState.filteredOffersList,
+                onSecondSeeAllClick = {offersList->
+                    Log.d("CheckUi",offersList.toString())
+                },
+                onOffersClick = {offers->
+                    Log.d("CheckUi",offers.toString())
+                })
+
+        }
         composable<CurrentDestination.SettingsPage> {
             SettingsPage(modifier = Modifier.fillMaxSize())
         }
@@ -262,29 +284,19 @@ sealed interface CurrentDestination {
     }
 
     @Serializable
-    data object HomePage : CurrentDestination{
-        const val ROUTE = "HomePage"
-    }
+    data object HomePage : CurrentDestination
 
     @Serializable
-    data object ProfilePage : CurrentDestination{
-        const val ROUTE = "ProfilePage"
-    }
+    data object ProfilePage : CurrentDestination
 
     @Serializable
-    data object ShoppingCartPage : CurrentDestination{
-        const val ROUTE = "ShoppingCartPage"
-    }
+    data object ShoppingCartPage : CurrentDestination
 
     @Serializable
-    data object SettingsPage : CurrentDestination{
-        const val ROUTE = "SettingsPage"
-    }
+    data object SettingsPage : CurrentDestination
 
     @Serializable
-    data object MyOrders : CurrentDestination{
-        const val ROUTE = ""
-    }
+    data object MyOrders : CurrentDestination
 
     @Serializable
     data object Loading : CurrentDestination

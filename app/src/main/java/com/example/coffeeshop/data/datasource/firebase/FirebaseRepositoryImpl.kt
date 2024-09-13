@@ -3,7 +3,8 @@ package com.example.coffeeshop.data.datasource.firebase
 import com.example.coffeeshop.data.datasource.firebase.firebaseAuthentication.FirebaseAuthenticationDataSourceImpl
 import com.example.coffeeshop.data.datasource.firebase.firebaseReadData.FirebaseReadDataDataSourceImpl
 import com.example.coffeeshop.domain.repository.FirebaseRepository
-import com.example.coffeeshop.ui.screen.homepage.FirebaseResponse
+import com.example.coffeeshop.ui.screen.homepage.FirebaseCategoryResponse
+import com.example.coffeeshop.ui.screen.homepage.FirebaseOffersResponse
 import com.example.coffeeshop.ui.screen.login.AuthState
 import com.example.coffeeshop.ui.screen.signup.AccountStatus
 import javax.inject.Inject
@@ -28,7 +29,11 @@ class FirebaseRepositoryImpl @Inject constructor(
          firebaseAuthenticationDataSourceImpl.signOut()
     }
 
-    override suspend fun readCategoryDataFromFirebase(): FirebaseResponse {
+    override suspend fun readCategoryDataFromFirebase(): FirebaseCategoryResponse {
         return firebaseReadDataDataSourceImpl.readCategoryDataFromFirebase()
+    }
+
+    override suspend fun readOffersDataFromFirebase(): FirebaseOffersResponse {
+        return firebaseReadDataDataSourceImpl.readOffersDataFromFirebase()
     }
 }
