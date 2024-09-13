@@ -10,4 +10,8 @@ object DataSource {
         R.drawable.good,
         R.drawable.awesome
     )
+
+    fun calculateTotal(price: Int,discount: Int): Int {
+        return (price - (price*discount/100))
+    }
 }

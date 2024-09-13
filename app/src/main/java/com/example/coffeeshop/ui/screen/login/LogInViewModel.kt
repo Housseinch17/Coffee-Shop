@@ -1,6 +1,5 @@
 package com.example.coffeeshop.ui.screen.login
 
-import android.util.Log
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -38,31 +37,14 @@ class LogInViewModel @Inject constructor(
         showLoader()
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        Log.d("MyTag", "LogIn Cleared")
-    }
-
     private fun showLoader(){
         viewModelScope.launch {
             _logInUiState.update { newState->
                 newState.copy(isLoading = true)
             }
-            delay(1000L)
+            delay(500L)
             _logInUiState.update { newState->
                 newState.copy(isLoading = false)
-            }
-        }
-    }
-
-    fun setSignUpButton() {
-        viewModelScope.launch {
-            _logInUiState.update { newState ->
-                newState.copy(signUpEnabled = false)
-            }
-            delay(200L)
-            _logInUiState.update { newState ->
-                newState.copy(signUpEnabled = true)
             }
         }
     }
@@ -81,7 +63,6 @@ class LogInViewModel @Inject constructor(
             }
             if (email.isEmpty() || password.isEmpty()) {
                 emitSharedFlow("Email and Password can't be empty")
-                delay(500L)
                 _logInUiState.update { newState ->
                     newState.copy(authState = AuthState.NotLoggedIn)
                 }
@@ -89,22 +70,23 @@ class LogInViewModel @Inject constructor(
                 val response = logInUseCase.logIn(email, password)
                 if (response is AuthState.Error) {
                     emitSharedFlow(response.message)
+                    _logInUiState.update { newState->
+                        newState.copy(authState = AuthState.NotLoggedIn)
+                    }
                 } else if (response is AuthState.LoggedIn) {
                     //save the user in sharedPreference if its logged in
-                    getCurrentUserAndSaveIt()
-                }
-                _logInUiState.update { newState ->
-                    newState.copy(authState = response)
+                        getCurrentUserAndSaveIt()
+                    _logInUiState.update { newState ->
+                        newState.copy(authState = AuthState.LoggedIn)
+                    }
                 }
             }
         }
     }
 
-    private fun getCurrentUserAndSaveIt() {
-        viewModelScope.launch {
+    private suspend fun getCurrentUserAndSaveIt() {
             val currentUsername = getCurrentUserUseCase.getCurrentUser()
             saveSharedPrefUsernameUseCase.saveUsername(currentUsername)
-        }
     }
 
     fun setEmail(email: String) {

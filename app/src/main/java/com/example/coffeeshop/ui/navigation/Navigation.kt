@@ -35,6 +35,8 @@ import com.example.coffeeshop.ui.screen.shoppingcartpage.ShoppingCartPage
 import com.example.coffeeshop.ui.screen.signup.AccountStatus
 import com.example.coffeeshop.ui.screen.signup.SignUpScreen
 import com.example.coffeeshop.ui.screen.signup.SignUpViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.serialization.Serializable
 
@@ -52,7 +54,6 @@ fun Navigation(
 
     val currentUsername = authenticationUiState.username
 
-    Log.d("currentUsername",currentUsername.toString())
 
     val context = LocalContext.current
 
@@ -82,12 +83,12 @@ fun Navigation(
         modifier = modifier,
         enterTransition = {
             slideIntoContainer(
-                AnimatedContentTransitionScope.SlideDirection.Up, animationSpec = tween(1000)
+                AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(1000)
             )
         },
         exitTransition = {
             slideOutOfContainer(
-                AnimatedContentTransitionScope.SlideDirection.Down, animationSpec = tween(1000)
+                AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(1000)
             )
         },
     ) {
@@ -104,34 +105,23 @@ fun Navigation(
             }
             LaunchedEffect(logInUiState.authState) {
                 when (logInUiState.authState) {
-                    AuthState.LoggedIn -> navController.navigate(CurrentDestination.HomePage) {
-                        //remove LogInPage from currentBackStack
-                        popUpTo(CurrentDestination.LogInPage) {
-                            inclusive = true
+                    AuthState.LoggedIn -> {
+                        async(Dispatchers.Main) {
+                            //update currentUsername before navigating
+                            authenticationViewModel.updateCurrentUserName()
+                        }.await()
+                        println("hello cha")
+                        navController.navigate(CurrentDestination.HomePage) {
+                            //remove LogInPage from currentBackStack
+                            popUpTo(CurrentDestination.LogInPage) {
+                                inclusive = true
+                            }
                         }
                     }
 
                     else -> {}
                 }
             }
-            //set delay for signup button to avoid spamming it
-            val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
-            DisposableEffect(key1 = lifecycleOwner) {
-                val observer = LifecycleEventObserver { _, event ->
-                    when (event) {
-                        Lifecycle.Event.ON_RESUME -> {
-                            logInViewModel.setSignUpButton()
-                        }
-
-                        else -> {}
-                    }
-                }
-                lifecycleOwner.lifecycle.addObserver(observer)
-                onDispose {
-                    lifecycleOwner.lifecycle.removeObserver(observer)
-                }
-            }
-
             LogInScreen(modifier = Modifier.fillMaxSize(),
                 textPage = stringResource(R.string.welcome_back),
                 emailValue = logInUiState.emailValue,
@@ -147,8 +137,8 @@ fun Navigation(
                 },
                 "LogIn",
                 "Don't have an account, SignUp!",
-                logInEnabled = logInUiState.authState != AuthState.Loading,
-                signUpEnabled = logInUiState.signUpEnabled,
+                logInEnabled = logInUiState.authState == AuthState.NotLoggedIn,
+                signUpEnabled = logInUiState.authState == AuthState.NotLoggedIn,
                 isLoading = logInUiState.isLoading,
                 onLogInClick = { email, password ->
                     logInViewModel.logIn(email, password)
@@ -208,8 +198,8 @@ fun Navigation(
                 },
                 buttonText = "Create Account",
                 accountTextButton = "Already have an account? Login!",
-                createAccountEnabled = signUpUiState.accountStatus != AccountStatus.Loading,
-                alreadyExistingEnabled = signUpUiState.alreadyHaveAccountButton,
+                createAccountEnabled = signUpUiState.accountStatus == AccountStatus.NotCreated,
+                alreadyExistingEnabled = signUpUiState.alreadyHaveAccountButton && (signUpUiState.accountStatus == AccountStatus.NotCreated),
                 onCreateAccount = { email, password ->
                     signUpViewModel.signUp(email, password)
                 },
@@ -220,9 +210,6 @@ fun Navigation(
         composable<CurrentDestination.HomePage> {
             val homePageViewModel = hiltViewModel<HomePageViewModel>()
             val homePageUiState by homePageViewModel.homePageUiState.collectAsStateWithLifecycle()
-
-            //update currentUsername
-            authenticationViewModel.getCurrentUserName()
 
             LaunchedEffect(homePageViewModel.responseError) {
                 homePageViewModel.responseError.collect { error ->
@@ -235,6 +222,7 @@ fun Navigation(
                 .fillMaxSize(),
                 isLoading = homePageUiState.isLoading,
                 searchText = homePageUiState.searchText,
+                onClear = homePageViewModel::onClearSearchText,
                 onSearch = { newText ->
                     homePageViewModel.onSearchTextChange(newText)
                 },
@@ -244,18 +232,18 @@ fun Navigation(
                     homePageViewModel.setCurrentCategory(newKey)
                 },
                 currentCategory = homePageUiState.filteredCategoryList,
-                onFirstSeeAllClick = {categoryItemsList->
+                onFirstSeeAllClick = { categoryItemsList ->
                     Log.d("CheckUi", categoryItemsList.toString())
                 },
-                onItemClick = {categoryItem->
+                onItemClick = { categoryItem ->
                     Log.d("CheckUi", categoryItem.toString())
                 },
                 offersList = homePageUiState.filteredOffersList,
-                onSecondSeeAllClick = {offersList->
-                    Log.d("CheckUi",offersList.toString())
+                onSecondSeeAllClick = { offersList ->
+                    Log.d("CheckUi", offersList.toString())
                 },
-                onOffersClick = {offers->
-                    Log.d("CheckUi",offers.toString())
+                onOffersClick = { offers ->
+                    Log.d("CheckUi", offers.toString())
                 })
 
         }
@@ -290,19 +278,29 @@ sealed interface CurrentDestination {
     }
 
     @Serializable
-    data object HomePage : CurrentDestination
+    data object HomePage : CurrentDestination {
+        const val ROUTE = "HomePage"
+    }
 
     @Serializable
-    data object ProfilePage : CurrentDestination
+    data object ProfilePage : CurrentDestination {
+        const val ROUTE = "ProfilePage"
+    }
 
     @Serializable
-    data object ShoppingCartPage : CurrentDestination
+    data object ShoppingCartPage : CurrentDestination {
+        const val ROUTE = "ShoppingCartPage"
+    }
 
     @Serializable
-    data object SettingsPage : CurrentDestination
+    data object SettingsPage : CurrentDestination {
+        const val ROUTE = "SettingsPage"
+    }
 
     @Serializable
-    data object MyOrders : CurrentDestination
+    data object MyOrders : CurrentDestination {
+        const val ROUTE = "MyOrders"
+    }
 
     @Serializable
     data object Loading : CurrentDestination

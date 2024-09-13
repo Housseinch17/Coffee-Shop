@@ -8,7 +8,6 @@ data class LogInUiState(
     val passwordValue: String = "",
     val showPassword: Boolean = false,
     val authState: AuthState = AuthState.NotLoggedIn,
-    val signUpEnabled: Boolean = false,
     val userName: String? = null,
     val isLoading: Boolean = true,
     

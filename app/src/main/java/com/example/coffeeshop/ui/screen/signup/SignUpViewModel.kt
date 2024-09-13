@@ -32,15 +32,6 @@ class SignUpViewModel @Inject constructor(
     val signUpSharedFlow: SharedFlow<String> = _signUpSharedFlow.asSharedFlow()
 
 
-    init {
-        Log.d("MyTag", "Entered SignUp")
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        Log.d("MyTag", "SignUp cleared")
-    }
-
     fun setAlreadyHaveAccountButton() {
         viewModelScope.launch {
             _signupUiState.update { newState ->
@@ -62,23 +53,25 @@ class SignUpViewModel @Inject constructor(
 
     fun signUp(email: String, password: String) {
         viewModelScope.launch {
-            _signupUiState.update { newState ->
-                newState.copy(accountStatus = AccountStatus.Loading)
-            }
             if (email.isEmpty() || password.isEmpty()) {
                 emitError("Email and Password can't be empty")
+                _signupUiState.update { newState ->
+                    newState.copy(accountStatus = AccountStatus.NotCreated)
+                }
             } else {
                 if (Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
                     val response = signUpUseCase.signUp(email, password)
                     if (response is AccountStatus.Error) {
                         emitError(response.error)
+                        _signupUiState.update { newState ->
+                            newState.copy(accountStatus = AccountStatus.NotCreated)
+                        }
                     } else if (response is AccountStatus.IsCreated) {
                         emitError(response.message)
+                        _signupUiState.update { newState ->
+                            newState.copy(accountStatus = AccountStatus.IsCreated(response.message))
+                        }
                     }
-                    _signupUiState.update { newState ->
-                        newState.copy(accountStatus = response)
-                    }
-                    return@launch
                 } else {
                     emitError("Please use a valid email account!")
                 }
@@ -129,5 +122,4 @@ sealed interface AccountStatus {
     data class IsCreated(val message: String) : AccountStatus
     data object NotCreated : AccountStatus
     data class Error(val error: String) : AccountStatus
-    data object Loading : AccountStatus
 }

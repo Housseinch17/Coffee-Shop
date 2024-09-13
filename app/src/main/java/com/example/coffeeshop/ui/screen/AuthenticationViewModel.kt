@@ -30,13 +30,15 @@ class AuthenticationViewModel @Inject constructor(
     val authenticationUiState: StateFlow<AuthenticationUiState> =
         _authenticationUiState.asStateFlow()
 
-    init {
-        getCurrentUserName()
-    }
-
     private val _showError = MutableSharedFlow<String>()
     val showError = _showError.asSharedFlow()
 
+
+    init {
+        viewModelScope.launch {
+            updateCurrentUserName()
+        }
+    }
 
     private fun emitError(error: String = "No internet connection") {
         viewModelScope.launch {
@@ -44,13 +46,11 @@ class AuthenticationViewModel @Inject constructor(
         }
     }
 
-    fun getCurrentUserName() {
-        viewModelScope.launch {
-            val currentUsername = getSharedPrefUsernameUseCase.getUsername()
+     suspend fun updateCurrentUserName() {
+        val currentUsername = getSharedPrefUsernameUseCase.getUsername()
             _authenticationUiState.update { newState ->
                 newState.copy(username = currentUsername)
             }
-        }
     }
 
     //reset state while signing out

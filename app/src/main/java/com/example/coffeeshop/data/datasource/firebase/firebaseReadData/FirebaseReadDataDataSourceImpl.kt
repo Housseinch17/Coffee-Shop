@@ -21,6 +21,7 @@ import kotlin.coroutines.resume
 class FirebaseReadDataDataSourceImpl @Inject constructor(
     @Named("menuReference") private val databaseReference: DatabaseReference,
     @ApplicationContext private val context: Context,
+    @Named("DispatchersIO")
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : FirebaseReadDataDataSource {
 

@@ -29,11 +29,13 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -69,6 +71,7 @@ import com.example.coffeeshop.ui.theme.Gray
 import com.example.coffeeshop.ui.theme.Orange
 import com.example.coffeeshop.ui.theme.TitleTypography
 import com.example.coffeeshop.ui.util.CoffeeImage
+import com.example.coffeeshop.ui.util.DataSource
 import com.example.coffeeshop.ui.util.RatingBar
 import com.example.coffeeshop.ui.util.ShimmerEffect
 
@@ -77,6 +80,7 @@ fun HomePage(
     modifier: Modifier,
     isLoading: Boolean,
     searchText: String,
+    onClear: () -> Unit,
     onSearch: (String) -> Unit,
     username: String?,
     categoriesKey: List<String>,
@@ -179,10 +183,26 @@ fun HomePage(
                     )
                 }
                 Spacer(modifier = Modifier.height(20.dp))
-
+                LazyRow(
+                    contentPadding = PaddingValues(vertical = 10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    items(3) {
+                        ShimmerEffect(
+                            modifier = Modifier
+                                .width(200.dp)
+                                .height(140.dp)
+                                .clip(RoundedCornerShape(12.dp)),
+                        )
+                    }
+                }
+                Spacer(Modifier.height(24.dp))
             } else {
                 SearchView(
-                    modifier = Modifier.fillMaxWidth(), searchText = searchText, onSearch = onSearch
+                    modifier = Modifier.fillMaxWidth(),
+                    searchText = searchText,
+                    onClear = onClear,
+                    onSearch = onSearch
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 TopText(modifier = Modifier.fillMaxWidth(), username = username.toString())
@@ -205,23 +225,23 @@ fun HomePage(
                     title = stringResource(R.string.available_offers),
                     onSeeAllClick = { onSecondSeeAllClick(offersList) })
                 //no need for spacer padding because we used contentPadding for OffersList
-                OffersList(offersList = offersList) { offers->
+                OffersList(offersList = offersList) { offers ->
                     onOffersClick(offers)
                 }
-                Spacer(Modifier.height(20.dp))
+                Spacer(Modifier.height(24.dp))
             }
         }
     }
 }
 
 @Composable
-fun OffersList(offersList: List<Offers>,onOffersClick: (Offers) -> Unit){
+fun OffersList(offersList: List<Offers>, onOffersClick: (Offers) -> Unit) {
     LazyRow(
         contentPadding = PaddingValues(vertical = 10.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+        horizontalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        items(offersList){offers->
-            OffersItem(offers){
+        items(offersList) { offers ->
+            OffersItem(offers) {
                 onOffersClick(offers)
             }
         }
@@ -229,18 +249,20 @@ fun OffersList(offersList: List<Offers>,onOffersClick: (Offers) -> Unit){
 }
 
 @Composable
-fun OffersItem(offers: Offers,onOffersClick: () -> Unit) {
+fun OffersItem(offers: Offers, onOffersClick: () -> Unit) {
     Card(
-        modifier = Modifier.clickable {
-            onOffersClick()
-        }
+        modifier = Modifier
+            .clickable {
+                onOffersClick()
+            }
             .width(200.dp),
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.elevatedCardElevation(4.dp),
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Top
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top,
         ) {
             CoffeeImage(
                 modifier = Modifier
@@ -248,36 +270,37 @@ fun OffersItem(offers: Offers,onOffersClick: () -> Unit) {
                     .height(80.dp), imageUrl = offers.picUrl
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
+            //text align used for the second line to show in center
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 10.dp),
-                text = offers.title,
-                minLines = 2,
-                maxLines = 2,
-                textAlign = TextAlign.Center,
-                style = DescriptionTypography.copy(color = Color.Black)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = (stringResource(R.string.discount) + ": " + offers.discount+"%"),
-                    style = BodyTypography.copy(color = Orange),
-                    maxLines = 1
+                    text = offers.description,
+                    minLines = 2,
+                    maxLines = 2,
+                    textAlign = TextAlign.Center,
+                    style = DescriptionTypography.copy(color = Color.Black)
                 )
                 Text(
-                    text = (stringResource(R.string.price) + ": " + offers.price+"$"),
+                    text = (stringResource(R.string.discount) + ": " + offers.discount + "%"),
                     style = BodyTypography,
                     maxLines = 1
                 )
+                Text(
+                    text = stringResource(R.string.total) + ": " + DataSource.calculateTotal(
+                        offers.price,
+                        offers.discount
+                    ) + "$",
+                    style = TitleTypography.copy(color = Orange),
+                    maxLines = 1,
+                )
             }
             Spacer(modifier = Modifier.height(8.dp))
+
         }
     }
 }
@@ -414,7 +437,7 @@ fun CategoryCardItem(
                     .widthIn(max = 100.dp),
                 text = "$${categoryItem.price}",
                 maxLines = 1,
-                style = BodyTypography,
+                style = BodyTypography.copy(color = Orange),
                 overflow = TextOverflow.Ellipsis
             )
         }
@@ -481,7 +504,12 @@ fun TopText(modifier: Modifier, username: String) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun SearchView(modifier: Modifier, searchText: String, onSearch: (String) -> Unit) {
+fun SearchView(
+    modifier: Modifier,
+    searchText: String,
+    onClear: () -> Unit,
+    onSearch: (String) -> Unit
+) {
     //keyboard controller to show or hide keyboard
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -499,7 +527,6 @@ fun SearchView(modifier: Modifier, searchText: String, onSearch: (String) -> Uni
 
     TextField(
         modifier = modifier
-            .horizontalScroll(rememberScrollState())
             .border(BorderStroke(1.dp, Color.White), RoundedCornerShape(25.dp)),
         leadingIcon = {
             Icon(
@@ -507,6 +534,15 @@ fun SearchView(modifier: Modifier, searchText: String, onSearch: (String) -> Uni
                 contentDescription = stringResource(R.string.search),
                 tint = Color.White
             )
+        },
+        trailingIcon = {
+            IconButton(onClick = onClear) {
+                Icon(
+                    imageVector = Icons.Filled.Clear,
+                    contentDescription = stringResource(R.string.clear),
+                    tint = Color.White
+                )
+            }
         },
         textStyle = TextStyle.Default.copy(color = Color.White, fontWeight = FontWeight.Bold),
         maxLines = 1,

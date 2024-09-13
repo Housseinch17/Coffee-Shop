@@ -7,6 +7,7 @@ import kotlinx.serialization.Serializable
 @Immutable
 data class Offers(
     val title: String = "",
+    val description: String ="",
     val price: Int = 0,
     val discount: Int = 0,
     val picUrl: String = "",

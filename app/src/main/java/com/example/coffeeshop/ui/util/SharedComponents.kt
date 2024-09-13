@@ -132,7 +132,7 @@ fun AccountTextButton(
     onSignUpClick: () -> Unit
 ) {
     TextButton(
-        modifier = modifier,
+        modifier = modifier.clip(RoundedCornerShape(12.dp)),
         onClick = onSignUpClick,
         enabled = textButtonEnabled,
         colors = ButtonDefaults.textButtonColors(

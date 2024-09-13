@@ -1,12 +1,5 @@
 package com.example.coffeeshop.ui
 
-//noinspection UsingMaterialAndMaterial3Libraries
-import androidx.compose.material.BottomNavigation
-//noinspection UsingMaterialAndMaterial3Libraries
-import androidx.compose.material.BottomNavigationItem
-//noinspection UsingMaterialAndMaterial3Libraries
-import androidx.compose.material.FabPosition
-import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,14 +7,20 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
+//noinspection UsingMaterialAndMaterial3Libraries
+import androidx.compose.material.BottomAppBar
+//noinspection UsingMaterialAndMaterial3Libraries
+import androidx.compose.material.BottomNavigation
+//noinspection UsingMaterialAndMaterial3Libraries
+import androidx.compose.material.BottomNavigationItem
+//noinspection UsingMaterialAndMaterial3Libraries
+import androidx.compose.material.FabPosition
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.ShoppingCart
-//noinspection UsingMaterialAndMaterial3Libraries
-import androidx.compose.material.BottomAppBar
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
@@ -50,7 +49,6 @@ fun MainPage(navController: NavHostController) {
     val currentScreen = backStackEntry?.destination?.route
     //get current screen route without (com.example.coffee...)
     val currentScreenRoute = getScreenName(currentScreen)
-    Log.d("currentScreen", currentScreenRoute)
 
     //not hideBottomBar
     val showBottomBar = !(hideBottomBar(currentScreenRoute))
@@ -61,7 +59,9 @@ fun MainPage(navController: NavHostController) {
             floatingActionButton = {
                 if (showBottomBar) {
                     FloatingButtonBar(onShoppingCartClick = {
-                        navController.navigate(CurrentDestination.ShoppingCartPage)
+                        bottomNavigation(currentScreenRoute,CurrentDestination.ShoppingCartPage.ROUTE){
+                            navController.navigate(CurrentDestination.ShoppingCartPage)
+                        }
                     })
                 }
             },
@@ -81,16 +81,24 @@ fun MainPage(navController: NavHostController) {
                         content = {
                             BottomAppBar(
                                 onHomeClick = {
+                                    bottomNavigation(currentScreenRoute,CurrentDestination.HomePage.ROUTE){
                                     navController.navigate(CurrentDestination.HomePage)
+                                }
                                 },
                                 onProfileClick = {
-                                    navController.navigate(CurrentDestination.ProfilePage)
+                                    bottomNavigation(currentScreenRoute,CurrentDestination.ProfilePage.ROUTE){
+                                        navController.navigate(CurrentDestination.ProfilePage)
+                                    }
                                 },
                                 onMyOrdersClick = {
-                                    navController.navigate(CurrentDestination.MyOrders)
+                                    bottomNavigation(currentScreenRoute,CurrentDestination.MyOrders.ROUTE){
+                                        navController.navigate(CurrentDestination.MyOrders)
+                                    }
                                 },
                                 onSettingsClick = {
-                                    navController.navigate(CurrentDestination.SettingsPage)
+                                    bottomNavigation(currentScreenRoute,CurrentDestination.SettingsPage.ROUTE){
+                                        navController.navigate(CurrentDestination.SettingsPage)
+                                    }
                                 }
                             )
                         }
@@ -187,6 +195,12 @@ fun BottomAppBar(
                 )
             }
         )
+    }
+}
+
+private fun bottomNavigation(currentScreenRoute: String,currentDestinationRoute: String,onNavigate: () -> Unit){
+    if(currentScreenRoute != currentDestinationRoute){
+        onNavigate()
     }
 }
 

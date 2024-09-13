@@ -5,9 +5,11 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import javax.inject.Named
 
-    class SharedPreferencesManagerImpl @Inject constructor(
+class SharedPreferencesManagerImpl @Inject constructor(
         private val sharedPreferences: SharedPreferences,
+        @Named("DispatchersIO")
         private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO
     ): SharedPreferencesManager {
 

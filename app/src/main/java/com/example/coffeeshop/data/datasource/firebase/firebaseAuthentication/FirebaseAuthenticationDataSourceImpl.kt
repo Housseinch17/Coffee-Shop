@@ -9,9 +9,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import javax.inject.Named
 
 class FirebaseAuthenticationDataSourceImpl @Inject constructor(
     private val auth: FirebaseAuth,
+    @Named("DispatchersIO")
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : FirebaseAuthenticationDataSource {
 

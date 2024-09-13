@@ -39,6 +39,15 @@ class HomePageViewModel @Inject constructor(
         readOffersData()
     }
 
+    fun onClearSearchText(){
+        filterList("")
+        viewModelScope.launch {
+            _homepageUiState.update { newState->
+                newState.copy(searchText = "")
+            }
+        }
+    }
+
     private fun emitError(error: String) {
         viewModelScope.launch {
             _responseError.emit(error)
@@ -47,6 +56,7 @@ class HomePageViewModel @Inject constructor(
 
     fun setCurrentCategory(currentKey: String) {
         viewModelScope.launch {
+            filterList("")
             _homepageUiState.update { newState ->
                 newState.copy(
                     searchText = "",
@@ -59,6 +69,7 @@ class HomePageViewModel @Inject constructor(
                         categoryList = newState.categoryMap[currentKey] ?: emptyList()
                     ),
                 )
+
             }
         }
     }
@@ -89,24 +100,23 @@ class HomePageViewModel @Inject constructor(
                         isLoading = false
                     )
                 }
-                Log.d("MyTag", "offers ${_homepageUiState.value.offersList}")
             } else if (response is FirebaseOffersResponse.Error) {
-                Log.d("MyTag", "readOffersData() ${response.message}")
                 _homepageUiState.update { newState ->
                     newState.copy(
                         isLoading = false
                     )
                 }
+                Log.d("MyTag", "readOffersData() ${response.message}")
                 emitError(response.message)
             }
         }
     }
 
+
     private fun readCategoryData() {
         viewModelScope.launch {
             val response = readCategoryDataFromFirebase.readCategoryData()
             if (response is FirebaseCategoryResponse.Success) {
-                Log.d("MyTag", "Entered Success")
                 //set category map we use it in setCurrentCategory
                 _homepageUiState.update { newState ->
                     newState.copy(categoryMap = response.categoryMap)
@@ -118,7 +128,6 @@ class HomePageViewModel @Inject constructor(
                 setCurrentCategory(response.categoryMap.keys.first())
 
             } else if (response is FirebaseCategoryResponse.Error) {
-                Log.d("MyTag", response.message)
                 emitError(response.message)
             }
         }

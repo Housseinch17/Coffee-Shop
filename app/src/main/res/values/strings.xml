@@ -20,5 +20,7 @@
     <string name="see_all">See All</string>
     <string name="discount">Discount</string>
     <string name="price">Price</string>
+    <string name="clear">Clear</string>
+    <string name="total">Total</string>
     <string name="available_offers">Available Offers</string>
 </resources>
