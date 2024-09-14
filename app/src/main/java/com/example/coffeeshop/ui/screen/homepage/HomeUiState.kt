@@ -1,10 +1,10 @@
 package com.example.coffeeshop.ui.screen.homepage
 
-import androidx.compose.runtime.Immutable
-import com.example.coffeeshop.data.model.items.CategoryItems
+import androidx.compose.runtime.Stable
+import com.example.coffeeshop.data.model.categoryItems.CategoryItems
 import com.example.coffeeshop.data.model.offers.Offers
 
-@Immutable
+@Stable
 data class HomePageUiState(
     val isLoading: Boolean = true,
     val searchText: String = "",
@@ -17,5 +17,5 @@ data class HomePageUiState(
 )
 
 
-@Immutable
+@Stable
 data class CurrentCategory(val key: String,val categoryList: List<CategoryItems>)

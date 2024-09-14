@@ -3,7 +3,7 @@ package com.example.coffeeshop.ui.screen.homepage
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.coffeeshop.data.model.items.CategoryItems
+import com.example.coffeeshop.data.model.categoryItems.CategoryItems
 import com.example.coffeeshop.data.model.offers.Offers
 import com.example.coffeeshop.domain.usecase.firebaseReadAndWriteUsecase.ReadCategoryDataFromFirebase
 import com.example.coffeeshop.domain.usecase.firebaseReadAndWriteUsecase.ReadOffersDataFromFirebase

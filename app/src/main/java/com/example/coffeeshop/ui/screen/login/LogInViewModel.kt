@@ -56,7 +56,7 @@ class LogInViewModel @Inject constructor(
     }
 
 
-    fun logIn(email: String, password: String) {
+    suspend fun logIn(email: String, password: String) {
         viewModelScope.launch {
             _logInUiState.update { newState ->
                 newState.copy(authState = AuthState.Loading)

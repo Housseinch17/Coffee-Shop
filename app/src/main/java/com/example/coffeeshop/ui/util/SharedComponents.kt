@@ -50,6 +50,7 @@ import coil.request.ImageRequest
 import com.example.coffeeshop.R
 import com.example.coffeeshop.ui.theme.Orange
 
+
 @Composable
 fun ShimmerEffect(
     modifier: Modifier,
@@ -328,4 +329,5 @@ fun ShowDialog(showDialog: Boolean, error: String, onDismissButton: () -> Unit) 
         )
     }
 }
+
 

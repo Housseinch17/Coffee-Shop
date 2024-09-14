@@ -1,3 +1,5 @@
+@file:Suppress("NAME_SHADOWING")
+
 package com.example.coffeeshop.ui.navigation
 
 import android.annotation.SuppressLint
@@ -10,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -20,25 +23,31 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.example.coffeeshop.R
+import com.example.coffeeshop.data.model.categoryItems.CategoryItems
 import com.example.coffeeshop.ui.screen.AuthenticationViewModel
 import com.example.coffeeshop.ui.screen.SignOutResponse
+import com.example.coffeeshop.ui.screen.categoryItemPage.CategoryItemPage
+import com.example.coffeeshop.ui.screen.categoryItemPage.CategoryItemViewModel
 import com.example.coffeeshop.ui.screen.homepage.HomePage
 import com.example.coffeeshop.ui.screen.homepage.HomePageViewModel
 import com.example.coffeeshop.ui.screen.login.AuthState
 import com.example.coffeeshop.ui.screen.login.LogInScreen
 import com.example.coffeeshop.ui.screen.login.LogInViewModel
 import com.example.coffeeshop.ui.screen.myorderspage.MyOrdersPage
+import com.example.coffeeshop.ui.screen.offerItemPage.OfferItemPage
 import com.example.coffeeshop.ui.screen.profilepage.ProfilePage
 import com.example.coffeeshop.ui.screen.settingspage.SettingsPage
 import com.example.coffeeshop.ui.screen.shoppingcartpage.ShoppingCartPage
 import com.example.coffeeshop.ui.screen.signup.AccountStatus
 import com.example.coffeeshop.ui.screen.signup.SignUpScreen
 import com.example.coffeeshop.ui.screen.signup.SignUpViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
+import com.example.coffeeshop.ui.util.CustomNavType
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import kotlin.reflect.typeOf
 
 
 @SuppressLint("RestrictedApi")
@@ -96,6 +105,8 @@ fun Navigation(
             val logInViewModel = hiltViewModel<LogInViewModel>()
             val logInUiState by logInViewModel.logInUiState.collectAsStateWithLifecycle()
 
+            val scope = rememberCoroutineScope()
+
             Log.d("BackStackEntry", navController.currentBackStack.value.toString())
 
             LaunchedEffect(logInViewModel.sharedFlow) {
@@ -106,11 +117,8 @@ fun Navigation(
             LaunchedEffect(logInUiState.authState) {
                 when (logInUiState.authState) {
                     AuthState.LoggedIn -> {
-                        async(Dispatchers.Main) {
-                            //update currentUsername before navigating
-                            authenticationViewModel.updateCurrentUserName()
-                        }.await()
-                        println("hello cha")
+                        //update currentUsername before navigating
+                        authenticationViewModel.updateCurrentUserName()
                         navController.navigate(CurrentDestination.HomePage) {
                             //remove LogInPage from currentBackStack
                             popUpTo(CurrentDestination.LogInPage) {
@@ -141,7 +149,9 @@ fun Navigation(
                 signUpEnabled = logInUiState.authState == AuthState.NotLoggedIn,
                 isLoading = logInUiState.isLoading,
                 onLogInClick = { email, password ->
-                    logInViewModel.logIn(email, password)
+                    scope.launch {
+                        logInViewModel.logIn(email, password)
+                    }
                 },
                 onSignUpClick = {
                     navController.navigate(CurrentDestination.SignUpPage)
@@ -233,20 +243,70 @@ fun Navigation(
                 },
                 currentCategory = homePageUiState.filteredCategoryList,
                 onFirstSeeAllClick = { categoryItemsList ->
-                    Log.d("CheckUi", categoryItemsList.toString())
                 },
-                onItemClick = { categoryItem ->
-                    Log.d("CheckUi", categoryItem.toString())
+                onItemClick = { categoryItems ->
+                    navController.navigate(
+                        CurrentDestination.CategoryItemPage(
+                            categoryItems = categoryItems,
+                        )
+                    )
                 },
                 offersList = homePageUiState.filteredOffersList,
                 onSecondSeeAllClick = { offersList ->
-                    Log.d("CheckUi", offersList.toString())
                 },
                 onOffersClick = { offers ->
-                    Log.d("CheckUi", offers.toString())
+                    navController.navigate(
+                        CurrentDestination.OfferItemPage
+                    )
                 })
-
         }
+
+        composable<CurrentDestination.CategoryItemPage>(
+            typeMap = mapOf(
+                typeOf<CategoryItems>() to CustomNavType.categoryItems,
+            )
+        ) { entry ->
+            val args = entry.toRoute<CurrentDestination.CategoryItemPage>()
+            val categoryItems = args.categoryItems
+
+            val categoryItemViewModel = hiltViewModel<CategoryItemViewModel>()
+            val categoryItemUiState by categoryItemViewModel.categoryItemUiState.collectAsStateWithLifecycle()
+
+            LaunchedEffect(Unit) {
+                categoryItemViewModel.setCountValues(price = categoryItems.price.toInt())
+            }
+
+
+            CategoryItemPage(
+                modifier = Modifier.fillMaxSize(),
+                categoryItems = categoryItems,
+                count = categoryItemUiState.count,
+                totalPrice = categoryItemUiState.total,
+                onCountRemove = {
+                    categoryItemViewModel.decreaseCount(categoryItemUiState.count)
+                },
+                onCountAdd = {
+                    categoryItemViewModel.increaseCount(categoryItemUiState.count)
+                },
+                addToCard = { count, categoryItems ->
+                    navController.navigate(
+                        CurrentDestination.ShoppingCartPage(
+                            count = count,
+                            categoryItems = categoryItems,
+                        )
+                    ) {
+                        popUpTo(CurrentDestination.CategoryItemPage) {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
+        }
+
+        composable<CurrentDestination.OfferItemPage> {
+            OfferItemPage(modifier = Modifier.fillMaxSize())
+        }
+
         composable<CurrentDestination.SettingsPage> {
             SettingsPage(modifier = Modifier.fillMaxSize())
         }
@@ -255,7 +315,11 @@ fun Navigation(
             ProfilePage(modifier = Modifier.fillMaxSize())
         }
 
-        composable<CurrentDestination.ShoppingCartPage> {
+        composable<CurrentDestination.ShoppingCartPage>(
+            typeMap = mapOf(
+                typeOf<CategoryItems>() to CustomNavType.categoryItems
+            )
+        ) {
             ShoppingCartPage(modifier = Modifier.fillMaxSize())
         }
 
@@ -283,13 +347,29 @@ sealed interface CurrentDestination {
     }
 
     @Serializable
+    data class CategoryItemPage(val categoryItems: CategoryItems) :
+        CurrentDestination {
+        companion object {
+            const val ROUTE = "Category Item Details"
+        }
+    }
+
+    @Serializable
+    data object OfferItemPage : CurrentDestination
+
+    @Serializable
     data object ProfilePage : CurrentDestination {
         const val ROUTE = "ProfilePage"
     }
 
     @Serializable
-    data object ShoppingCartPage : CurrentDestination {
-        const val ROUTE = "ShoppingCartPage"
+    data class ShoppingCartPage(
+        val count: Int,
+        val categoryItems: CategoryItems,
+    ) : CurrentDestination {
+        companion object {
+            const val ROUTE = "ShoppingCartPage"
+        }
     }
 
     @Serializable

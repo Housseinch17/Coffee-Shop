@@ -11,10 +11,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun RatingBar(ratingIndex: Int) {
+fun RatingBar(ratingIndex: Int,smallSize: Dp,largeSize: Dp) {
     val list = DataSource.ratingBarList
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -25,7 +26,9 @@ fun RatingBar(ratingIndex: Int) {
             RatingIcon(
                 isTargeted = isTargeted,
                 imageDrawable = imageDrawable,
-                contentDescription = null
+                contentDescription = null,
+                smallSize = smallSize,
+                largeSize = largeSize
             )
         }
     }
@@ -33,7 +36,7 @@ fun RatingBar(ratingIndex: Int) {
 
 //image used instead of vector cause i cant convert all drawables for free
 @Composable
-fun RatingIcon(isTargeted: Boolean, imageDrawable: Int, contentDescription: String?) {
+fun RatingIcon(isTargeted: Boolean, imageDrawable: Int, contentDescription: String?,smallSize: Dp,largeSize: Dp) {
     val alpha = if (isTargeted) 1F else {
         0.5F
     }
@@ -43,9 +46,9 @@ fun RatingIcon(isTargeted: Boolean, imageDrawable: Int, contentDescription: Stri
             .clip(CircleShape)
             .size(
                 if (isTargeted) {
-                    26.dp
+                    largeSize
                 } else {
-                    18.dp
+                    smallSize
                 }
             ),
         alpha = alpha

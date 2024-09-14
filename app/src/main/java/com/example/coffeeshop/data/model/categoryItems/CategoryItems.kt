@@ -1,11 +1,10 @@
-package com.example.coffeeshop.data.model.items
+package com.example.coffeeshop.data.model.categoryItems
 
 import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable
 
 @Serializable
 @Immutable
-//Single class All categories has same parameters
 data class CategoryItems(
     val title: String = "",
     val description: String = "",

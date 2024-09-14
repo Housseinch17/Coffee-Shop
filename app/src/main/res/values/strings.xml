@@ -22,5 +22,8 @@
     <string name="price">Price</string>
     <string name="clear">Clear</string>
     <string name="total">Total</string>
+    <string name="remove">Remove</string>
+    <string name="add">Add</string>
+    <string name="add_to_cart">Add to cart</string>
     <string name="available_offers">Available Offers</string>
 </resources>

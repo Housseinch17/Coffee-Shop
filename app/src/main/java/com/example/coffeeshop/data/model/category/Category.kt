@@ -1,7 +1,7 @@
 package com.example.coffeeshop.data.model.category
 
 import androidx.compose.runtime.Stable
-import com.example.coffeeshop.data.model.items.CategoryItems
+import com.example.coffeeshop.data.model.categoryItems.CategoryItems
 import kotlinx.serialization.Serializable
 
 @Serializable

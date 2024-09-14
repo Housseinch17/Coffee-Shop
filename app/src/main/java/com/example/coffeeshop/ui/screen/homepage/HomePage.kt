@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.isImeVisible
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -63,7 +64,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.example.coffeeshop.R
-import com.example.coffeeshop.data.model.items.CategoryItems
+import com.example.coffeeshop.data.model.categoryItems.CategoryItems
 import com.example.coffeeshop.data.model.offers.Offers
 import com.example.coffeeshop.ui.theme.BodyTypography
 import com.example.coffeeshop.ui.theme.DescriptionTypography
@@ -228,7 +229,6 @@ fun HomePage(
                 OffersList(offersList = offersList) { offers ->
                     onOffersClick(offers)
                 }
-                Spacer(Modifier.height(24.dp))
             }
         }
     }
@@ -237,7 +237,8 @@ fun HomePage(
 @Composable
 fun OffersList(offersList: List<Offers>, onOffersClick: (Offers) -> Unit) {
     LazyRow(
-        contentPadding = PaddingValues(vertical = 10.dp),
+        modifier = Modifier.navigationBarsPadding(),
+        contentPadding = PaddingValues(top = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         items(offersList) { offers ->
@@ -416,7 +417,7 @@ fun CategoryCardItem(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceEvenly
         ) {
-            RatingBar(ratingIndex = ratingIndex)
+            RatingBar(ratingIndex = ratingIndex, smallSize = 18.dp, largeSize = 26.dp)
             Text(
                 modifier = Modifier
                     .widthIn(max = 100.dp),
