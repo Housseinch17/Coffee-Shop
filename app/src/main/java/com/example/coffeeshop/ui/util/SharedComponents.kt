@@ -107,7 +107,7 @@ fun CoffeeImage(modifier: Modifier, imageUrl: String?) {
                 .error(R.drawable.connectionerror)
                 .build(),
             contentDescription = null,
-            contentScale = ContentScale.Crop,
+            contentScale = ContentScale.FillBounds,
             modifier = modifier
         )
     }

@@ -26,6 +26,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.example.coffeeshop.R
 import com.example.coffeeshop.data.model.categoryItems.CategoryItems
+import com.example.coffeeshop.data.model.offers.Offers
 import com.example.coffeeshop.ui.screen.AuthenticationViewModel
 import com.example.coffeeshop.ui.screen.SignOutResponse
 import com.example.coffeeshop.ui.screen.categoryItemPage.CategoryItemPage
@@ -63,6 +64,10 @@ fun Navigation(
 
     val currentUsername = authenticationUiState.username
 
+    //i have to use this in popupto because in CurrentDestination where i have class with parameters and type-safe instead of objects
+    //i cant get exact destination of it
+
+    val currentRouteDestination = navController.currentBackStackEntry?.destination?.route.toString()
 
     val context = LocalContext.current
 
@@ -102,12 +107,11 @@ fun Navigation(
         },
     ) {
         composable<CurrentDestination.LogInPage> {
+            Log.d("BackStack", navController.currentBackStack.value.toString())
             val logInViewModel = hiltViewModel<LogInViewModel>()
             val logInUiState by logInViewModel.logInUiState.collectAsStateWithLifecycle()
 
             val scope = rememberCoroutineScope()
-
-            Log.d("BackStackEntry", navController.currentBackStack.value.toString())
 
             LaunchedEffect(logInViewModel.sharedFlow) {
                 logInViewModel.sharedFlow.collect { error ->
@@ -163,7 +167,6 @@ fun Navigation(
             val signUpViewModel = hiltViewModel<SignUpViewModel>()
             val signUpUiState by signUpViewModel.signupUiState.collectAsStateWithLifecycle()
 
-            Log.d("BackStackEntry", navController.currentBackStack.value.toString())
 
             LaunchedEffect(signUpViewModel.signUpSharedFlow) {
                 signUpViewModel.signUpSharedFlow.collect { error ->
@@ -218,6 +221,7 @@ fun Navigation(
                 })
         }
         composable<CurrentDestination.HomePage> {
+            Log.d("BackStack", navController.currentBackStack.value.toString())
             val homePageViewModel = hiltViewModel<HomePageViewModel>()
             val homePageUiState by homePageViewModel.homePageUiState.collectAsStateWithLifecycle()
 
@@ -226,8 +230,6 @@ fun Navigation(
                     Toast.makeText(context, error, Toast.LENGTH_LONG).show()
                 }
             }
-
-            Log.d("BackStack", navController.currentBackStack.value.toString())
             HomePage(modifier = Modifier
                 .fillMaxSize(),
                 isLoading = homePageUiState.isLoading,
@@ -266,6 +268,7 @@ fun Navigation(
                 typeOf<CategoryItems>() to CustomNavType.categoryItems,
             )
         ) { entry ->
+            Log.d("BackStack", navController.currentBackStack.value.toString())
             val args = entry.toRoute<CurrentDestination.CategoryItemPage>()
             val categoryItems = args.categoryItems
 
@@ -275,8 +278,6 @@ fun Navigation(
             LaunchedEffect(Unit) {
                 categoryItemViewModel.setCountValues(price = categoryItems.price.toInt())
             }
-
-
             CategoryItemPage(
                 modifier = Modifier.fillMaxSize(),
                 categoryItems = categoryItems,
@@ -288,14 +289,16 @@ fun Navigation(
                 onCountAdd = {
                     categoryItemViewModel.increaseCount(categoryItemUiState.count)
                 },
-                addToCard = { count, categoryItems ->
+                addToCard = { categoryItems,count,totalPrice ->
                     navController.navigate(
                         CurrentDestination.ShoppingCartPage(
-                            count = count,
                             categoryItems = categoryItems,
+                            offers = Offers(),
+                            count = count,
+                            totalPrice = totalPrice
                         )
                     ) {
-                        popUpTo(CurrentDestination.CategoryItemPage) {
+                        popUpTo(route = currentRouteDestination) {
                             inclusive = true
                         }
                     }
@@ -303,27 +306,39 @@ fun Navigation(
             )
         }
 
+        composable<CurrentDestination.ShoppingCartPage>(
+            typeMap = mapOf(
+                typeOf<Offers>() to CustomNavType.offers,
+                typeOf<CategoryItems>() to CustomNavType.categoryItems
+            )
+        ) { entry ->
+            Log.d("BackStack", navController.currentBackStack.value.toString())
+            val args = entry.toRoute<CurrentDestination.ShoppingCartPage>()
+            val categoryItems = args.categoryItems
+            val offers = args.offers
+            val count = args.count
+            val totalPrice = args.totalPrice
+            Log.d("argsValue",args.toString())
+            ShoppingCartPage(modifier = Modifier.fillMaxSize())
+        }
+
         composable<CurrentDestination.OfferItemPage> {
+            Log.d("BackStack", navController.currentBackStack.value.toString())
             OfferItemPage(modifier = Modifier.fillMaxSize())
         }
 
         composable<CurrentDestination.SettingsPage> {
+            Log.d("BackStack", navController.currentBackStack.value.toString())
             SettingsPage(modifier = Modifier.fillMaxSize())
         }
 
         composable<CurrentDestination.ProfilePage> {
+            Log.d("BackStack", navController.currentBackStack.value.toString())
             ProfilePage(modifier = Modifier.fillMaxSize())
         }
 
-        composable<CurrentDestination.ShoppingCartPage>(
-            typeMap = mapOf(
-                typeOf<CategoryItems>() to CustomNavType.categoryItems
-            )
-        ) {
-            ShoppingCartPage(modifier = Modifier.fillMaxSize())
-        }
-
         composable<CurrentDestination.MyOrders> {
+            Log.d("BackStack", navController.currentBackStack.value.toString())
             MyOrdersPage(modifier = Modifier.fillMaxSize())
         }
     }
@@ -347,10 +362,10 @@ sealed interface CurrentDestination {
     }
 
     @Serializable
-    data class CategoryItemPage(val categoryItems: CategoryItems) :
+    data class CategoryItemPage(val categoryItems: CategoryItems = CategoryItems()) :
         CurrentDestination {
         companion object {
-            const val ROUTE = "Category Item Details"
+            const val ROUTE = "CategoryItemPage"
         }
     }
 
@@ -364,9 +379,11 @@ sealed interface CurrentDestination {
 
     @Serializable
     data class ShoppingCartPage(
-        val count: Int,
-        val categoryItems: CategoryItems,
-    ) : CurrentDestination {
+        val categoryItems: CategoryItems = CategoryItems(),
+        val offers: Offers = Offers(),
+        val count: Int = 0,
+        val totalPrice: Int = 0
+    ) : CurrentDestination{
         companion object {
             const val ROUTE = "ShoppingCartPage"
         }

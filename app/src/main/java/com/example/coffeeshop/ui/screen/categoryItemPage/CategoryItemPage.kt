@@ -49,7 +49,7 @@ fun CategoryItemPage(
     categoryItems: CategoryItems,
     count: Int,
     totalPrice: Int, onCountRemove: () -> Unit, onCountAdd: () -> Unit,
-    addToCard: (count: Int, categoryItems: CategoryItems) -> Unit,
+    addToCard: (categoryItems: CategoryItems,count: Int,totalPrice: Int) -> Unit,
 ) {
     Box(
         modifier = modifier,
@@ -82,7 +82,7 @@ fun CategoryItemPage(
             )
             Spacer(modifier.weight(1f))
             AddToCartButton {
-                addToCard(count, categoryItems)
+                addToCard(categoryItems,count,totalPrice)
             }
         }
     }

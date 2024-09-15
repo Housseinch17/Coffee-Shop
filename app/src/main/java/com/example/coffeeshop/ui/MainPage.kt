@@ -50,6 +50,7 @@ fun MainPage(navController: NavHostController) {
     //get current screen route without (com.example.coffee...)
     val currentScreenRoute = getScreenName(currentScreen)
 
+
     //not hideBottomBar
     val showBottomBar = !(hideBottomBar(currentScreenRoute))
 
@@ -59,8 +60,8 @@ fun MainPage(navController: NavHostController) {
             floatingActionButton = {
                 if (showBottomBar) {
                     FloatingButtonBar(onShoppingCartClick = {
-                        bottomNavigation(currentScreenRoute,CurrentDestination.ShoppingCartPage.ROUTE){
-                            navController.navigate(CurrentDestination.ShoppingCartPage)
+                        if (!currentScreenRoute.startsWith(CurrentDestination.ShoppingCartPage.ROUTE)) {
+                            navController.navigate(CurrentDestination.ShoppingCartPage())
                         }
                     })
                 }
@@ -145,7 +146,7 @@ fun BottomAppBar(
 ) {
     BottomNavigation(
         backgroundColor = MatteBlack,
-    ){
+    ) {
         BottomNavigationItem(
             selectedContentColor = Orange,
             selected = true,
@@ -198,8 +199,12 @@ fun BottomAppBar(
     }
 }
 
-private fun bottomNavigation(currentScreenRoute: String,currentDestinationRoute: String,onNavigate: () -> Unit){
-    if(currentScreenRoute != currentDestinationRoute){
+private fun bottomNavigation(
+    currentScreenRoute: String,
+    currentDestinationRoute: String,
+    onNavigate: () -> Unit
+) {
+    if (currentScreenRoute != currentDestinationRoute) {
         onNavigate()
     }
 }
