@@ -1,5 +1,6 @@
 package com.example.coffeeshop.ui
 
+import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -36,6 +37,7 @@ import com.example.coffeeshop.ui.navigation.CurrentDestination
 import com.example.coffeeshop.ui.navigation.Navigation
 import com.example.coffeeshop.ui.theme.MatteBlack
 import com.example.coffeeshop.ui.theme.Orange
+import com.example.coffeeshop.ui.util.navigateSingleTopTo
 
 @Composable
 fun MainPage(navController: NavHostController) {
@@ -46,9 +48,12 @@ fun MainPage(navController: NavHostController) {
 
     val backStackEntry by navController.currentBackStackEntryAsState()
     //get current screen
-    val currentScreen = backStackEntry?.destination?.route
+    val currentScreenDestination = backStackEntry?.destination?.route
     //get current screen route without (com.example.coffee...)
-    val currentScreenRoute = getScreenName(currentScreen)
+    val currentScreenRoute = getScreenName(currentScreenDestination)
+
+    Log.d("currentScreen","current screen $currentScreenDestination")
+    Log.d("currentScreen","current home ${CurrentDestination.HomePage}")
 
 
     //not hideBottomBar
@@ -60,9 +65,7 @@ fun MainPage(navController: NavHostController) {
             floatingActionButton = {
                 if (showBottomBar) {
                     FloatingButtonBar(onShoppingCartClick = {
-                        if (!currentScreenRoute.startsWith(CurrentDestination.ShoppingCartPage.ROUTE)) {
-                            navController.navigate(CurrentDestination.ShoppingCartPage())
-                        }
+                        navController.navigateSingleTopTo(route = CurrentDestination.ShoppingCartPage(), currentDestinationRoute = currentScreenDestination.toString())
                     })
                 }
             },
@@ -82,24 +85,16 @@ fun MainPage(navController: NavHostController) {
                         content = {
                             BottomAppBar(
                                 onHomeClick = {
-                                    bottomNavigation(currentScreenRoute,CurrentDestination.HomePage.ROUTE){
-                                    navController.navigate(CurrentDestination.HomePage)
-                                }
+                                    navController.navigateSingleTopTo(route = CurrentDestination.HomePage, currentDestinationRoute = currentScreenDestination.toString())
                                 },
                                 onProfileClick = {
-                                    bottomNavigation(currentScreenRoute,CurrentDestination.ProfilePage.ROUTE){
-                                        navController.navigate(CurrentDestination.ProfilePage)
-                                    }
+                                        navController.navigateSingleTopTo(route = CurrentDestination.ProfilePage, currentDestinationRoute = currentScreenDestination.toString())
                                 },
                                 onMyOrdersClick = {
-                                    bottomNavigation(currentScreenRoute,CurrentDestination.MyOrders.ROUTE){
-                                        navController.navigate(CurrentDestination.MyOrders)
-                                    }
+                                    navController.navigateSingleTopTo(route = CurrentDestination.MyOrders, currentDestinationRoute = currentScreenDestination.toString())
                                 },
                                 onSettingsClick = {
-                                    bottomNavigation(currentScreenRoute,CurrentDestination.SettingsPage.ROUTE){
-                                        navController.navigate(CurrentDestination.SettingsPage)
-                                    }
+                                    navController.navigateSingleTopTo(route = CurrentDestination.SettingsPage, currentDestinationRoute = currentScreenDestination.toString())
                                 }
                             )
                         }
@@ -204,6 +199,7 @@ private fun bottomNavigation(
     currentDestinationRoute: String,
     onNavigate: () -> Unit
 ) {
+
     if (currentScreenRoute != currentDestinationRoute) {
         onNavigate()
     }

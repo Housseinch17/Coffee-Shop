@@ -5,9 +5,12 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import androidx.navigation.NavHostController
+import com.example.coffeeshop.ui.navigation.CurrentDestination
 
 
 // Extension function to check internet connectivity
+@Suppress("DEPRECATION")
 @SuppressLint("ObsoleteSdkInt")
 fun Context.isInternetAvailable(): Boolean {
     val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
@@ -21,4 +24,17 @@ fun Context.isInternetAvailable(): Boolean {
         val activeNetworkInfo = connectivityManager.activeNetworkInfo
         activeNetworkInfo != null && activeNetworkInfo.isConnected
     }
+}
+
+
+fun NavHostController.navigateSingleTopTo(route: CurrentDestination,currentDestinationRoute: String) = this.navigate(route) {
+    // If the destination doesn't exist, pop up to the start destination
+    popUpTo(currentDestinationRoute) {
+        //inclusive = true this means in the backstack entry the old destination will be replaced by the new destination
+        //inclusive = false this means the backstack entry will put the new destination at the top and below it will keep the old destination
+        inclusive = false
+        saveState = true
+    }
+    launchSingleTop = true
+    restoreState = true
 }
