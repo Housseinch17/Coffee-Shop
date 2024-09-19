@@ -1,10 +1,9 @@
 package com.example.coffeeshop.ui.screen.categoryItemPage
 
-import androidx.compose.runtime.Stable
+import androidx.compose.runtime.Immutable
+import com.example.coffeeshop.data.model.shoppingCart.CategoryItemsCart
 
-@Stable
+@Immutable
 data class CategoryItemUiState(
-    val count: Int = 0,
-    val price: Int = 0,
-    val total: Int = 0
+    val categoryItemsCart: CategoryItemsCart = CategoryItemsCart()
 )

@@ -7,8 +7,10 @@ import kotlinx.serialization.Serializable
 @Immutable
 data class Offers(
     val title: String = "",
+    val offerDescription: String = "",
     val description: String ="",
-    val price: Int = 0,
+    val rating: Int = 0,
+    val price: Double = 0.0,
     val discount: Int = 0,
     val picUrl: String = "",
 )

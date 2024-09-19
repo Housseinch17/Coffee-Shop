@@ -1,5 +1,6 @@
 package com.example.coffeeshop.ui.screen
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
@@ -38,6 +39,7 @@ class AuthenticationViewModel @Inject constructor(
         viewModelScope.launch {
             updateCurrentUserName()
         }
+            Log.d("ViewModelInitialization","authentication")
     }
 
     private fun emitError(error: String = "No internet connection") {
@@ -46,6 +48,7 @@ class AuthenticationViewModel @Inject constructor(
         }
     }
 
+     @SuppressLint("SuspiciousIndentation")
      suspend fun updateCurrentUserName() {
         val currentUsername = getSharedPrefUsernameUseCase.getUsername()
             _authenticationUiState.update { newState ->

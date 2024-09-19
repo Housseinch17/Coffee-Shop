@@ -52,8 +52,8 @@ fun MainPage(navController: NavHostController) {
     //get current screen route without (com.example.coffee...)
     val currentScreenRoute = getScreenName(currentScreenDestination)
 
-    Log.d("currentScreen","current screen $currentScreenDestination")
-    Log.d("currentScreen","current home ${CurrentDestination.HomePage}")
+    Log.d("currentScreen", "current screen $currentScreenDestination")
+    Log.d("currentScreen", "current home ${CurrentDestination.HomePage}")
 
 
     //not hideBottomBar
@@ -65,7 +65,10 @@ fun MainPage(navController: NavHostController) {
             floatingActionButton = {
                 if (showBottomBar) {
                     FloatingButtonBar(onShoppingCartClick = {
-                        navController.navigateSingleTopTo(route = CurrentDestination.ShoppingCartPage(), currentDestinationRoute = currentScreenDestination.toString())
+                        navController.navigateSingleTopTo(
+                            route = CurrentDestination.ShoppingCartPage(),
+                            currentDestinationRoute = currentScreenDestination.toString()
+                        )
                     })
                 }
             },
@@ -85,16 +88,28 @@ fun MainPage(navController: NavHostController) {
                         content = {
                             BottomAppBar(
                                 onHomeClick = {
-                                    navController.navigateSingleTopTo(route = CurrentDestination.HomePage, currentDestinationRoute = currentScreenDestination.toString())
+                                    navController.navigateSingleTopTo(
+                                        route = CurrentDestination.HomePage,
+                                        currentDestinationRoute = currentScreenDestination.toString()
+                                    )
                                 },
                                 onProfileClick = {
-                                        navController.navigateSingleTopTo(route = CurrentDestination.ProfilePage, currentDestinationRoute = currentScreenDestination.toString())
+                                    navController.navigateSingleTopTo(
+                                        route = CurrentDestination.ProfilePage,
+                                        currentDestinationRoute = currentScreenDestination.toString()
+                                    )
                                 },
                                 onMyOrdersClick = {
-                                    navController.navigateSingleTopTo(route = CurrentDestination.MyOrders, currentDestinationRoute = currentScreenDestination.toString())
+                                    navController.navigateSingleTopTo(
+                                        route = CurrentDestination.MyOrders,
+                                        currentDestinationRoute = currentScreenDestination.toString()
+                                    )
                                 },
                                 onSettingsClick = {
-                                    navController.navigateSingleTopTo(route = CurrentDestination.SettingsPage, currentDestinationRoute = currentScreenDestination.toString())
+                                    navController.navigateSingleTopTo(
+                                        route = CurrentDestination.SettingsPage,
+                                        currentDestinationRoute = currentScreenDestination.toString()
+                                    )
                                 }
                             )
                         }
@@ -191,17 +206,6 @@ fun BottomAppBar(
                 )
             }
         )
-    }
-}
-
-private fun bottomNavigation(
-    currentScreenRoute: String,
-    currentDestinationRoute: String,
-    onNavigate: () -> Unit
-) {
-
-    if (currentScreenRoute != currentDestinationRoute) {
-        onNavigate()
     }
 }
 

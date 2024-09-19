@@ -24,6 +24,10 @@
     <string name="total">Total</string>
     <string name="remove">Remove</string>
     <string name="add">Add</string>
+    <string name="total_price">Total Price</string>
     <string name="add_to_cart">Add to cart</string>
+    <string name="category_orders">Category Items Orders</string>
+    <string name="offer_orders">Offers Orders</string>
     <string name="available_offers">Available Offers</string>
+    <string name="checkout">Checkout</string>
 </resources>

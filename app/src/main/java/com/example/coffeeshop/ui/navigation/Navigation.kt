@@ -1,5 +1,3 @@
-@file:Suppress("NAME_SHADOWING")
-
 package com.example.coffeeshop.ui.navigation
 
 import android.annotation.SuppressLint
@@ -27,6 +25,8 @@ import androidx.navigation.toRoute
 import com.example.coffeeshop.R
 import com.example.coffeeshop.data.model.categoryItems.CategoryItems
 import com.example.coffeeshop.data.model.offers.Offers
+import com.example.coffeeshop.data.model.shoppingCart.CategoryItemsCart
+import com.example.coffeeshop.data.model.shoppingCart.OfferCart
 import com.example.coffeeshop.ui.screen.AuthenticationViewModel
 import com.example.coffeeshop.ui.screen.SignOutResponse
 import com.example.coffeeshop.ui.screen.categoryItemPage.CategoryItemPage
@@ -37,10 +37,15 @@ import com.example.coffeeshop.ui.screen.login.AuthState
 import com.example.coffeeshop.ui.screen.login.LogInScreen
 import com.example.coffeeshop.ui.screen.login.LogInViewModel
 import com.example.coffeeshop.ui.screen.myorderspage.MyOrdersPage
+import com.example.coffeeshop.ui.screen.myorderspage.MyOrdersViewModel
 import com.example.coffeeshop.ui.screen.offerItemPage.OfferItemPage
+import com.example.coffeeshop.ui.screen.offerItemPage.OfferItemViewModel
 import com.example.coffeeshop.ui.screen.profilepage.ProfilePage
+import com.example.coffeeshop.ui.screen.profilepage.ProfileViewModel
 import com.example.coffeeshop.ui.screen.settingspage.SettingsPage
+import com.example.coffeeshop.ui.screen.settingspage.SettingsViewModel
 import com.example.coffeeshop.ui.screen.shoppingcartpage.ShoppingCartPage
+import com.example.coffeeshop.ui.screen.shoppingcartpage.ShoppingCartViewModel
 import com.example.coffeeshop.ui.screen.signup.AccountStatus
 import com.example.coffeeshop.ui.screen.signup.SignUpScreen
 import com.example.coffeeshop.ui.screen.signup.SignUpViewModel
@@ -68,6 +73,11 @@ fun Navigation(
     //i cant get exact destination of it
 
     val currentRouteDestination = navController.currentBackStackEntry?.destination?.route.toString()
+
+    //avoid initializing viewmodel everytime i navigate to shopping cart
+    //instead of using local data to save the current orders of shopping cart
+    val shoppingCartViewModel = hiltViewModel<ShoppingCartViewModel>()
+
 
     val context = LocalContext.current
 
@@ -230,8 +240,7 @@ fun Navigation(
                     Toast.makeText(context, error, Toast.LENGTH_LONG).show()
                 }
             }
-            HomePage(modifier = Modifier
-                .fillMaxSize(),
+            HomePage(modifier = Modifier.fillMaxSize(),
                 isLoading = homePageUiState.isLoading,
                 searchText = homePageUiState.searchText,
                 onClear = homePageViewModel::onClearSearchText,
@@ -245,20 +254,20 @@ fun Navigation(
                 },
                 currentCategory = homePageUiState.filteredCategoryList,
                 onFirstSeeAllClick = { categoryItemsList ->
+
                 },
                 onItemClick = { categoryItems ->
                     navController.navigate(
-                        CurrentDestination.CategoryItemPage(
-                            categoryItems = categoryItems,
-                        )
+                        CurrentDestination.CategoryItemPage(categoryItems = categoryItems)
                     )
                 },
                 offersList = homePageUiState.filteredOffersList,
                 onSecondSeeAllClick = { offersList ->
+
                 },
                 onOffersClick = { offers ->
                     navController.navigate(
-                        CurrentDestination.OfferItemPage
+                        CurrentDestination.OfferItemPage(offers = offers)
                     )
                 })
         }
@@ -275,70 +284,135 @@ fun Navigation(
             val categoryItemViewModel = hiltViewModel<CategoryItemViewModel>()
             val categoryItemUiState by categoryItemViewModel.categoryItemUiState.collectAsStateWithLifecycle()
 
+
             LaunchedEffect(Unit) {
-                categoryItemViewModel.setCountValues(price = categoryItems.price.toInt())
+                categoryItemViewModel.setCategoryItems(categoryItems)
+                categoryItemViewModel.setCountAndTotalFirstValues(price = categoryItems.price)
             }
-            CategoryItemPage(
-                modifier = Modifier.fillMaxSize(),
-                categoryItems = categoryItems,
-                count = categoryItemUiState.count,
-                totalPrice = categoryItemUiState.total,
+
+            CategoryItemPage(modifier = Modifier.fillMaxSize(),
+                categoryItemsCart = categoryItemUiState.categoryItemsCart,
                 onCountRemove = {
-                    categoryItemViewModel.decreaseCount(categoryItemUiState.count)
+                    categoryItemViewModel.decreaseCount(categoryItemUiState.categoryItemsCart.count)
                 },
                 onCountAdd = {
-                    categoryItemViewModel.increaseCount(categoryItemUiState.count)
+                    categoryItemViewModel.increaseCount(categoryItemUiState.categoryItemsCart.count)
                 },
-                addToCard = { categoryItems,count,totalPrice ->
+                addToCard = { categoryItemCart ->
                     navController.navigate(
                         CurrentDestination.ShoppingCartPage(
-                            categoryItems = categoryItems,
-                            offers = Offers(),
-                            count = count,
-                            totalPrice = totalPrice
+                            categoryItemsCart = categoryItemCart, offerCart = OfferCart()
                         )
                     ) {
                         popUpTo(route = currentRouteDestination) {
                             inclusive = true
                         }
                     }
-                }
-            )
+                })
         }
+
+        //Offer Item Page might be similar to CategoryItemPage but it was added for later use
+        //Offers data class structure might change which lead to error having single page for
+        //both CategoryItems and OffersItem
+        composable<CurrentDestination.OfferItemPage>(
+            typeMap = mapOf(
+                typeOf<Offers>() to CustomNavType.offers
+            )
+        ) { entry ->
+            Log.d("BackStack", navController.currentBackStack.value.toString())
+            val args = entry.toRoute<CurrentDestination.OfferItemPage>()
+            val offer = args.offers
+
+            val offerItemViewModel = hiltViewModel<OfferItemViewModel>()
+            val offerItemUiState by offerItemViewModel.offerItemUiState.collectAsStateWithLifecycle()
+
+            LaunchedEffect(Unit) {
+                offerItemViewModel.setOffer(offer)
+                offerItemViewModel.setCountAndTotalFirstValues(price = offer.price)
+            }
+
+            OfferItemPage(modifier = Modifier.fillMaxSize(),
+                offerCart = offerItemUiState.offerCart,
+                onCountRemove = {
+                    offerItemViewModel.decreaseCount(offerItemUiState.offerCart.count)
+                },
+                onCountAdd = {
+                    offerItemViewModel.increaseCount(offerItemUiState.offerCart.count)
+                },
+                addToCard = { offerCart ->
+                    navController.navigate(
+                        CurrentDestination.ShoppingCartPage(
+                            categoryItemsCart = CategoryItemsCart(), offerCart = offerCart
+                        )
+                    ) {
+                        popUpTo(route = currentRouteDestination) {
+                            inclusive = true
+                        }
+                    }
+                })
+        }
+
 
         composable<CurrentDestination.ShoppingCartPage>(
             typeMap = mapOf(
-                typeOf<Offers>() to CustomNavType.offers,
-                typeOf<CategoryItems>() to CustomNavType.categoryItems
+                typeOf<OfferCart>() to CustomNavType.offerCart,
+                typeOf<CategoryItemsCart>() to CustomNavType.categoryItemsCart
             )
         ) { entry ->
             Log.d("BackStack", navController.currentBackStack.value.toString())
             val args = entry.toRoute<CurrentDestination.ShoppingCartPage>()
-            val categoryItems = args.categoryItems
-            val offers = args.offers
-            val count = args.count
-            val totalPrice = args.totalPrice
-            Log.d("argsValue",args.toString())
-            ShoppingCartPage(modifier = Modifier.fillMaxSize())
+            val categoryItemsCart = args.categoryItemsCart
+            val offerCart = args.offerCart
+
+            val shoppingCartUiState by shoppingCartViewModel.shoppingCartUiState.collectAsStateWithLifecycle()
+
+            LaunchedEffect(categoryItemsCart, offerCart) {
+                shoppingCartViewModel.updateShoppingCartLists(
+                    categoryItemsCart = categoryItemsCart, offerCart = offerCart
+                )
+            }
+
+
+            ShoppingCartPage(modifier = Modifier.fillMaxSize(),
+                categoryItemsCartList = shoppingCartUiState.categoryItemsList,
+                offerCartList = shoppingCartUiState.offersList,
+                totalPrice = shoppingCartUiState.totalPrice,
+                onCategoryCountDecrease = { index, categoryItemCart ->
+                    shoppingCartViewModel.onCategoryCountDecrease(index, categoryItemCart)
+                },
+                onCategoryCountIncrease = { index, categoryItemCart ->
+                    shoppingCartViewModel.onCategoryCountIncrease(index, categoryItemCart)
+                },
+                onOfferCountDecrease = { index, offerCart ->
+                    shoppingCartViewModel.onOfferCountDecrease(index, offerCart)
+                },
+
+                onOfferCountIncrease = { index, offerCart ->
+                    shoppingCartViewModel.onOfferCountIncrease(index, offerCart)
+                },
+                onCheckOut = {
+
+                }
+
+            )
         }
 
-        composable<CurrentDestination.OfferItemPage> {
-            Log.d("BackStack", navController.currentBackStack.value.toString())
-            OfferItemPage(modifier = Modifier.fillMaxSize())
-        }
 
         composable<CurrentDestination.SettingsPage> {
             Log.d("BackStack", navController.currentBackStack.value.toString())
+            val settingsViewModel = hiltViewModel<SettingsViewModel>()
             SettingsPage(modifier = Modifier.fillMaxSize())
         }
 
         composable<CurrentDestination.ProfilePage> {
             Log.d("BackStack", navController.currentBackStack.value.toString())
+            val profileViewModel = hiltViewModel<ProfileViewModel>()
             ProfilePage(modifier = Modifier.fillMaxSize())
         }
 
         composable<CurrentDestination.MyOrders> {
             Log.d("BackStack", navController.currentBackStack.value.toString())
+            val myOrdersViewModel = hiltViewModel<MyOrdersViewModel>()
             MyOrdersPage(modifier = Modifier.fillMaxSize())
         }
     }
@@ -370,7 +444,11 @@ sealed interface CurrentDestination {
     }
 
     @Serializable
-    data object OfferItemPage : CurrentDestination
+    data class OfferItemPage(val offers: Offers = Offers()) : CurrentDestination {
+        companion object {
+            const val ROUTE = "OfferItemPage"
+        }
+    }
 
     @Serializable
     data object ProfilePage : CurrentDestination {
@@ -379,11 +457,9 @@ sealed interface CurrentDestination {
 
     @Serializable
     data class ShoppingCartPage(
-        val categoryItems: CategoryItems = CategoryItems(),
-        val offers: Offers = Offers(),
-        val count: Int = 0,
-        val totalPrice: Int = 0
-    ) : CurrentDestination{
+        val categoryItemsCart: CategoryItemsCart = CategoryItemsCart(),
+        val offerCart: OfferCart = OfferCart(),
+    ) : CurrentDestination {
         companion object {
             const val ROUTE = "ShoppingCartPage"
         }

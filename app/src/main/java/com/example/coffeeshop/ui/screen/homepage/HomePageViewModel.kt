@@ -32,6 +32,7 @@ class HomePageViewModel @Inject constructor(
 
     init {
         readData()
+            Log.d("ViewModelInitialization","Home")
     }
 
     private fun readData() {

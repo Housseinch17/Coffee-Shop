@@ -1,5 +1,6 @@
 package com.example.coffeeshop.ui
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.coffeeshop.domain.usecase.sharedprefrenceUsecase.GetSharedPrefUsernameUseCase
@@ -23,6 +24,7 @@ class MainViewModel @Inject constructor(
 
     init {
         checkSharedPreferUsername()
+            Log.d("ViewModelInitialization","main")
     }
 
     private suspend fun getCurrentUserName(): String? {

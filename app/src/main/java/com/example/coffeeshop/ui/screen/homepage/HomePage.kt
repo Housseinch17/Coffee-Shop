@@ -227,7 +227,10 @@ fun HomePage(
                     onSeeAllClick = { onSecondSeeAllClick(offersList) })
                 //no need for spacer padding because we used contentPadding for OffersList
                 OffersList(offersList = offersList) { offers ->
-                    onOffersClick(offers)
+                    onOffersClick(offers.copy(price = DataSource.calculateTotal(
+                        offers.price,
+                        offers.discount
+                    )))
                 }
             }
         }

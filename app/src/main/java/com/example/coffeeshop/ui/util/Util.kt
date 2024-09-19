@@ -27,12 +27,15 @@ fun Context.isInternetAvailable(): Boolean {
 }
 
 
-fun NavHostController.navigateSingleTopTo(route: CurrentDestination,currentDestinationRoute: String) = this.navigate(route) {
+fun NavHostController.navigateSingleTopTo(
+    route: CurrentDestination,
+    currentDestinationRoute: String
+) = this.navigate(route) {
     // If the destination doesn't exist, pop up to the start destination
     popUpTo(currentDestinationRoute) {
         //inclusive = true this means in the backstack entry the old destination will be replaced by the new destination
         //inclusive = false this means the backstack entry will put the new destination at the top and below it will keep the old destination
-        inclusive = false
+        inclusive = true
         saveState = true
     }
     launchSingleTop = true
