@@ -31,6 +31,14 @@ class SignUpViewModel @Inject constructor(
     private val _signUpSharedFlow: MutableSharedFlow<String> = MutableSharedFlow()
     val signUpSharedFlow: SharedFlow<String> = _signUpSharedFlow.asSharedFlow()
 
+    init {
+        Log.d("ViewModelInitialization", "signup destroyed")
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        Log.d("ViewModelInitialization", "signup destroyed")
+    }
 
     fun setAlreadyHaveAccountButton() {
         viewModelScope.launch {

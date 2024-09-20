@@ -42,6 +42,10 @@ class AuthenticationViewModel @Inject constructor(
             Log.d("ViewModelInitialization","authentication")
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        Log.d("ViewModelInitialization","authentication destroyed")
+    }
     private fun emitError(error: String = "No internet connection") {
         viewModelScope.launch {
             _showError.emit(error)

@@ -35,6 +35,11 @@ class HomePageViewModel @Inject constructor(
             Log.d("ViewModelInitialization","Home")
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        Log.d("ViewModelInitialization","home destroyed")
+    }
+
     private fun readData() {
         readCategoryData()
         readOffersData()

@@ -11,4 +11,9 @@ class SettingsViewModel @Inject constructor(): ViewModel() {
     init {
         Log.d("ViewModelInitialization","settings")
     }
+
+    override fun onCleared() {
+        super.onCleared()
+        Log.d("ViewModelInitialization","settings destroyed")
+    }
 }

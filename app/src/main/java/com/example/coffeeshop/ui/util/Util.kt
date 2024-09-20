@@ -5,6 +5,7 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.example.coffeeshop.ui.navigation.CurrentDestination
 
@@ -29,13 +30,12 @@ fun Context.isInternetAvailable(): Boolean {
 
 fun NavHostController.navigateSingleTopTo(
     route: CurrentDestination,
-    currentDestinationRoute: String
+    navHostController: NavHostController
 ) = this.navigate(route) {
     // If the destination doesn't exist, pop up to the start destination
-    popUpTo(currentDestinationRoute) {
+    popUpTo(navHostController.graph.findStartDestination().id) {
         //inclusive = true this means in the backstack entry the old destination will be replaced by the new destination
         //inclusive = false this means the backstack entry will put the new destination at the top and below it will keep the old destination
-        inclusive = true
         saveState = true
     }
     launchSingleTop = true

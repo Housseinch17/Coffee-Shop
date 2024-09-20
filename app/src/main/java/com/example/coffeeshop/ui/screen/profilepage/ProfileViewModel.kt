@@ -11,4 +11,9 @@ class ProfileViewModel @Inject constructor(): ViewModel() {
     init {
         Log.d("ViewModelInitialization","profile")
     }
+
+    override fun onCleared() {
+        super.onCleared()
+        Log.d("ViewModelInitialization","profile destroyed")
+    }
 }

@@ -11,4 +11,9 @@ class MyOrdersViewModel @Inject constructor(): ViewModel(){
     init {
         Log.d("ViewModelInitialization","MyOrders")
     }
+
+    override fun onCleared() {
+        super.onCleared()
+        Log.d("ViewModelInitialization","myorders destroyed")
+    }
 }

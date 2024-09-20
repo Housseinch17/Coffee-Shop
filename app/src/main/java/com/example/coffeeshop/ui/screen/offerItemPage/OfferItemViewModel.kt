@@ -23,6 +23,11 @@ class OfferItemViewModel @Inject constructor(): ViewModel() {
         Log.d("ViewModelInitialization","offer")
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        Log.d("ViewModelInitialization","offer destroyed")
+    }
+
     fun setOffer(offers: Offers) {
         viewModelScope.launch {
             _offerItemUiState.update { newState ->

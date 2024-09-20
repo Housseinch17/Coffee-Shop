@@ -29,7 +29,7 @@ class ShoppingCartViewModel @Inject constructor() : ViewModel() {
 
     override fun onCleared() {
         super.onCleared()
-        Log.d("MyTag", "viewmodel cleared")
+        Log.d("ViewModelInitialization","shopping destroyed")
     }
 
     private fun isCategoryItemsInList(

@@ -23,6 +23,11 @@ class CategoryItemViewModel @Inject constructor() : ViewModel() {
         Log.d("ViewModelInitialization","category")
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        Log.d("ViewModelInitialization","category destroyed")
+    }
+
     fun setCategoryItems(categoryItems: CategoryItems) {
         viewModelScope.launch {
             _categoryItemUiState.update { newState ->

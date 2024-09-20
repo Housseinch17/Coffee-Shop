@@ -18,6 +18,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -65,19 +66,14 @@ fun Navigation(
 ) {
     val authenticationViewModel = hiltViewModel<AuthenticationViewModel>()
     val authenticationUiState by authenticationViewModel.authenticationUiState.collectAsStateWithLifecycle()
+
     val signOut = authenticationUiState.signOut
 
     val currentUsername = authenticationUiState.username
 
-    //i have to use this in popupto because in CurrentDestination where i have class with parameters and type-safe instead of objects
-    //i cant get exact destination of it
-
-    val currentRouteDestination = navController.currentBackStackEntry?.destination?.route.toString()
-
     //avoid initializing viewmodel everytime i navigate to shopping cart
     //instead of using local data to save the current orders of shopping cart
     val shoppingCartViewModel = hiltViewModel<ShoppingCartViewModel>()
-
 
     val context = LocalContext.current
 
@@ -206,6 +202,7 @@ fun Navigation(
                     lifecycleOwner.lifecycle.removeObserver(observer)
                 }
             }
+
             SignUpScreen(Modifier.fillMaxSize(),
                 textPage = "SignUp Page",
                 emailValue = signUpUiState.email,
@@ -254,12 +251,17 @@ fun Navigation(
                 },
                 currentCategory = homePageUiState.filteredCategoryList,
                 onFirstSeeAllClick = { categoryItemsList ->
-
                 },
                 onItemClick = { categoryItems ->
                     navController.navigate(
                         CurrentDestination.CategoryItemPage(categoryItems = categoryItems)
-                    )
+                    ) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        restoreState = true
+                        launchSingleTop = true
+                    }
                 },
                 offersList = homePageUiState.filteredOffersList,
                 onSecondSeeAllClick = { offersList ->
@@ -268,7 +270,13 @@ fun Navigation(
                 onOffersClick = { offers ->
                     navController.navigate(
                         CurrentDestination.OfferItemPage(offers = offers)
-                    )
+                    ) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        restoreState = true
+                        launchSingleTop = true
+                    }
                 })
         }
 
@@ -304,9 +312,10 @@ fun Navigation(
                             categoryItemsCart = categoryItemCart, offerCart = OfferCart()
                         )
                     ) {
-                        popUpTo(route = currentRouteDestination) {
-                            inclusive = true
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            inclusive = false
                         }
+                        launchSingleTop = true
                     }
                 })
         }
@@ -345,9 +354,10 @@ fun Navigation(
                             categoryItemsCart = CategoryItemsCart(), offerCart = offerCart
                         )
                     ) {
-                        popUpTo(route = currentRouteDestination) {
-                            inclusive = true
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            inclusive = false
                         }
+                        launchSingleTop = true
                     }
                 })
         }
@@ -393,7 +403,6 @@ fun Navigation(
                 onCheckOut = {
 
                 }
-
             )
         }
 

@@ -38,6 +38,11 @@ class LogInViewModel @Inject constructor(
         showLoader()
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        Log.d("ViewModelInitialization","login destroyed")
+    }
+
     private fun showLoader(){
         viewModelScope.launch {
             _logInUiState.update { newState->

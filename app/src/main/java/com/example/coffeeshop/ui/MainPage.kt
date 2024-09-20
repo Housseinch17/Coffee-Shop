@@ -67,7 +67,7 @@ fun MainPage(navController: NavHostController) {
                     FloatingButtonBar(onShoppingCartClick = {
                         navController.navigateSingleTopTo(
                             route = CurrentDestination.ShoppingCartPage(),
-                            currentDestinationRoute = currentScreenDestination.toString()
+                            navController
                         )
                     })
                 }
@@ -90,25 +90,25 @@ fun MainPage(navController: NavHostController) {
                                 onHomeClick = {
                                     navController.navigateSingleTopTo(
                                         route = CurrentDestination.HomePage,
-                                        currentDestinationRoute = currentScreenDestination.toString()
+                                        navController
                                     )
                                 },
                                 onProfileClick = {
                                     navController.navigateSingleTopTo(
                                         route = CurrentDestination.ProfilePage,
-                                        currentDestinationRoute = currentScreenDestination.toString()
+                                        navController
                                     )
                                 },
                                 onMyOrdersClick = {
                                     navController.navigateSingleTopTo(
                                         route = CurrentDestination.MyOrders,
-                                        currentDestinationRoute = currentScreenDestination.toString()
+                                        navController
                                     )
                                 },
                                 onSettingsClick = {
                                     navController.navigateSingleTopTo(
                                         route = CurrentDestination.SettingsPage,
-                                        currentDestinationRoute = currentScreenDestination.toString()
+                                        navController
                                     )
                                 }
                             )
