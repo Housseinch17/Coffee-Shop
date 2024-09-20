@@ -181,9 +181,16 @@ fun Navigation(
             }
 
             LaunchedEffect(signUpUiState.accountStatus) {
+                Log.d("MyTag","launch")
                 when (signUpUiState.accountStatus) {
-                    is AccountStatus.IsCreated -> navController.navigate(CurrentDestination.LogInPage)
-                    else -> {}
+                    is AccountStatus.IsCreated -> {
+                        Log.d("MyTag","IsCreated")
+                        navController.navigate(CurrentDestination.LogInPage)
+                    }
+                    else -> {
+                        Log.d("MyTag",signUpUiState.accountStatus.toString()
+                        )
+                    }
                 }
             }
 

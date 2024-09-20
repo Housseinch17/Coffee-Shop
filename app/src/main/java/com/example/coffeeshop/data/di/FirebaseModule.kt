@@ -6,6 +6,8 @@ import com.example.coffeeshop.data.datasource.firebase.firebaseAuthentication.Fi
 import com.example.coffeeshop.data.datasource.firebase.firebaseAuthentication.FirebaseAuthenticationDataSourceImpl
 import com.example.coffeeshop.data.datasource.firebase.firebaseReadData.FirebaseReadDataDataSource
 import com.example.coffeeshop.data.datasource.firebase.firebaseReadData.FirebaseReadDataDataSourceImpl
+import com.example.coffeeshop.data.datasource.firebase.firebaseWriteData.FirebaseWriteDataDataSource
+import com.example.coffeeshop.data.datasource.firebase.firebaseWriteData.FirebaseWriteDataDataSourceImpl
 import com.example.coffeeshop.domain.repository.FirebaseRepository
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -22,7 +24,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-class FirebaseModule {
+object FirebaseModule {
 
     @Provides
     @Singleton
@@ -32,14 +34,15 @@ class FirebaseModule {
     @Singleton
     fun provideFirebaseAuthenticationDataSource(
         firebaseAuth: FirebaseAuth,
+        firebaseWriteDataDataSourceImpl: FirebaseWriteDataDataSourceImpl
     ): FirebaseAuthenticationDataSource {
-        return FirebaseAuthenticationDataSourceImpl(firebaseAuth)
+        return FirebaseAuthenticationDataSourceImpl(firebaseAuth,firebaseWriteDataDataSourceImpl)
     }
 
     @Provides
     @Singleton
     @Named("menuReference")
-    fun provideDatabaseReference(): DatabaseReference {
+    fun provideDatabaseMenuReference(): DatabaseReference {
         // Return the reference to your specific path or the default database reference
         return FirebaseDatabase.getInstance().getReference("menu")
     }
@@ -48,6 +51,20 @@ class FirebaseModule {
     @Singleton
     fun provideFirebaseReadDataDataSource(databaseReference: DatabaseReference,@ApplicationContext  context: Context): FirebaseReadDataDataSource {
         return FirebaseReadDataDataSourceImpl(databaseReference,context)
+    }
+
+    @Provides
+    @Singleton
+    @Named("usersReference")
+    fun provideDatabaseUsersReference(): DatabaseReference {
+        // Return the reference to your specific path or the default database reference
+        return FirebaseDatabase.getInstance().getReference("users")
+    }
+
+    @Provides
+    @Singleton
+    fun provideFirebaseWriteDataDataSource(databaseReference: DatabaseReference): FirebaseWriteDataDataSource{
+        return FirebaseWriteDataDataSourceImpl(databaseReference)
     }
 
     @Provides

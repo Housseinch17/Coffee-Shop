@@ -1,6 +1,7 @@
 package com.example.coffeeshop.data.datasource.firebase.firebaseAuthentication
 
 import android.util.Log
+import com.example.coffeeshop.data.datasource.firebase.firebaseWriteData.FirebaseWriteDataDataSourceImpl
 import com.example.coffeeshop.ui.screen.login.AuthState
 import com.example.coffeeshop.ui.screen.signup.AccountStatus
 import com.google.firebase.auth.FirebaseAuth
@@ -13,8 +14,9 @@ import javax.inject.Named
 
 class FirebaseAuthenticationDataSourceImpl @Inject constructor(
     private val auth: FirebaseAuth,
-    @Named("DispatchersIO")
-    private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val firebaseWriteDataDataSourceImpl: FirebaseWriteDataDataSourceImpl,
+    @Named("DispatchersIO") private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
+
 ) : FirebaseAuthenticationDataSource {
 
     override suspend fun getCurrentUser(): String? = withContext(coroutineDispatcher) {
@@ -33,6 +35,7 @@ class FirebaseAuthenticationDataSourceImpl @Inject constructor(
                return@withContext try {
                    auth.signInWithEmailAndPassword(email, password).await()
                    AuthState.LoggedIn
+
                }catch (e:Exception) {
                    val errorMessage = e.message ?: "Something went wrong"
                    AuthState.Error(errorMessage)
