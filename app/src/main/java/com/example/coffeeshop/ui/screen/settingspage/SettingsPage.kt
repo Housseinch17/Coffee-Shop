@@ -81,10 +81,13 @@ fun SettingsPage(
                     modifier = Modifier,
                     showDialog = resetShowDialog,
                     title = stringResource(R.string.reset_password),
-                    isProgressBar = resetShowDialog,
+                    isProgressBar = resetIsLoading,
                     description = {
                         if (!resetIsLoading) {
-                            stringResource(R.string.are_you____reset)
+                            Text(
+                                text = stringResource(R.string.are_you____reset),
+                                style = MaterialTheme.typography.titleMedium.copy(Color.Black)
+                            )
                         } else {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -214,7 +217,7 @@ fun SettingsPage(
             }) {
                 Text(text = stringResource(R.string.change_password))
             }
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(30.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
