@@ -6,6 +6,7 @@ import com.example.coffeeshop.domain.repository.FirebaseRepository
 import com.example.coffeeshop.ui.screen.homepage.FirebaseCategoryResponse
 import com.example.coffeeshop.ui.screen.homepage.FirebaseOffersResponse
 import com.example.coffeeshop.ui.screen.login.AuthState
+import com.example.coffeeshop.ui.screen.settingspage.PasswordChangement
 import com.example.coffeeshop.ui.screen.signup.AccountStatus
 import javax.inject.Inject
 
@@ -29,6 +30,14 @@ class FirebaseRepositoryImpl @Inject constructor(
          firebaseAuthenticationDataSourceImpl.signOut()
     }
 
+    override suspend fun changePassword(email: String, newPassword: String): PasswordChangement {
+        return firebaseAuthenticationDataSourceImpl.changePassword(email,newPassword)
+    }
+
+    override suspend fun resetPassword(): PasswordChangement {
+        return firebaseAuthenticationDataSourceImpl.resetPassword()
+    }
+
     override suspend fun readCategoryDataFromFirebase(): FirebaseCategoryResponse {
         return firebaseReadDataDataSourceImpl.readCategoryDataFromFirebase()
     }
@@ -36,4 +45,5 @@ class FirebaseRepositoryImpl @Inject constructor(
     override suspend fun readOffersDataFromFirebase(): FirebaseOffersResponse {
         return firebaseReadDataDataSourceImpl.readOffersDataFromFirebase()
     }
+
 }

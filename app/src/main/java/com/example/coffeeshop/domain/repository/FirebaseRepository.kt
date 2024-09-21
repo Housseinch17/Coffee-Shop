@@ -3,6 +3,7 @@ package com.example.coffeeshop.domain.repository
 import com.example.coffeeshop.ui.screen.homepage.FirebaseCategoryResponse
 import com.example.coffeeshop.ui.screen.homepage.FirebaseOffersResponse
 import com.example.coffeeshop.ui.screen.login.AuthState
+import com.example.coffeeshop.ui.screen.settingspage.PasswordChangement
 import com.example.coffeeshop.ui.screen.signup.AccountStatus
 
 interface FirebaseRepository {
@@ -12,4 +13,7 @@ interface FirebaseRepository {
     suspend fun signOut()
     suspend fun readCategoryDataFromFirebase(): FirebaseCategoryResponse
     suspend fun readOffersDataFromFirebase(): FirebaseOffersResponse
+    suspend fun changePassword(email: String,newPassword: String): PasswordChangement
+    suspend fun resetPassword(): PasswordChangement
+
 }

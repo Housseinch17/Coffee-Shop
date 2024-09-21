@@ -62,7 +62,7 @@ class SignUpViewModel @Inject constructor(
     fun signUp(email: String, password: String) {
         viewModelScope.launch {
             _signupUiState.update { newState ->
-                newState.copy(accountStatus = AccountStatus.NotCreated)
+                newState.copy(accountStatus = AccountStatus.isLoading)
             }
             if (email.isEmpty() || password.isEmpty()) {
                 emitError("Email and Password can't be empty")
@@ -86,7 +86,9 @@ class SignUpViewModel @Inject constructor(
                     emitError("Please use a valid email account!")
                 }
             }
+            Log.d("MyTag",_signupUiState.value.accountStatus.toString())
         }
+
     }
 
     fun setEmail(email: String) {
@@ -128,5 +130,6 @@ class SignUpViewModel @Inject constructor(
 sealed interface AccountStatus {
     data class IsCreated(val message: String) : AccountStatus
     data object NotCreated : AccountStatus
+    data object isLoading : AccountStatus
     data class Error(val error: String) : AccountStatus
 }

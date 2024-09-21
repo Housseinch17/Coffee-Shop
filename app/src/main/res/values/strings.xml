@@ -3,10 +3,16 @@
     <string name="login">LogIn</string>
     <string name="page">Page</string>
     <string name="signup">SignUp</string>
+    <string name="sign_out">SignOut</string>
+    <string name="reset_password">Reset Password</string>
+    <string name="change_password">Change Password</string>
     <string name="create_account">Create Account</string>
+    <string name="new_password">New Password</string>
+    <string name="confirm_password">Confirm Password</string>
     <string name="visibility">Visibility</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
+    <string name="dismiss">Dismiss</string>
     <string name="empty_email_password">Email and Password can\'t be empty</string>
     <string name="account_created">Account is created</string>
     <string name="loading">Loading</string>
@@ -30,4 +36,8 @@
     <string name="offer_orders">Offers Orders</string>
     <string name="available_offers">Available Offers</string>
     <string name="checkout">Checkout</string>
+    <string name="your_password_must_be_at_least">Your password must be at least </string>
+    <string name="characters">Characters</string>
+    <string name="are_you..._reset">Are you sure that you want to reset your password?</string>
+    <string name="are_you..._signOut">Are you sure that you want to SignOut from this account?</string>
 </resources>

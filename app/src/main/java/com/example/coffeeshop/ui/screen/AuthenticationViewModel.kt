@@ -10,6 +10,7 @@ import com.example.coffeeshop.domain.usecase.sharedprefrenceUsecase.GetSharedPre
 import com.example.coffeeshop.domain.usecase.sharedprefrenceUsecase.SaveSharedPrefUsernameUseCase
 import com.example.coffeeshop.ui.util.isInternetAvailable
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,7 +22,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AuthenticationViewModel @Inject constructor(
-    application: Application, // Use Application directly
+    application: Application,
     private val signOutUseCase: SignOutUseCase,
     private val saveSharedPrefUsernameUseCase: SaveSharedPrefUsernameUseCase,
     private val getSharedPrefUsernameUseCase: GetSharedPrefUsernameUseCase,
@@ -39,32 +40,49 @@ class AuthenticationViewModel @Inject constructor(
         viewModelScope.launch {
             updateCurrentUserName()
         }
-            Log.d("ViewModelInitialization","authentication")
+        Log.d("ViewModelInitialization", "authentication")
     }
 
     override fun onCleared() {
         super.onCleared()
-        Log.d("ViewModelInitialization","authentication destroyed")
+        Log.d("ViewModelInitialization", "authentication destroyed")
     }
+
     private fun emitError(error: String = "No internet connection") {
         viewModelScope.launch {
             _showError.emit(error)
         }
     }
 
-     @SuppressLint("SuspiciousIndentation")
-     suspend fun updateCurrentUserName() {
+    @SuppressLint("SuspiciousIndentation")
+    suspend fun updateCurrentUserName() {
         val currentUsername = getSharedPrefUsernameUseCase.getUsername()
-            _authenticationUiState.update { newState ->
-                newState.copy(username = currentUsername)
-            }
+        _authenticationUiState.update { newState ->
+            newState.copy(username = currentUsername)
+        }
     }
 
     //reset state while signing out
     fun resetSignOutState() {
         viewModelScope.launch {
             _authenticationUiState.update { newState ->
-                newState.copy(signOut = SignOutResponse.Loading)
+                newState.copy(signOut = SignOutResponse.InitialState)
+            }
+        }
+    }
+
+    fun resetShowDialog() {
+        viewModelScope.launch {
+            _authenticationUiState.update { newState ->
+                newState.copy(signOutShowDialog = true)
+            }
+        }
+    }
+
+    fun resetHideDialog() {
+        viewModelScope.launch {
+            _authenticationUiState.update { newState ->
+                newState.copy(signOutShowDialog = false)
             }
         }
     }
@@ -72,19 +90,26 @@ class AuthenticationViewModel @Inject constructor(
     fun signOut() {
         viewModelScope.launch {
             _authenticationUiState.update { newState ->
-                newState.copy(signOut = SignOutResponse.Loading)
+                newState.copy(signOut = SignOutResponse.isLoading)
             }
             val hasInternet = getApplication<Application>().isInternetAvailable()
             Log.d("hasInternet", "$hasInternet")
             if (hasInternet) {
                 signOutUseCase.signOut()
+                delay(10000L)
                 _authenticationUiState.update { newState ->
-                    newState.copy(signOut = SignOutResponse.Success)
+                    newState.copy(
+                        signOut = SignOutResponse.Success,
+                        signOutShowDialog = false
+                    )
                 }
                 saveSharedPrefUsernameUseCase.saveUsername(null)
             } else {
                 _authenticationUiState.update { newState ->
-                    newState.copy(signOut = SignOutResponse.Error)
+                    newState.copy(
+                        signOut = SignOutResponse.Error,
+                        signOutShowDialog = false
+                    )
                 }
                 //show error to the user
                 emitError()
@@ -94,7 +119,8 @@ class AuthenticationViewModel @Inject constructor(
 }
 
 sealed interface SignOutResponse {
-    data object Loading : SignOutResponse
+    data object isLoading: SignOutResponse
+    data object InitialState : SignOutResponse
     data object Success : SignOutResponse
     data object Error : SignOutResponse
 

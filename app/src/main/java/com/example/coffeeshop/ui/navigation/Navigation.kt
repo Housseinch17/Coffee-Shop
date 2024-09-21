@@ -43,6 +43,7 @@ import com.example.coffeeshop.ui.screen.offerItemPage.OfferItemPage
 import com.example.coffeeshop.ui.screen.offerItemPage.OfferItemViewModel
 import com.example.coffeeshop.ui.screen.profilepage.ProfilePage
 import com.example.coffeeshop.ui.screen.profilepage.ProfileViewModel
+import com.example.coffeeshop.ui.screen.settingspage.PasswordChangement
 import com.example.coffeeshop.ui.screen.settingspage.SettingsPage
 import com.example.coffeeshop.ui.screen.settingspage.SettingsViewModel
 import com.example.coffeeshop.ui.screen.shoppingcartpage.ShoppingCartPage
@@ -70,6 +71,8 @@ fun Navigation(
     val signOut = authenticationUiState.signOut
 
     val currentUsername = authenticationUiState.username
+
+    Log.d("MyTag", currentUsername.toString())
 
     //avoid initializing viewmodel everytime i navigate to shopping cart
     //instead of using local data to save the current orders of shopping cart
@@ -181,14 +184,16 @@ fun Navigation(
             }
 
             LaunchedEffect(signUpUiState.accountStatus) {
-                Log.d("MyTag","launch")
+                Log.d("MyTag", "launch")
                 when (signUpUiState.accountStatus) {
                     is AccountStatus.IsCreated -> {
-                        Log.d("MyTag","IsCreated")
+                        Log.d("MyTag", "IsCreated")
                         navController.navigate(CurrentDestination.LogInPage)
                     }
+
                     else -> {
-                        Log.d("MyTag",signUpUiState.accountStatus.toString()
+                        Log.d(
+                            "MyTag", signUpUiState.accountStatus.toString()
                         )
                     }
                 }
@@ -225,8 +230,8 @@ fun Navigation(
                 },
                 buttonText = "Create Account",
                 accountTextButton = "Already have an account? Login!",
-                createAccountEnabled = signUpUiState.accountStatus == AccountStatus.NotCreated,
-                alreadyExistingEnabled = signUpUiState.alreadyHaveAccountButton && (signUpUiState.accountStatus == AccountStatus.NotCreated),
+                createAccountEnabled = signUpUiState.accountStatus != AccountStatus.isLoading,
+                alreadyExistingEnabled = signUpUiState.alreadyHaveAccountButton && (signUpUiState.accountStatus != AccountStatus.isLoading),
                 onCreateAccount = { email, password ->
                     signUpViewModel.signUp(email, password)
                 },
@@ -400,24 +405,68 @@ fun Navigation(
                 onCategoryCountIncrease = { index, categoryItemCart ->
                     shoppingCartViewModel.onCategoryCountIncrease(index, categoryItemCart)
                 },
-                onOfferCountDecrease = { index, offerCart ->
-                    shoppingCartViewModel.onOfferCountDecrease(index, offerCart)
+                onOfferCountDecrease = { index, offerDecrease ->
+                    shoppingCartViewModel.onOfferCountDecrease(index, offerDecrease)
                 },
 
-                onOfferCountIncrease = { index, offerCart ->
-                    shoppingCartViewModel.onOfferCountIncrease(index, offerCart)
+                onOfferCountIncrease = { index, offerIncrease ->
+                    shoppingCartViewModel.onOfferCountIncrease(index, offerIncrease)
                 },
                 onCheckOut = {
 
-                }
-            )
+                })
         }
 
 
         composable<CurrentDestination.SettingsPage> {
             Log.d("BackStack", navController.currentBackStack.value.toString())
             val settingsViewModel = hiltViewModel<SettingsViewModel>()
-            SettingsPage(modifier = Modifier.fillMaxSize())
+            val settingsUiState by settingsViewModel.settingsUiState.collectAsStateWithLifecycle()
+
+            LaunchedEffect(settingsViewModel.emitValue) {
+                settingsViewModel.emitValue.collectLatest { message ->
+                    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                }
+            }
+
+            SettingsPage(
+                modifier = Modifier.fillMaxSize(),
+                newPasswordValue = settingsUiState.newPasswordValue,
+                confirmPasswordValue = settingsUiState.confirmNewPasswordValue,
+                newPasswordValueChange = { newPassword ->
+                    settingsViewModel.newPasswordValueChange(newPassword)
+                },
+                confirmPasswordValueChange = { confirmPassword ->
+                    settingsViewModel.confirmNewPasswordValueChange(confirmPassword)
+                },
+                imageVector = settingsViewModel.getIconVisibility(
+                    settingsUiState.showPassword
+                ),
+                confirmImageVector = settingsViewModel.getIconVisibility(settingsUiState.confirmShowPassword),
+                onIconClick = settingsViewModel::setShowPassword,
+                confirmOnIconClick = settingsViewModel::setConfirmShowPassword,
+                showPassword = settingsUiState.showPassword,
+                confirmShowPassword = settingsUiState.confirmShowPassword,
+                showText = settingsUiState.showText,
+                confirmShowText = settingsUiState.confirmShowText,
+                onPasswordChange = { newPassword, confirmPassword ->
+                    settingsViewModel.changePassword(
+                        email = currentUsername!!,
+                        newPassword = newPassword,
+                        confirmNewPassword = confirmPassword
+                    )
+                },
+                onResetPassword = settingsViewModel::resetShowDialog,
+                resetShowDialog = settingsUiState.resetShowDialog,
+                resetPassword = settingsViewModel::resetPassword,
+                resetDismiss = settingsViewModel::resetHideDialog,
+                resetIsLoading = settingsUiState.resetPassword == PasswordChangement.isLoading,
+                onSignOut = authenticationViewModel::resetShowDialog,
+                signOutShowDialog = authenticationUiState.signOutShowDialog,
+                signOutConfirm = authenticationViewModel::signOut,
+                signOutDismiss = authenticationViewModel::resetHideDialog,
+                signOutIsLoading = authenticationUiState.signOut == SignOutResponse.isLoading,
+            )
         }
 
         composable<CurrentDestination.ProfilePage> {

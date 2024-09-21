@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalLayoutApi::class)
+
 package com.example.coffeeshop.ui.util
 
 import androidx.compose.animation.core.LinearEasing
@@ -6,17 +8,22 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -44,9 +51,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -57,6 +68,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.coffeeshop.R
 import com.example.coffeeshop.ui.theme.BodyTypography
+import com.example.coffeeshop.ui.theme.BrightBlue
 import com.example.coffeeshop.ui.theme.Orange
 import com.example.coffeeshop.ui.theme.TitleTypography
 
@@ -88,7 +100,8 @@ fun ShimmerEffect(
                 easing = LinearEasing,
             ),
             repeatMode = RepeatMode.Restart,
-        ), label = ""
+        ),
+        label = ""
     )
 
     val brush = Brush.linearGradient(
@@ -110,12 +123,8 @@ fun ShimmerEffect(
 fun CoffeeImage(modifier: Modifier, imageUrl: String?) {
     if (imageUrl != null) {
         AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(imageUrl)
-                .crossfade(true)
-                .placeholder(R.drawable.loading)
-                .error(R.drawable.connectionerror)
-                .build(),
+            model = ImageRequest.Builder(LocalContext.current).data(imageUrl).crossfade(true)
+                .placeholder(R.drawable.loading).error(R.drawable.connectionerror).build(),
             contentDescription = null,
             contentScale = ContentScale.FillBounds,
             modifier = modifier
@@ -123,6 +132,22 @@ fun CoffeeImage(modifier: Modifier, imageUrl: String?) {
     }
 }
 
+@Composable
+fun AppCard(modifier: Modifier, pageScreen: @Composable () -> Unit) {
+    Box(
+        modifier = modifier
+    ) {
+        Image(
+            painter = painterResource(R.drawable.coffee_bean),
+            contentDescription = stringResource(R.string.background_image),
+            modifier = modifier,
+            contentScale = ContentScale.FillBounds
+        )
+        //set content for each image
+        pageScreen()
+
+    }
+}
 
 @Composable
 fun TrailingIcon(imageVector: ImageVector, onIconClick: () -> Unit) {
@@ -137,10 +162,7 @@ fun TrailingIcon(imageVector: ImageVector, onIconClick: () -> Unit) {
 
 @Composable
 fun AccountTextButton(
-    modifier: Modifier,
-    text: String,
-    textButtonEnabled: Boolean,
-    onSignUpClick: () -> Unit
+    modifier: Modifier, text: String, textButtonEnabled: Boolean, onSignUpClick: () -> Unit
 ) {
     TextButton(
         modifier = modifier.clip(RoundedCornerShape(12.dp)),
@@ -154,8 +176,7 @@ fun AccountTextButton(
             Text(text, fontSize = 16.sp, fontWeight = FontWeight.Bold)
         } else {
             CircularProgressIndicator(
-                modifier = Modifier
-                    .size(30.dp), // Adjust size as needed
+                modifier = Modifier.size(30.dp), // Adjust size as needed
                 color = Color.White, // Set the color for the progress bar
                 strokeWidth = 2.dp
             )
@@ -165,10 +186,7 @@ fun AccountTextButton(
 
 @Composable
 fun AccountButton(
-    modifier: Modifier,
-    text: String,
-    buttonEnabled: Boolean,
-    onLogInClick: () -> Unit
+    modifier: Modifier, text: String, buttonEnabled: Boolean, onLogInClick: () -> Unit
 ) {
     Button(
         modifier = modifier,
@@ -180,8 +198,7 @@ fun AccountButton(
             Text(text = text, fontSize = 16.sp, fontWeight = FontWeight.Bold)
         } else {
             CircularProgressIndicator(
-                modifier = Modifier
-                    .size(30.dp), // Adjust size as needed
+                modifier = Modifier.size(30.dp), // Adjust size as needed
                 color = Color.White, // Set the color for the progress bar
                 strokeWidth = 2.dp
             )
@@ -202,7 +219,7 @@ fun EmailAndPassword(
     Column(modifier) {
         EmailTextField(
             modifier = modifier, label = stringResource(R.string.email), value = emailValue,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Done ),
             onValueChange = { newEmail ->
                 onEmailChange(newEmail)
             },
@@ -210,8 +227,9 @@ fun EmailAndPassword(
         Spacer(Modifier.height(16.dp))
         PasswordTextField(
             modifier = modifier,
-            label = stringResource(R.string.password), value = passwordValue,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            label = stringResource(R.string.password),
+            value = passwordValue,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password,imeAction = ImeAction.Done),
             visualTransformation = getPasswordVisualTransformation(showPassword),
             onValueChange = { newPassword ->
                 onPasswordChange(newPassword)
@@ -224,16 +242,29 @@ fun EmailAndPassword(
 @Composable
 fun PasswordTextField(
     modifier: Modifier, label: String,
-    value: String, keyboardOptions: KeyboardOptions,
+    value: String,
+    keyboardOptions: KeyboardOptions,
     visualTransformation: VisualTransformation, onValueChange: (String) -> Unit,
     trailingIcon: @Composable () -> Unit,
 ) {
+    //keyboard controller to show or hide keyboard
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    //current focus manager if focused or not
+    val focusManager = LocalFocusManager.current
+
+    //check if keyboard is open or closed
+    val isImeVisible = WindowInsets.isImeVisible
+
+    //when keyboard closed clear focus (show unfocusedContainerColor)
+    if (!isImeVisible) {
+        focusManager.clearFocus()
+    }
+
     OutlinedTextField(
         maxLines = 1,
         textStyle = TextStyle.Default.copy(
-            color = Color.White,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold
+            color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold
         ),
         colors = TextFieldDefaults.colors(
             focusedIndicatorColor = Orange,
@@ -251,11 +282,14 @@ fun PasswordTextField(
         },
         leadingIcon = {
             Icon(
-                imageVector = Icons.Filled.Lock, contentDescription = null,
-                tint = Color.White
+                imageVector = Icons.Filled.Lock, contentDescription = null, tint = Color.White
             )
         },
         keyboardOptions = keyboardOptions,
+        keyboardActions = KeyboardActions(
+            onDone = {
+                keyboardController?.hide()
+            }),
         visualTransformation = visualTransformation,
         trailingIcon = trailingIcon,
 
@@ -268,12 +302,24 @@ fun EmailTextField(
     value: String, keyboardOptions: KeyboardOptions,
     onValueChange: (String) -> Unit,
 ) {
+    //keyboard controller to show or hide keyboard
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    //current focus manager if focused or not
+    val focusManager = LocalFocusManager.current
+
+    //check if keyboard is open or closed
+    val isImeVisible = WindowInsets.isImeVisible
+
+    //when keyboard closed clear focus (show unfocusedContainerColor)
+    if (!isImeVisible) {
+        focusManager.clearFocus()
+    }
+
     OutlinedTextField(
         maxLines = 1,
         textStyle = TextStyle.Default.copy(
-            color = Color.White,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold
+            color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold
         ),
         colors = TextFieldDefaults.colors(
             focusedIndicatorColor = Orange,
@@ -291,11 +337,16 @@ fun EmailTextField(
         },
         leadingIcon = {
             Icon(
-                imageVector = Icons.Filled.AttachEmail, contentDescription = null,
+                imageVector = Icons.Filled.AttachEmail,
+                contentDescription = null,
                 tint = Color.White
             )
         },
         keyboardOptions = keyboardOptions,
+        keyboardActions = KeyboardActions(
+            onDone = {
+                keyboardController?.hide()
+            }),
     )
 }
 
@@ -310,54 +361,79 @@ fun getPasswordVisualTransformation(showValue: Boolean): VisualTransformation {
 
 
 @Composable
-fun ShowDialog(showDialog: Boolean, error: String, onDismissButton: () -> Unit) {
+fun ShowDialog(
+    modifier: Modifier,
+    showDialog: Boolean,
+    title: String,
+    isProgressBar: Boolean,
+    description: @Composable () -> Unit,
+    confirmText: String,
+    confirmButton: () -> Unit,
+    onDismissButton: () -> Unit
+) {
     if (showDialog) {
         AlertDialog(
+            modifier = modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(25.dp))
+                .border(1.dp,Color.Blue, RoundedCornerShape(25.dp))
+                .background(Color.White),
             onDismissRequest = {},
-            confirmButton = {},
-            dismissButton = {
-                Button(onClick = onDismissButton) {
-                    Text("Dismiss", color = Orange)
+            confirmButton = {
+                Button(
+                    onClick = confirmButton,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = BrightBlue
+                    )
+                ) {
+                    Text(
+                        text = confirmText, color = Color.Black,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             },
-            modifier = Modifier
-                .size(200.dp)
-                .background(Color.White)
-                .clip(RoundedCornerShape(25.dp)),
+            dismissButton = {
+                Button(
+                    enabled = !isProgressBar,
+                    onClick = onDismissButton,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = BrightBlue
+                    )
+                ) {
+                    Text(
+                        stringResource(R.string.dismiss),
+                        color = Color.Black,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+
             title = {
                 Text(
-                    "No internet connection",
+                    text = title,
                     style = MaterialTheme.typography.titleLarge.copy(color = Orange)
                 )
             },
             text = {
-                Text(
-                    text = error,
-                    style = MaterialTheme.typography.titleMedium.copy(Color.Black)
-                )
-            }
-        )
+                description()
+            })
     }
 }
 
 
 @Composable
 fun OrderCountWithImage(
-    count: Int,
-    onCountRemove: () -> Unit,
-    onCountAdd: () -> Unit,
-    imageUrl: String
+    count: Int, onCountRemove: () -> Unit, onCountAdd: () -> Unit, imageUrl: String
 ) {
-    ConstraintLayout{
+    ConstraintLayout {
         val (image, orderCount) = createRefs()
         DetailImage(
-            modifier = Modifier
-                .constrainAs(image) {
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                    top.linkTo(parent.top)
-                    bottom.linkTo(parent.bottom)
-                }, imageUrl
+            modifier = Modifier.constrainAs(image) {
+                start.linkTo(parent.start)
+                end.linkTo(parent.end)
+                top.linkTo(parent.top)
+                bottom.linkTo(parent.bottom)
+            }, imageUrl
         )
         OrderCount(
             modifier = Modifier.constrainAs(orderCount) {
@@ -365,14 +441,15 @@ fun OrderCountWithImage(
                 bottom.linkTo(image.bottom)
                 start.linkTo(image.start)
                 end.linkTo(image.end)
-            },
-            count = count, onCountRemove = onCountRemove, onCountAdd = onCountAdd
+            }, count = count, onCountRemove = onCountRemove, onCountAdd = onCountAdd
         )
     }
 }
 
 @Composable
-fun OrderCount(modifier: Modifier, count: Int, onCountRemove: () -> Unit, onCountAdd: () -> Unit) {
+fun OrderCount(
+    modifier: Modifier, count: Int, onCountRemove: () -> Unit, onCountAdd: () -> Unit
+) {
     Row(
         modifier = modifier
             .border(1.dp, color = Color.Black, shape = RoundedCornerShape(12.dp))
@@ -394,7 +471,8 @@ fun OrderCount(modifier: Modifier, count: Int, onCountRemove: () -> Unit, onCoun
         )
         IconButton(onClick = onCountAdd, modifier = Modifier.size(44.dp)) {
             Icon(
-                imageVector = Icons.Filled.Add, contentDescription = stringResource(R.string.add),
+                imageVector = Icons.Filled.Add,
+                contentDescription = stringResource(R.string.add),
                 tint = Color.Black
             )
         }
@@ -424,8 +502,7 @@ fun TitleAndPrice(title: String, price: Double) {
             style = TitleTypography.copy(color = Color.White, fontSize = 20.sp),
         )
         Text(
-            text = "$$price",
-            style = BodyTypography.copy(color = Orange, fontSize = 24.sp)
+            text = "$$price", style = BodyTypography.copy(color = Orange, fontSize = 24.sp)
         )
     }
 }
