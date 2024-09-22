@@ -3,10 +3,12 @@ package com.example.coffeeshop.ui.screen.shoppingcartpage
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.coffeeshop.data.model.ShoppingCart
 import com.example.coffeeshop.data.model.categoryItems.CategoryItems
 import com.example.coffeeshop.data.model.offers.Offers
 import com.example.coffeeshop.data.model.shoppingCart.CategoryItemsCart
 import com.example.coffeeshop.data.model.shoppingCart.OfferCart
+import com.example.coffeeshop.domain.usecase.localDataBaseUseCase.SaveShoppingCartItemsUseCase
 import com.example.coffeeshop.ui.util.DataSource.formatTotal
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +19,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ShoppingCartViewModel @Inject constructor() : ViewModel() {
+class ShoppingCartViewModel @Inject constructor(
+    private val saveShoppingCartItemsUseCase: SaveShoppingCartItemsUseCase
+) : ViewModel() {
     private val _shoppingCartUiState: MutableStateFlow<ShoppingCartUiState> =
         MutableStateFlow(ShoppingCartUiState())
     val shoppingCartUiState: StateFlow<ShoppingCartUiState> = _shoppingCartUiState.asStateFlow()
@@ -44,6 +48,25 @@ class ShoppingCartViewModel @Inject constructor() : ViewModel() {
         offers: Offers
     ): Boolean {
         return offerCartList.any { it.offers == offers }
+    }
+
+    fun saveShoppingCartItems(shoppingCart: ShoppingCart){
+        viewModelScope.launch {
+            saveShoppingCartItemsUseCase.saveShoppingCartItems(shoppingCart)
+            Log.d("MyTag","successfully saved!")
+            resetState()
+            Log.d("MyTag","reset")
+        }
+    }
+
+    private fun resetState(){
+        viewModelScope.launch {
+            _shoppingCartUiState.update { newState->
+                newState.copy(
+                    shoppingCart = ShoppingCart()
+                )
+            }
+        }
     }
 
     fun updateShoppingCartLists(categoryItemsCart: CategoryItemsCart, offerCart: OfferCart) {

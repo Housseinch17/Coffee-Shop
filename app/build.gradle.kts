@@ -125,6 +125,14 @@ dependencies {
     //Constraint Layout in Compose
     implementation (libs.androidx.constraintlayout.compose)
 
+    //Room database
+    implementation (libs.androidx.room.runtime)
+    //noinspection KaptUsageInsteadOfKsp
+    kapt (libs.androidx.room.compiler)
+    implementation (libs.androidx.room.ktx)
+    //converters for classes inside room database
+    implementation (libs.gson)
+
 
 }
 

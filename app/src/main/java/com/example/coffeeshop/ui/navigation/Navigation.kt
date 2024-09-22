@@ -411,7 +411,8 @@ fun Navigation(
                     shoppingCartViewModel.onOfferCountIncrease(index, offerIncrease)
                 },
                 onCheckOut = {
-
+                    val currentShoppingCart = shoppingCartUiState.shoppingCart
+                    shoppingCartViewModel.saveShoppingCartItems(shoppingCart = currentShoppingCart)
                 })
         }
 
@@ -476,7 +477,12 @@ fun Navigation(
         composable<CurrentDestination.MyOrders> {
             Log.d("BackStack", navController.currentBackStack.value.toString())
             val myOrdersViewModel = hiltViewModel<MyOrdersViewModel>()
-            MyOrdersPage(modifier = Modifier.fillMaxSize())
+            val myOrdersUiState by myOrdersViewModel.myOrdersUiState.collectAsStateWithLifecycle()
+
+            MyOrdersPage(
+                modifier = Modifier.fillMaxSize(),
+                myOrders = myOrdersUiState.myOrdersUiState
+            )
         }
     }
 }
