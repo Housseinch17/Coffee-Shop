@@ -29,7 +29,7 @@ class ShoppingCartViewModel @Inject constructor() : ViewModel() {
 
     override fun onCleared() {
         super.onCleared()
-        Log.d("ViewModelInitialization","shopping destroyed")
+        Log.d("ViewModelInitialization", "shopping destroyed")
     }
 
     private fun isCategoryItemsInList(
@@ -48,7 +48,7 @@ class ShoppingCartViewModel @Inject constructor() : ViewModel() {
 
     fun updateShoppingCartLists(categoryItemsCart: CategoryItemsCart, offerCart: OfferCart) {
         viewModelScope.launch {
-            val shoppingCartUiState = _shoppingCartUiState.value
+            val shoppingCartUiState = _shoppingCartUiState.value.shoppingCart
 
             val addCategoryItemsCart: Boolean = categoryItemsCart != CategoryItemsCart()
             val addOfferCart: Boolean = offerCart != OfferCart()
@@ -56,34 +56,37 @@ class ShoppingCartViewModel @Inject constructor() : ViewModel() {
             // Modify the categoryItemsCartList
             val categoryItemsList = shoppingCartUiState.categoryItemsList.toMutableList()
             //check categoryItemsCart if exists
-            val categoryItemsCartExist = isCategoryItemsInList(categoryItemsList,categoryItemsCart.categoryItems)
+            val categoryItemsCartExist =
+                isCategoryItemsInList(categoryItemsList, categoryItemsCart.categoryItems)
 
             //Modify the existing offerCartList
             val offersList = shoppingCartUiState.offersList.toMutableList()
             //check offerCart if exists
-            val offerCartExists = isOfferCartInList(offersList,offerCart.offers)
+            val offerCartExists = isOfferCartInList(offersList, offerCart.offers)
 
             // Add the new category item cart if not already present
             if (addCategoryItemsCart && !categoryItemsCartExist) {
                 categoryItemsList.add(categoryItemsCart)
             }
-            if(addOfferCart && !offerCartExists){
+            if (addOfferCart && !offerCartExists) {
                 offersList.add(offerCart)
             }
 
-            val totalPrice: Double = if(!categoryItemsCartExist && addCategoryItemsCart){
+            val totalPrice: Double = if (!categoryItemsCartExist && addCategoryItemsCart) {
                 shoppingCartUiState.totalPrice + categoryItemsCart.totalPrice
-            }else if(!offerCartExists && addOfferCart){
+            } else if (!offerCartExists && addOfferCart) {
                 shoppingCartUiState.totalPrice + offerCart.totalPrice
-            }else{
-                _shoppingCartUiState.value.totalPrice
+            } else {
+                _shoppingCartUiState.value.shoppingCart.totalPrice
             }
 
             _shoppingCartUiState.update { newState ->
                 newState.copy(
-                    categoryItemsList = categoryItemsList,
-                    offersList = offersList,
-                    totalPrice = formatTotal(totalPrice)
+                    shoppingCart = newState.shoppingCart.copy(
+                        categoryItemsList = categoryItemsList,
+                        offersList = offersList,
+                        totalPrice = formatTotal(totalPrice)
+                    ),
                 )
             }
         }
@@ -92,7 +95,8 @@ class ShoppingCartViewModel @Inject constructor() : ViewModel() {
     fun onCategoryCountDecrease(index: Int, categoryItemsCart: CategoryItemsCart) {
         viewModelScope.launch {
             if (categoryItemsCart.count > 1) {
-                val categoryItemsCartList = _shoppingCartUiState.value.categoryItemsList
+                val categoryItemsCartList =
+                    _shoppingCartUiState.value.shoppingCart.categoryItemsList
                 val newCount = categoryItemsCart.count - 1
 
                 val categoryItemsPrice = categoryItemsCart.categoryItems.price
@@ -102,8 +106,10 @@ class ShoppingCartViewModel @Inject constructor() : ViewModel() {
                 updatedCategoryItemList[index] = currentCategoryItems
                 _shoppingCartUiState.update { newState ->
                     newState.copy(
-                        categoryItemsList = updatedCategoryItemList,
-                        totalPrice = formatTotal(newState.totalPrice - categoryItemsPrice)
+                        shoppingCart = newState.shoppingCart.copy(
+                            categoryItemsList = updatedCategoryItemList,
+                            totalPrice = formatTotal(newState.shoppingCart.totalPrice - categoryItemsPrice)
+                        )
                     )
                 }
             }
@@ -113,7 +119,7 @@ class ShoppingCartViewModel @Inject constructor() : ViewModel() {
     fun onOfferCountDecrease(index: Int, offerCart: OfferCart) {
         viewModelScope.launch {
             if (offerCart.count > 1) {
-                val offerCartList = _shoppingCartUiState.value.offersList
+                val offerCartList = _shoppingCartUiState.value.shoppingCart.offersList
                 val newCount = offerCart.count - 1
 
                 val offersPrice = offerCart.offers.price
@@ -123,8 +129,10 @@ class ShoppingCartViewModel @Inject constructor() : ViewModel() {
                 updatedOfferCartList[index] = currentOfferCart
                 _shoppingCartUiState.update { newState ->
                     newState.copy(
-                        offersList = updatedOfferCartList,
-                        totalPrice = formatTotal(newState.totalPrice - offersPrice)
+                        shoppingCart = newState.shoppingCart.copy(
+                            offersList = updatedOfferCartList,
+                            totalPrice = formatTotal(newState.shoppingCart.totalPrice - offersPrice)
+                        )
                     )
                 }
             }
@@ -134,7 +142,7 @@ class ShoppingCartViewModel @Inject constructor() : ViewModel() {
     fun onOfferCountIncrease(index: Int, offerCart: OfferCart) {
         viewModelScope.launch {
             if (offerCart.count < 50) {
-                val offerCartList = _shoppingCartUiState.value.offersList
+                val offerCartList = _shoppingCartUiState.value.shoppingCart.offersList
                 val newCount = offerCart.count + 1
 
                 val offerPrice = offerCart.offers.price
@@ -144,8 +152,10 @@ class ShoppingCartViewModel @Inject constructor() : ViewModel() {
                 updatedOfferCartList[index] = currentOffer
                 _shoppingCartUiState.update { newState ->
                     newState.copy(
-                        offersList = updatedOfferCartList,
-                        totalPrice = formatTotal(newState.totalPrice + offerPrice)
+                        shoppingCart = newState.shoppingCart.copy(
+                            offersList = updatedOfferCartList,
+                            totalPrice = formatTotal(newState.shoppingCart.totalPrice + offerPrice)
+                        ),
                     )
                 }
             }
@@ -155,7 +165,8 @@ class ShoppingCartViewModel @Inject constructor() : ViewModel() {
     fun onCategoryCountIncrease(index: Int, categoryItemsCart: CategoryItemsCart) {
         viewModelScope.launch {
             if (categoryItemsCart.count < 50) {
-                val categoryItemsCartList = _shoppingCartUiState.value.categoryItemsList
+                val categoryItemsCartList =
+                    _shoppingCartUiState.value.shoppingCart.categoryItemsList
                 val newCount = categoryItemsCart.count + 1
 
                 val categoryItemsPrice = categoryItemsCart.categoryItems.price
@@ -165,8 +176,10 @@ class ShoppingCartViewModel @Inject constructor() : ViewModel() {
                 updatedCategoryItemList[index] = currentCategoryItems
                 _shoppingCartUiState.update { newState ->
                     newState.copy(
-                        categoryItemsList = updatedCategoryItemList,
-                        totalPrice = formatTotal(newState.totalPrice + categoryItemsPrice)
+                        shoppingCart = newState.shoppingCart.copy(
+                            categoryItemsList = updatedCategoryItemList,
+                            totalPrice = formatTotal(newState.shoppingCart.totalPrice + categoryItemsPrice)
+                        ),
                     )
                 }
             }

@@ -396,9 +396,7 @@ fun Navigation(
 
 
             ShoppingCartPage(modifier = Modifier.fillMaxSize(),
-                categoryItemsCartList = shoppingCartUiState.categoryItemsList,
-                offerCartList = shoppingCartUiState.offersList,
-                totalPrice = shoppingCartUiState.totalPrice,
+                shoppingCart = shoppingCartUiState.shoppingCart,
                 onCategoryCountDecrease = { index, categoryItemCart ->
                     shoppingCartViewModel.onCategoryCountDecrease(index, categoryItemCart)
                 },

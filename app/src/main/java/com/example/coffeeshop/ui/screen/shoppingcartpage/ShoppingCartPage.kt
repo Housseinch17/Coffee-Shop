@@ -42,6 +42,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.coffeeshop.R
+import com.example.coffeeshop.data.model.ShoppingCart
 import com.example.coffeeshop.data.model.shoppingCart.CategoryItemsCart
 import com.example.coffeeshop.data.model.shoppingCart.OfferCart
 import com.example.coffeeshop.ui.theme.BodyTypography
@@ -54,9 +55,7 @@ import com.example.coffeeshop.ui.util.CoffeeImage
 @Composable
 fun ShoppingCartPage(
     modifier: Modifier,
-    categoryItemsCartList: List<CategoryItemsCart>,
-    offerCartList: List<OfferCart>,
-    totalPrice: Double,
+    shoppingCart: ShoppingCart,
     onCategoryCountDecrease: (index: Int, categoryItemsCart: CategoryItemsCart) -> Unit,
     onCategoryCountIncrease: (index: Int, categoryItemsCart: CategoryItemsCart) -> Unit,
     onOfferCountDecrease: (index: Int, offerCart: OfferCart) -> Unit,
@@ -83,7 +82,7 @@ fun ShoppingCartPage(
                     bottom = 20.dp
                 ),
         ) {
-            if (categoryItemsCartList.isNotEmpty()) {
+            if (shoppingCart.categoryItemsList.isNotEmpty()) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center,
@@ -101,7 +100,7 @@ fun ShoppingCartPage(
                         .fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(2.dp),
                 ) {
-                    categoryItemsCartList.forEachIndexed { index, categoryItem ->
+                    shoppingCart.categoryItemsList.forEachIndexed { index, categoryItem ->
                         CategoryItemComponent(
                             categoryItemsCart = categoryItem,
                             onCategoryCountDecrease = {
@@ -119,7 +118,7 @@ fun ShoppingCartPage(
             }
             Spacer(modifier = Modifier.height(8.dp))
 
-            if (offerCartList.isNotEmpty()) {
+            if (shoppingCart.offersList.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     modifier = Modifier,
@@ -137,7 +136,7 @@ fun ShoppingCartPage(
                         .fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(2.dp),
                 ) {
-                    offerCartList.forEachIndexed { index, offerCart ->
+                    shoppingCart.offersList.forEachIndexed { index, offerCart ->
                         OfferCartComponent(
                             offerCart = offerCart,
                             onOfferCountIncrease = {
@@ -167,7 +166,7 @@ fun ShoppingCartPage(
                         ),
                     textAlign = TextAlign.Start,
                     maxLines = 1,
-                    text = stringResource(R.string.total_price) + ": $totalPrice $",
+                    text = stringResource(R.string.total_price) + ": ${shoppingCart.totalPrice} $",
                     style = TitleTypography.copy(color = BrightBlue, lineHeight = 24.sp)
                 )
                 Button(
