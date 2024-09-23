@@ -1,5 +1,6 @@
 package com.example.coffeeshop.data.datasource.localdatabase
 
+import android.util.Log
 import com.example.coffeeshop.data.model.ShoppingCart
 import com.example.coffeeshop.data.roomdb.ShoppingCartDAO
 import kotlinx.coroutines.CoroutineDispatcher
@@ -17,12 +18,17 @@ class LocalDataBaseDataSourceImpl @Inject constructor(
             shoppingCartDAO.saveShoppingCartItems(shoppingCart)
         }
 
-    override suspend fun getAllShoppingCartItems(): List<ShoppingCart> = withContext(coroutineDispatcher) {
-       val shoppingCartList = try {
-            shoppingCartDAO.getAllShoppingCartItems()
-        } catch (e: Exception) {
-            emptyList()
-        }
+    override suspend fun getAllShoppingCartItems(): List<ShoppingCart> =
+        withContext(coroutineDispatcher) {
+            val shoppingCartList = try {
+                shoppingCartDAO.getAllShoppingCartItems()
+            } catch (e: Exception) {
+                emptyList()
+            }
+            for(i in shoppingCartList.indices){
+                Log.d("ShowResult", shoppingCartDAO.getAllShoppingCartItems()[i].toString())
+            }
+
             return@withContext shoppingCartList
         }
 }

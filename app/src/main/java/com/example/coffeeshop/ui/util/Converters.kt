@@ -11,6 +11,8 @@ import com.google.gson.reflect.TypeToken
 class Converters {
     private val gson = Gson()
 
+    //we don't need them for now
+/*
     @TypeConverter
     fun fromCategoryItems(value: CategoryItems?): String {
         return gson.toJson(value)
@@ -29,7 +31,7 @@ class Converters {
     @TypeConverter
     fun toOffers(value: String): Offers {
         return gson.fromJson(value, Offers::class.java)
-    }
+    }*/
 
     @TypeConverter
     fun fromCategoryItemsList(value: MutableList<CategoryItemsCart>?): String {

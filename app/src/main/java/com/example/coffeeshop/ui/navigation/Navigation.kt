@@ -39,6 +39,7 @@ import com.example.coffeeshop.ui.screen.login.LogInScreen
 import com.example.coffeeshop.ui.screen.login.LogInViewModel
 import com.example.coffeeshop.ui.screen.myorderspage.MyOrdersPage
 import com.example.coffeeshop.ui.screen.myorderspage.MyOrdersViewModel
+import com.example.coffeeshop.ui.screen.myorderspage.OrderStatus
 import com.example.coffeeshop.ui.screen.offerItemPage.OfferItemPage
 import com.example.coffeeshop.ui.screen.offerItemPage.OfferItemViewModel
 import com.example.coffeeshop.ui.screen.profilepage.ProfilePage
@@ -481,7 +482,13 @@ fun Navigation(
 
             MyOrdersPage(
                 modifier = Modifier.fillMaxSize(),
-                myOrders = myOrdersUiState.myOrdersUiState
+                myOrdersList = myOrdersUiState.myOrdersUiState,
+                onExpand = { index ->
+                    myOrdersViewModel.setExpanded(index)
+                },
+                isLoading = myOrdersUiState.orderState == OrderStatus.IsLoading,
+                isRefreshing = myOrdersUiState.isRefreshing,
+                onRefresh = myOrdersViewModel::loadNewOrders
             )
         }
     }

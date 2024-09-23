@@ -5,5 +5,11 @@ import com.example.coffeeshop.data.model.ShoppingCart
 
 @Stable
 data class MyOrdersUiState(
-    val myOrdersUiState: List<ShoppingCart> = emptyList()
+    val myOrdersUiState: List<MyOrders> = emptyList(),
+    val orderState: OrderStatus = OrderStatus.IsLoading,
+    val isRefreshing: Boolean = false,
 )
+
+@Stable
+data class MyOrders(val shoppingCart: ShoppingCart = ShoppingCart(), var isExpanded: Boolean = false)
+
