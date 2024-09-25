@@ -238,8 +238,8 @@ fun Navigation(
                 },
                 buttonText = "Create Account",
                 accountTextButton = "Already have an account? Login!",
-                createAccountEnabled = signUpUiState.accountStatus != AccountStatus.isLoading,
-                alreadyExistingEnabled = signUpUiState.alreadyHaveAccountButton && (signUpUiState.accountStatus != AccountStatus.isLoading),
+                createAccountEnabled = signUpUiState.accountStatus == AccountStatus.NotCreated,
+                alreadyExistingEnabled = signUpUiState.alreadyHaveAccountButton && (signUpUiState.accountStatus == AccountStatus.NotCreated),
                 onCreateAccount = { email, password ->
                     signUpViewModel.signUp(email, password)
                 },

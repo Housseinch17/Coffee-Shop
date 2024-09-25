@@ -62,14 +62,20 @@ class SignUpViewModel @Inject constructor(
     fun signUp(email: String, password: String) {
         viewModelScope.launch {
             _signupUiState.update { newState ->
-                newState.copy(accountStatus = AccountStatus.isLoading)
+                newState.copy(accountStatus = AccountStatus.IsLoading)
             }
             if (email.isEmpty() || password.isEmpty()) {
                 emitError("Email and Password can't be empty")
                 _signupUiState.update { newState ->
                     newState.copy(accountStatus = AccountStatus.NotCreated)
                 }
-            } else {
+            }else if(password.length <6){
+                emitError("Password should contains minimum 6 letters!")
+                _signupUiState.update { newState ->
+                    newState.copy(accountStatus = AccountStatus.NotCreated)
+                }
+            }
+            else {
                 if (Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
                     val response = signUpUseCase.signUp(email, password)
                     if (response is AccountStatus.Error) {
@@ -84,6 +90,9 @@ class SignUpViewModel @Inject constructor(
                     }
                 } else {
                     emitError("Please use a valid email account!")
+                    _signupUiState.update { newState ->
+                        newState.copy(accountStatus = AccountStatus.NotCreated)
+                    }
                 }
             }
             Log.d("MyTag",_signupUiState.value.accountStatus.toString())
@@ -130,6 +139,6 @@ class SignUpViewModel @Inject constructor(
 sealed interface AccountStatus {
     data class IsCreated(val message: String) : AccountStatus
     data object NotCreated : AccountStatus
-    data object isLoading : AccountStatus
+    data object IsLoading : AccountStatus
     data class Error(val error: String) : AccountStatus
 }

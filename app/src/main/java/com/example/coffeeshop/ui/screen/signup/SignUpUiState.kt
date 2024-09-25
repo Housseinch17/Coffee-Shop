@@ -9,5 +9,4 @@ data class SignUpUiState(
     val showPassword: Boolean = false,
     val accountStatus: AccountStatus = AccountStatus.NotCreated,
     val alreadyHaveAccountButton: Boolean = false,
-    
 )
