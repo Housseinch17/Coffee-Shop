@@ -1,5 +1,6 @@
 package com.example.coffeeshop.ui.screen.myorderspage
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -35,6 +36,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -43,9 +46,9 @@ import com.example.coffeeshop.R
 import com.example.coffeeshop.data.model.shoppingCart.CategoryItemsCart
 import com.example.coffeeshop.data.model.shoppingCart.OfferCart
 import com.example.coffeeshop.ui.theme.BodyTypography
+import com.example.coffeeshop.ui.theme.BrightBlue
 import com.example.coffeeshop.ui.theme.Orange
 import com.example.coffeeshop.ui.theme.TitleTypography
-import com.example.coffeeshop.ui.util.AppCard
 import com.example.coffeeshop.ui.util.CoffeeImage
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -62,15 +65,23 @@ fun MyOrdersPage(
         refreshing = isRefreshing,
         onRefresh = onRefresh,
     )
-    AppCard(
+    Box(
         modifier = modifier.pullRefresh(pullRefreshState)
     ) {
-        if (myOrdersList.isEmpty()) {
+        Image(
+            painter = painterResource(R.drawable.coffee_bean),
+            contentDescription = stringResource(R.string.background_image),
+            modifier = modifier,
+            contentScale = ContentScale.FillBounds
+        )
+
+        if (myOrdersList.isEmpty() && !isRefreshing) {
             Box(modifier = modifier) {
                 Text(
+                    modifier = Modifier.align(Alignment.Center),
                     text = stringResource(R.string.no_orders_yet), style = TitleTypography.copy(
                         fontSize = 30.sp,
-                        color = Color.White
+                        color = BrightBlue,
                     )
                 )
             }
@@ -90,6 +101,12 @@ fun MyOrdersPage(
                 )
             }
         }
+        // Adding the PullRefreshIndicator
+        PullRefreshIndicator(
+            refreshing = isRefreshing,
+            state = pullRefreshState,
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
     }
 }
 

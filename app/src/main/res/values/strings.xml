@@ -42,4 +42,6 @@
     <string name="are_you..._signOut">Are you sure that you want to SignOut from this account?</string>
     <string name="order">Order</string>
     <string name="no_orders_yet">No Orders Yet!</string>
+    <string name="all_categories">All Categories</string>
+    <string name="all_offers">All Offers</string>
 </resources>

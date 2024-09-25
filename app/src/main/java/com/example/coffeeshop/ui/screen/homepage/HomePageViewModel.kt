@@ -32,12 +32,12 @@ class HomePageViewModel @Inject constructor(
 
     init {
         readData()
-            Log.d("ViewModelInitialization","Home")
+        Log.d("ViewModelInitialization", "Home")
     }
 
     override fun onCleared() {
         super.onCleared()
-        Log.d("ViewModelInitialization","home destroyed")
+        Log.d("ViewModelInitialization", "home destroyed")
     }
 
     private fun readData() {
@@ -45,10 +45,35 @@ class HomePageViewModel @Inject constructor(
         readOffersData()
     }
 
-    fun onClearSearchText(){
+    fun refreshData() {
+        val homePageUiState = _homepageUiState.value
+        viewModelScope.launch {
+            if (homePageUiState.currentCategory == CurrentCategory(
+                    "",
+                    emptyList()
+                ) && homePageUiState.offersList.isEmpty()
+            ) {
+                _homepageUiState.update { newState ->
+                    newState.copy(
+                        isRefreshing = true
+                    )
+                }
+                readData()
+                _homepageUiState.update { newState ->
+                    newState.copy(
+                        isRefreshing = false
+                    )
+                }
+            } else {
+                emitError("Your data up to date!")
+            }
+        }
+    }
+
+    fun onClearSearchText() {
         filterList("")
         viewModelScope.launch {
-            _homepageUiState.update { newState->
+            _homepageUiState.update { newState ->
                 newState.copy(searchText = "")
             }
         }
@@ -114,6 +139,14 @@ class HomePageViewModel @Inject constructor(
                 }
                 Log.d("MyTag", "readOffersData() ${response.message}")
                 emitError(response.message)
+            }
+        }
+    }
+
+    fun setSeeAllClicked(isClicked: Boolean){
+        viewModelScope.launch {
+            _homepageUiState.update { newState->
+                newState.copy(seeAllClicked =  isClicked)
             }
         }
     }

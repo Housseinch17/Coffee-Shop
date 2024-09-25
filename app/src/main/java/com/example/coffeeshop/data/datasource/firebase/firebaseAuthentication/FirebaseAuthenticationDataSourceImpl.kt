@@ -65,7 +65,7 @@ class FirebaseAuthenticationDataSourceImpl @Inject constructor(
         return@withContext resetPassword
     }
 
-    //firebase login is asynchronous using suspendCancellableCoroutine ensuring that it has to wait
+    //firebase login is asynchronous using await ensuring that it has to wait
     //for  signInWithEmailAndPassword to complete same as using async await
     override suspend fun logIn(email: String, password: String): AuthState =
         withContext(coroutineDispatcher) {
@@ -79,7 +79,7 @@ class FirebaseAuthenticationDataSourceImpl @Inject constructor(
             }
         }
 
-    //firebase signup is asynchronous using suspendCancellableCoroutine ensuring that it has to wait
+    //firebase signup is asynchronous using await ensuring that it has to wait
     //for  createUserWithEmailAndPassword to complete same as using async await
     override suspend fun signUp(email: String, password: String): AccountStatus =
         withContext(coroutineDispatcher) {

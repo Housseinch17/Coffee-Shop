@@ -29,12 +29,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -60,6 +65,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -76,10 +82,12 @@ import com.example.coffeeshop.ui.util.DataSource
 import com.example.coffeeshop.ui.util.RatingBar
 import com.example.coffeeshop.ui.util.ShimmerEffect
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun HomePage(
     modifier: Modifier,
     isLoading: Boolean,
+    seeAllClicked: Boolean,
     searchText: String,
     onClear: () -> Unit,
     onSearch: (String) -> Unit,
@@ -91,10 +99,16 @@ fun HomePage(
     onItemClick: (CategoryItems) -> Unit,
     offersList: List<Offers>,
     onSecondSeeAllClick: (List<Offers>) -> Unit,
-    onOffersClick: (Offers) -> Unit
+    onOffersClick: (Offers) -> Unit,
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit,
 ) {
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = isRefreshing,
+        onRefresh = onRefresh,
+    )
     Box(
-        modifier = modifier
+        modifier = modifier.pullRefresh(pullRefreshState)
     ) {
         Image(
             painterResource(id = R.drawable.coffee_bean),
@@ -227,13 +241,29 @@ fun HomePage(
                     onSeeAllClick = { onSecondSeeAllClick(offersList) })
                 //no need for spacer padding because we used contentPadding for OffersList
                 OffersList(offersList = offersList) { offers ->
-                    onOffersClick(offers.copy(price = DataSource.calculateTotal(
-                        offers.price,
-                        offers.discount
-                    )))
+                    onOffersClick(
+                        offers.copy(
+                            price = DataSource.calculateTotal(
+                                offers.price,
+                                offers.discount
+                            )
+                        )
+                    )
                 }
             }
         }
+        // Adding the PullRefreshIndicator
+        PullRefreshIndicator(
+            refreshing = isRefreshing,
+            state = pullRefreshState,
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
+        if(seeAllClicked) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(100.dp).align(Alignment.Center)
+            )
+        }
+
     }
 }
 
@@ -245,7 +275,7 @@ fun OffersList(offersList: List<Offers>, onOffersClick: (Offers) -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         items(offersList) { offers ->
-            OffersItem(offers) {
+            OffersItem(modifier = Modifier.width(200.dp), offers) {
                 onOffersClick(offers)
             }
         }
@@ -253,13 +283,12 @@ fun OffersList(offersList: List<Offers>, onOffersClick: (Offers) -> Unit) {
 }
 
 @Composable
-fun OffersItem(offers: Offers, onOffersClick: () -> Unit) {
+fun OffersItem(modifier: Modifier, offers: Offers, onOffersClick: () -> Unit) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .clickable {
                 onOffersClick()
-            }
-            .width(200.dp),
+            },
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.elevatedCardElevation(4.dp),
     ) {
@@ -363,18 +392,20 @@ fun CurrentCategoryList(
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         items(currentCategoryList) { categoryItem ->
-            CategoryItem(categoryItem, onItemClick = { onItemClick(categoryItem) })
+            CategoryItem(
+                modifier = Modifier.size(140.dp),
+                categoryItem,
+                onItemClick = { onItemClick(categoryItem) })
         }
     }
 }
 
 @Composable
-fun CategoryItem(categoryItem: CategoryItems, onItemClick: () -> Unit) {
+fun CategoryItem(modifier: Modifier, categoryItem: CategoryItems, onItemClick: () -> Unit) {
     ConstraintLayout {
         val (card, image) = createRefs()
         CategoryCardItem(
-            modifier = Modifier
-                .size(140.dp)
+            modifier = modifier
                 .constrainAs(card) {
                     top.linkTo(parent.top)
                 }, categoryItem = categoryItem,
@@ -382,6 +413,7 @@ fun CategoryItem(categoryItem: CategoryItems, onItemClick: () -> Unit) {
         )
         CoffeeImage(
             modifier = Modifier
+                .padding(10.dp)
                 .width(100.dp)
                 .height(80.dp)
                 .clip(RoundedCornerShape(12.dp))
@@ -444,6 +476,7 @@ fun CategoryCardItem(
                 style = BodyTypography.copy(color = Orange),
                 overflow = TextOverflow.Ellipsis
             )
+            Spacer(modifier = Modifier.height(10.dp))
         }
     }
 }

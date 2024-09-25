@@ -30,6 +30,10 @@ import com.example.coffeeshop.data.model.shoppingCart.CategoryItemsCart
 import com.example.coffeeshop.data.model.shoppingCart.OfferCart
 import com.example.coffeeshop.ui.screen.AuthenticationViewModel
 import com.example.coffeeshop.ui.screen.SignOutResponse
+import com.example.coffeeshop.ui.screen.allCategoriesDetail.AllCategoriesPage
+import com.example.coffeeshop.ui.screen.allCategoriesDetail.AllCategoriesViewModel
+import com.example.coffeeshop.ui.screen.allOffersDetail.AllOffersPage
+import com.example.coffeeshop.ui.screen.allOffersDetail.AllOffersViewModel
 import com.example.coffeeshop.ui.screen.categoryItemPage.CategoryItemPage
 import com.example.coffeeshop.ui.screen.categoryItemPage.CategoryItemViewModel
 import com.example.coffeeshop.ui.screen.homepage.HomePage
@@ -53,6 +57,9 @@ import com.example.coffeeshop.ui.screen.signup.AccountStatus
 import com.example.coffeeshop.ui.screen.signup.SignUpScreen
 import com.example.coffeeshop.ui.screen.signup.SignUpViewModel
 import com.example.coffeeshop.ui.util.CustomNavType
+import com.example.coffeeshop.ui.util.navigateSingleTopTo
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -245,13 +252,18 @@ fun Navigation(
             val homePageViewModel = hiltViewModel<HomePageViewModel>()
             val homePageUiState by homePageViewModel.homePageUiState.collectAsStateWithLifecycle()
 
+            val scope = rememberCoroutineScope()
+
             LaunchedEffect(homePageViewModel.responseError) {
                 homePageViewModel.responseError.collect { error ->
                     Toast.makeText(context, error, Toast.LENGTH_LONG).show()
                 }
             }
-            HomePage(modifier = Modifier.fillMaxSize(),
+
+            HomePage(
+                modifier = Modifier.fillMaxSize(),
                 isLoading = homePageUiState.isLoading,
+                seeAllClicked = homePageUiState.seeAllClicked,
                 searchText = homePageUiState.searchText,
                 onClear = homePageViewModel::onClearSearchText,
                 onSearch = { newText ->
@@ -264,33 +276,109 @@ fun Navigation(
                 },
                 currentCategory = homePageUiState.filteredCategoryList,
                 onFirstSeeAllClick = { categoryItemsList ->
+                    scope.launch {
+                        async {
+                            homePageViewModel.setSeeAllClicked(true)
+                            delay(500)
+                        }.await()
+                        navController.navigateSingleTopTo(
+                            CurrentDestination.AllCategories(categoryItemsList),
+                            navHostController = navController
+                        )
+                        homePageViewModel.setSeeAllClicked(false)
+                    }
+
                 },
                 onItemClick = { categoryItems ->
-                    navController.navigate(
-                        CurrentDestination.CategoryItemPage(categoryItems = categoryItems)
-                    ) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
-                        }
-                        restoreState = true
-                        launchSingleTop = true
-                    }
+                    navController.navigateSingleTopTo(
+                        CurrentDestination.CategoryItemPage(categoryItems = categoryItems),
+                        navHostController = navController
+                    )
                 },
                 offersList = homePageUiState.filteredOffersList,
                 onSecondSeeAllClick = { offersList ->
+                    scope.launch {
+                        async {
+                            homePageViewModel.setSeeAllClicked(true)
+                            delay(500)
+                        }.await()
+                        navController.navigateSingleTopTo(
+                            CurrentDestination.AllOffers(
+                                allOffers = offersList
+                            ),
+                            navHostController = navController
+                        )
+                        homePageViewModel.setSeeAllClicked(false)
+                    }
 
                 },
                 onOffersClick = { offers ->
-                    navController.navigate(
-                        CurrentDestination.OfferItemPage(offers = offers)
-                    ) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
-                        }
-                        restoreState = true
-                        launchSingleTop = true
-                    }
+                    navController.navigateSingleTopTo(
+                        CurrentDestination.OfferItemPage(offers = offers),
+                        navHostController = navController
+                    )
+                },
+                isRefreshing = homePageUiState.isRefreshing,
+                onRefresh = homePageViewModel::refreshData
+            )
+        }
+
+        composable<CurrentDestination.AllCategories>(
+            typeMap = mapOf(
+                typeOf<List<CategoryItems>>() to CustomNavType.allCategories
+            )
+        ) { entry ->
+            Log.d("BackStack", navController.currentBackStack.value.toString())
+            val args = entry.toRoute<CurrentDestination.AllCategories>()
+            val allCategories = args.allCategories
+
+            val allCategoriesViewModel = hiltViewModel<AllCategoriesViewModel>()
+            val allCategoriesUiState by allCategoriesViewModel.allCategoriesUiState.collectAsStateWithLifecycle()
+
+            LaunchedEffect(Unit) {
+                allCategoriesViewModel.setData(allCategories)
+            }
+
+            AllCategoriesPage(modifier = Modifier.fillMaxSize(),
+                isLoading = allCategoriesUiState.isLoading,
+                categoriesList = allCategoriesUiState.allCategoriesList,
+                onItemClick = { categoryItem ->
+                    navController.navigateSingleTopTo(
+                        CurrentDestination.CategoryItemPage(
+                            categoryItems = categoryItem
+                        ), navHostController = navController
+                    )
                 })
+        }
+
+        composable<CurrentDestination.AllOffers>(
+            typeMap = mapOf(
+                typeOf<List<Offers>>() to CustomNavType.allOffers
+            )
+        ) { entry ->
+            val args = entry.toRoute<CurrentDestination.AllOffers>()
+            val allOffers = args.allOffers
+
+            val allOffersViewModel = hiltViewModel<AllOffersViewModel>()
+            val allOffersUiState by allOffersViewModel.allOffersUiState.collectAsStateWithLifecycle()
+
+            LaunchedEffect(Unit) {
+                allOffersViewModel.setData(allOffers)
+            }
+
+            AllOffersPage(
+                modifier = Modifier.fillMaxSize(),
+                isLoading = allOffersUiState.isLoading,
+                offersList = allOffersUiState.allOffersList,
+                onItemClick = { offers ->
+                    navController.navigateSingleTopTo(
+                        CurrentDestination.OfferItemPage(
+                            offers = offers
+                        ),
+                        navHostController = navController
+                    )
+                }
+            )
         }
 
         composable<CurrentDestination.CategoryItemPage>(
@@ -549,6 +637,21 @@ sealed interface CurrentDestination {
     @Serializable
     data object MyOrders : CurrentDestination {
         const val ROUTE = "MyOrders"
+    }
+
+    @Serializable
+    data class AllCategories(val allCategories: List<CategoryItems> = emptyList()) :
+        CurrentDestination {
+        companion object {
+            const val ROUTE = "AllCategories"
+        }
+    }
+
+    @Serializable
+    data class AllOffers(val allOffers: List<Offers> = emptyList()) : CurrentDestination {
+        companion object {
+            const val ROUTE = "AllOffers"
+        }
     }
 
     @Serializable

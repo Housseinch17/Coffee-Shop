@@ -14,6 +14,8 @@ data class HomePageUiState(
     val filteredCategoryList: CurrentCategory = CurrentCategory("", emptyList()),
     val offersList: List<Offers> = emptyList(),
     val filteredOffersList: List<Offers> = emptyList(),
+    val isRefreshing: Boolean = false,
+    val seeAllClicked: Boolean = false,
 )
 
 
