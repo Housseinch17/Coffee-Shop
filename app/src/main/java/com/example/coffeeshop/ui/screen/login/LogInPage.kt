@@ -4,14 +4,19 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,6 +32,7 @@ import com.example.coffeeshop.ui.util.AccountButton
 import com.example.coffeeshop.ui.util.AccountTextButton
 import com.example.coffeeshop.ui.util.EmailAndPassword
 import com.example.coffeeshop.ui.util.ShimmerEffect
+import com.example.coffeeshop.ui.util.ShowDialog
 import com.example.coffeeshop.ui.util.TrailingIcon
 
 
@@ -47,7 +53,14 @@ fun LogInScreen(
     signUpEnabled: Boolean,
     isLoading: Boolean,
     onLogInClick: (email: String, password: String) -> Unit,
-    onSignUpClick: () -> Unit
+    onSignUpClick: () -> Unit,
+    onResetEmailValue: String,
+    onResetEmailChange: (String) -> Unit,
+    resetShowDialog: Boolean,
+    resetPassword: () -> Unit,
+    resetDismiss: () -> Unit,
+    resetIsLoading: Boolean,
+    onResetPassword: () -> Unit,
 ) {
     Box(
         modifier = modifier
@@ -58,6 +71,56 @@ fun LogInScreen(
             modifier = modifier,
             contentScale = ContentScale.FillBounds,
         )
+        if (resetShowDialog) {
+            Box(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                ShowDialog(
+                    modifier = Modifier,
+                    showDialog = resetShowDialog,
+                    title = stringResource(R.string.reset_password),
+                    isProgressBar = resetIsLoading,
+                    description = {
+                        if (!resetIsLoading) {
+                            Column(
+                            ) {
+                            Text(
+                                text = stringResource(R.string.are_you____reset),
+                                style = MaterialTheme.typography.titleMedium.copy(Color.Black)
+                            )
+                            Spacer(Modifier.height(16.dp))
+                            TextField(
+                                value = onResetEmailValue,
+                                onValueChange = {
+                                    onResetEmailChange(it)
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                placeholder = {
+                                    Text(text = stringResource(R.string.reset_password_email))
+                                }
+                            )
+                            }
+                        } else {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier
+                                        .size(80.dp),
+                                    color = Color.Gray,
+                                    strokeWidth = 2.dp
+                                )
+                            }
+
+                        }
+                    },
+                    confirmText = stringResource(R.string.reset_password),
+                    confirmButton = resetPassword,
+                    onDismissButton = resetDismiss
+                )
+            }
+        }
         Column(
             modifier = Modifier
                 .matchParentSize()
@@ -128,6 +191,11 @@ fun LogInScreen(
                     textButtonEnabled = signUpEnabled,
                     onSignUpClick = onSignUpClick
                 )
+                Spacer(Modifier.height(0.dp))
+                Button(onClick = onResetPassword) {
+                    Text(text = stringResource(R.string.reset_password))
+                }
+                Spacer(Modifier.height(30.dp))
             }
         }
     }

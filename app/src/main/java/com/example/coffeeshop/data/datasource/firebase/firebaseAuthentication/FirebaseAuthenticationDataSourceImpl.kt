@@ -22,7 +22,7 @@ class FirebaseAuthenticationDataSourceImpl @Inject constructor(
 
     ) : FirebaseAuthenticationDataSource {
 
-    override suspend fun getCurrentUser(): String? = withContext(coroutineDispatcher) {
+    override suspend fun getCurrentUser(): String? = withContext(coroutineDispatcher){
         return@withContext try {
             auth.currentUser?.email
         } catch (e: Exception) {
@@ -36,11 +36,11 @@ class FirebaseAuthenticationDataSourceImpl @Inject constructor(
             var passwordChangement: PasswordChangement = PasswordChangement.InitialState
             try {
                 auth.currentUser?.updatePassword(newPassword)?.addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        passwordChangement = PasswordChangement.Success("Password changed successfully!")
+                    passwordChangement = if (task.isSuccessful) {
+                        PasswordChangement.Success("Password changed successfully!")
 
                     } else {
-                        passwordChangement = PasswordChangement.Error("Password didnt change!")
+                        PasswordChangement.Error("Password didnt change!")
                     }
                 }?.await()
             } catch (e: Exception) {
@@ -49,19 +49,21 @@ class FirebaseAuthenticationDataSourceImpl @Inject constructor(
             return@withContext passwordChangement
         }
 
-    override suspend fun resetPassword(): PasswordChangement = withContext(coroutineDispatcher) {
+    override suspend fun resetPassword(email: String): PasswordChangement = withContext(coroutineDispatcher) {
         var resetPassword: PasswordChangement = PasswordChangement.InitialState
         try {
-            auth.sendPasswordResetEmail(auth.currentUser?.email.toString()).addOnCompleteListener { task->
-                if (task.isSuccessful) {
-                    resetPassword = PasswordChangement.Success("Check your email, to reset your password ! ")
+            Log.d("MyTag","f1")
+            auth.sendPasswordResetEmail(email).addOnCompleteListener { task->
+                resetPassword = if (task.isSuccessful) {
+                    PasswordChangement.Success("Check your email, to reset your password ! ")
                 } else {
-                    resetPassword = PasswordChangement.Error("Password didn't change!")
+                    PasswordChangement.Error("Password didn't change!")
                 }
             }.await()
         }catch (e: Exception){
             resetPassword = PasswordChangement.Error(e.message ?: "Check your internet")
         }
+        Log.d("MyTag","f2")
         return@withContext resetPassword
     }
 

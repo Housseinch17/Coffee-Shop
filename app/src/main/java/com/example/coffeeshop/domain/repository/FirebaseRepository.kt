@@ -14,6 +14,6 @@ interface FirebaseRepository {
     suspend fun readCategoryDataFromFirebase(): FirebaseCategoryResponse
     suspend fun readOffersDataFromFirebase(): FirebaseOffersResponse
     suspend fun changePassword(email: String,newPassword: String): PasswordChangement
-    suspend fun resetPassword(): PasswordChangement
+    suspend fun resetPassword(email: String): PasswordChangement
 
 }

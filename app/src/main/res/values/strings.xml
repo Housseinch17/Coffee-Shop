@@ -44,4 +44,6 @@
     <string name="no_orders_yet">No Orders Yet!</string>
     <string name="all_categories">All Categories</string>
     <string name="all_offers">All Offers</string>
+    <string name="reset_password_email">Enter your email</string>
+
 </resources>

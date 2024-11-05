@@ -7,5 +7,5 @@ import javax.inject.Inject
 class ResetPasswordUseCase @Inject constructor(
     private val firebaseRepositoryImpl: FirebaseRepositoryImpl
 ) {
-    suspend fun resetPassword(): PasswordChangement = firebaseRepositoryImpl.resetPassword()
+    suspend fun resetPassword(email: String): PasswordChangement = firebaseRepositoryImpl.resetPassword(email)
 }

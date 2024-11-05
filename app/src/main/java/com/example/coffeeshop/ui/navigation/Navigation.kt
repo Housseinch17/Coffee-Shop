@@ -131,10 +131,11 @@ fun Navigation(
             val scope = rememberCoroutineScope()
 
             LaunchedEffect(logInViewModel.sharedFlow) {
-                logInViewModel.sharedFlow.collect { error ->
-                    Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+                logInViewModel.sharedFlow.collect { message ->
+                    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
                 }
             }
+
             LaunchedEffect(logInUiState.authState) {
                 when (logInUiState.authState) {
                     AuthState.LoggedIn -> {
@@ -176,7 +177,19 @@ fun Navigation(
                 },
                 onSignUpClick = {
                     navController.navigate(CurrentDestination.SignUpPage)
-                })
+                },
+                onResetEmailValue = logInUiState.resetEmailValue,
+                onResetEmailChange = { newEmail->
+                    logInViewModel.onResetEmailValue(newEmail)
+                },
+                resetShowDialog = logInUiState.resetShowDialog,
+                resetPassword = {
+                    Log.d("MyTag","hey")
+                    logInViewModel.resetPassword(logInUiState.resetEmailValue)
+                },
+                resetDismiss = logInViewModel::resetHideDialog,
+                resetIsLoading = logInUiState.resetPassword == PasswordChangement.IsLoading,
+                onResetPassword = logInViewModel::resetShowDialog,)
         }
 
         composable<CurrentDestination.SignUpPage> {
@@ -287,7 +300,6 @@ fun Navigation(
                         )
                         homePageViewModel.setSeeAllClicked(false)
                     }
-
                 },
                 onItemClick = { categoryItems ->
                     navController.navigateSingleTopTo(
@@ -548,7 +560,7 @@ fun Navigation(
                 resetShowDialog = settingsUiState.resetShowDialog,
                 resetPassword = settingsViewModel::resetPassword,
                 resetDismiss = settingsViewModel::resetHideDialog,
-                resetIsLoading = settingsUiState.resetPassword == PasswordChangement.isLoading,
+                resetIsLoading = settingsUiState.resetPassword == PasswordChangement.IsLoading,
                 onSignOut = authenticationViewModel::resetShowDialog,
                 signOutShowDialog = authenticationUiState.signOutShowDialog,
                 signOutConfirm = authenticationViewModel::signOut,

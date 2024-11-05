@@ -13,29 +13,30 @@ import javax.inject.Inject
 class FirebaseRepositoryImpl @Inject constructor(
     private val firebaseAuthenticationDataSourceImpl: FirebaseAuthenticationDataSourceImpl,
     private val firebaseReadDataDataSourceImpl: FirebaseReadDataDataSourceImpl
-): FirebaseRepository{
+) : FirebaseRepository {
+
     override suspend fun getCurrentUser(): String? {
         return firebaseAuthenticationDataSourceImpl.getCurrentUser()
     }
 
     override suspend fun logIn(email: String, password: String): AuthState {
-        return firebaseAuthenticationDataSourceImpl.logIn(email,password)
+        return firebaseAuthenticationDataSourceImpl.logIn(email, password)
     }
 
     override suspend fun signUp(email: String, password: String): AccountStatus {
-        return firebaseAuthenticationDataSourceImpl.signUp(email,password)
+        return firebaseAuthenticationDataSourceImpl.signUp(email, password)
     }
 
     override suspend fun signOut() {
-         firebaseAuthenticationDataSourceImpl.signOut()
+        firebaseAuthenticationDataSourceImpl.signOut()
     }
 
     override suspend fun changePassword(email: String, newPassword: String): PasswordChangement {
-        return firebaseAuthenticationDataSourceImpl.changePassword(email,newPassword)
+        return firebaseAuthenticationDataSourceImpl.changePassword(email, newPassword)
     }
 
-    override suspend fun resetPassword(): PasswordChangement {
-        return firebaseAuthenticationDataSourceImpl.resetPassword()
+    override suspend fun resetPassword(email: String): PasswordChangement {
+        return firebaseAuthenticationDataSourceImpl.resetPassword(email)
     }
 
     override suspend fun readCategoryDataFromFirebase(): FirebaseCategoryResponse {

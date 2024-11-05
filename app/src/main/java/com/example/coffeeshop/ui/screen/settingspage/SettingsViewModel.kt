@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.coffeeshop.domain.usecase.firebaseAuthenticationUseCase.ChangePasswordUseCase
+import com.example.coffeeshop.domain.usecase.firebaseAuthenticationUseCase.GetCurrentUserUseCase
 import com.example.coffeeshop.domain.usecase.firebaseAuthenticationUseCase.ResetPasswordUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
@@ -24,7 +25,8 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val changePasswordUseCase: ChangePasswordUseCase,
-    private val resetPasswordUseCase: ResetPasswordUseCase
+    private val resetPasswordUseCase: ResetPasswordUseCase,
+    private val getCurrentUserUseCase: GetCurrentUserUseCase
 ) : ViewModel() {
     private val _settingsUiState: MutableStateFlow<SettingsUiState> =
         MutableStateFlow(SettingsUiState())
@@ -146,9 +148,9 @@ class SettingsViewModel @Inject constructor(
     fun resetPassword() {
         viewModelScope.launch {
             _settingsUiState.update { newState ->
-                newState.copy(resetPassword = PasswordChangement.isLoading)
+                newState.copy(resetPassword = PasswordChangement.IsLoading)
             }
-            val resetPassword = resetPasswordUseCase.resetPassword()
+            val resetPassword = resetPasswordUseCase.resetPassword(getCurrentUserUseCase.getCurrentUser()!!)
 
             Log.d("MyTag", "resetPassword $resetPassword")
             _settingsUiState.update { newState ->
@@ -180,5 +182,5 @@ sealed interface PasswordChangement {
     data class Success(val successMessage: String) : PasswordChangement
     data class Error(val errorMessage: String) : PasswordChangement
     data object InitialState : PasswordChangement
-    data object isLoading : PasswordChangement
+    data object IsLoading : PasswordChangement
 }

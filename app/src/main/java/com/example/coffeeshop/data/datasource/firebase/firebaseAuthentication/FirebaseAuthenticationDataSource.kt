@@ -10,5 +10,5 @@ interface FirebaseAuthenticationDataSource {
     suspend fun signUp(email: String,password: String): AccountStatus
     suspend fun signOut()
     suspend fun changePassword(email: String,newPassword: String): PasswordChangement
-    suspend fun resetPassword(): PasswordChangement
+    suspend fun resetPassword(email: String): PasswordChangement
 }
