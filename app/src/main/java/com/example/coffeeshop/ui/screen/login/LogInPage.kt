@@ -167,6 +167,16 @@ fun LogInScreen(
                         .height(26.dp)
                         .clip(RoundedCornerShape(12.dp))
                 )
+                Spacer(Modifier.height(20.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    ShimmerEffect(modifier = Modifier.height(30.dp).width(150.dp).clip(
+                        RoundedCornerShape(25.dp)
+                    ))
+                }
+
             } else {
                 Text(textPage, style = MaterialTheme.typography.titleLarge, color = Color.White)
                 Spacer(Modifier.height(16.dp))
@@ -191,7 +201,7 @@ fun LogInScreen(
                     textButtonEnabled = signUpEnabled,
                     onSignUpClick = onSignUpClick
                 )
-                Spacer(Modifier.height(0.dp))
+                Spacer(Modifier.height(20.dp))
                 Button(onClick = onResetPassword) {
                     Text(text = stringResource(R.string.reset_password))
                 }
