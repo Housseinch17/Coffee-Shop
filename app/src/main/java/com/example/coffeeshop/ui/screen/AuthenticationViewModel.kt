@@ -3,11 +3,15 @@ package com.example.coffeeshop.ui.screen
 import android.annotation.SuppressLint
 import android.app.Application
 import android.util.Log
+import android.util.Patterns
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.coffeeshop.domain.usecase.firebaseAuthenticationUseCase.GetCurrentUserUseCase
+import com.example.coffeeshop.domain.usecase.firebaseAuthenticationUseCase.ResetPasswordUseCase
 import com.example.coffeeshop.domain.usecase.firebaseAuthenticationUseCase.SignOutUseCase
 import com.example.coffeeshop.domain.usecase.sharedprefrenceUsecase.GetSharedPrefUsernameUseCase
 import com.example.coffeeshop.domain.usecase.sharedprefrenceUsecase.SaveSharedPrefUsernameUseCase
+import com.example.coffeeshop.ui.screen.settingspage.PasswordChangement
 import com.example.coffeeshop.ui.util.isInternetAvailable
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -26,14 +30,16 @@ class AuthenticationViewModel @Inject constructor(
     private val signOutUseCase: SignOutUseCase,
     private val saveSharedPrefUsernameUseCase: SaveSharedPrefUsernameUseCase,
     private val getSharedPrefUsernameUseCase: GetSharedPrefUsernameUseCase,
+    private val resetPasswordUseCase: ResetPasswordUseCase,
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
 ) : AndroidViewModel(application = application) {
     private val _authenticationUiState: MutableStateFlow<AuthenticationUiState> =
         MutableStateFlow(AuthenticationUiState())
     val authenticationUiState: StateFlow<AuthenticationUiState> =
         _authenticationUiState.asStateFlow()
 
-    private val _showError = MutableSharedFlow<String>()
-    val showError = _showError.asSharedFlow()
+    private val _showMessage = MutableSharedFlow<String>()
+    val showMessage = _showMessage.asSharedFlow()
 
 
     init {
@@ -48,9 +54,9 @@ class AuthenticationViewModel @Inject constructor(
         Log.d("ViewModelInitialization", "authentication destroyed")
     }
 
-    private fun emitError(error: String = "No internet connection") {
+    private fun emitMessage(message: String = "No internet connection") {
         viewModelScope.launch {
-            _showError.emit(error)
+            _showMessage.emit(message)
         }
     }
 
@@ -112,7 +118,72 @@ class AuthenticationViewModel @Inject constructor(
                     )
                 }
                 //show error to the user
-                emitError()
+                emitMessage()
+            }
+        }
+    }
+
+    fun resetResetShowDialog() {
+        viewModelScope.launch {
+            _authenticationUiState.update { newState ->
+                newState.copy(resetShowDialog = true)
+            }
+        }
+    }
+
+    fun resetResetHideDialog() {
+        viewModelScope.launch {
+            _authenticationUiState.update { newState ->
+                newState.copy(resetShowDialog = false)
+            }
+        }
+    }
+
+    fun onResetEmailValue(email: String){
+        viewModelScope.launch {
+            _authenticationUiState.update { newState->
+                newState.copy(resetEmailValue = email)
+            }
+        }
+    }
+
+    fun resetPassword(email: String = "",resetPage: ResetPage) {
+        viewModelScope.launch {
+            if ((resetPage is ResetPage.LogInPage && Patterns.EMAIL_ADDRESS.matcher(email).matches()) || resetPage is ResetPage.SettingsPage) {
+                _authenticationUiState.update { newState ->
+                    newState.copy(resetPassword = PasswordChangement.IsLoading)
+                }
+
+                val resetPassword: PasswordChangement = when(resetPage){
+                    ResetPage.LogInPage -> resetPasswordUseCase.resetPassword(email)
+                    ResetPage.SettingsPage -> resetPasswordUseCase.resetPassword(getCurrentUserUseCase.getCurrentUser()!!)
+                }
+
+
+                Log.d("MyTag", "resetPassword $resetPassword")
+                _authenticationUiState.update { newState ->
+                    newState.copy(
+                        resetPassword = resetPassword,
+                        resetShowDialog = false
+                    )
+                }
+                when (resetPassword) {
+                    is PasswordChangement.Error -> emitMessage(resetPassword.errorMessage)
+                    is PasswordChangement.Success -> {
+                        Log.d("MyTag",_showMessage.toString())
+                        emitMessage(resetPassword.successMessage)
+                        Log.d("MyTag",_showMessage.toString())
+                        _authenticationUiState.update { newState->
+                            newState.copy(resetEmailValue = "")
+                        }
+                    }
+                    else -> {
+                        emitMessage("Check if email exists!")
+                    }
+                }
+                Log.d("MyTag", _authenticationUiState.value.resetPassword.toString())
+            } else {
+                emitMessage("Email not valid")
             }
         }
     }
@@ -123,5 +194,9 @@ sealed interface SignOutResponse {
     data object InitialState : SignOutResponse
     data object Success : SignOutResponse
     data object Error : SignOutResponse
+}
 
+sealed interface ResetPage{
+    data object LogInPage: ResetPage
+    data object SettingsPage: ResetPage
 }

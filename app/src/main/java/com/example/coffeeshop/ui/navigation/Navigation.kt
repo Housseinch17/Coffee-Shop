@@ -29,6 +29,7 @@ import com.example.coffeeshop.data.model.offers.Offers
 import com.example.coffeeshop.data.model.shoppingCart.CategoryItemsCart
 import com.example.coffeeshop.data.model.shoppingCart.OfferCart
 import com.example.coffeeshop.ui.screen.AuthenticationViewModel
+import com.example.coffeeshop.ui.screen.ResetPage
 import com.example.coffeeshop.ui.screen.SignOutResponse
 import com.example.coffeeshop.ui.screen.allCategoriesDetail.AllCategoriesPage
 import com.example.coffeeshop.ui.screen.allCategoriesDetail.AllCategoriesViewModel
@@ -103,9 +104,9 @@ fun Navigation(
         }
     }
 
-    LaunchedEffect(authenticationViewModel.showError) {
-        authenticationViewModel.showError.collectLatest { error ->
-            Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+    LaunchedEffect(authenticationViewModel.showMessage) {
+        authenticationViewModel.showMessage.collectLatest { message ->
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -152,7 +153,8 @@ fun Navigation(
                     else -> {}
                 }
             }
-            LogInScreen(modifier = Modifier.fillMaxSize(),
+            LogInScreen(
+                modifier = Modifier.fillMaxSize(),
                 textPage = stringResource(R.string.welcome_back),
                 emailValue = logInUiState.emailValue,
                 onEmailChange = { newEmail ->
@@ -178,18 +180,21 @@ fun Navigation(
                 onSignUpClick = {
                     navController.navigate(CurrentDestination.SignUpPage)
                 },
-                onResetEmailValue = logInUiState.resetEmailValue,
-                onResetEmailChange = { newEmail->
-                    logInViewModel.onResetEmailValue(newEmail)
+                onResetEmailValue = authenticationUiState.resetEmailValue,
+                onResetEmailChange = { newEmail ->
+                    authenticationViewModel.onResetEmailValue(newEmail)
                 },
-                resetShowDialog = logInUiState.resetShowDialog,
+                resetShowDialog = authenticationUiState.resetShowDialog,
                 resetPassword = {
-                    Log.d("MyTag","hey")
-                    logInViewModel.resetPassword(logInUiState.resetEmailValue)
+                    Log.d("MyTag", "hey")
+                    authenticationViewModel.resetPassword(
+                        email = authenticationUiState.resetEmailValue,
+                        resetPage = ResetPage.LogInPage)
                 },
-                resetDismiss = logInViewModel::resetHideDialog,
-                resetIsLoading = logInUiState.resetPassword == PasswordChangement.IsLoading,
-                onResetPassword = logInViewModel::resetShowDialog,)
+                resetDismiss = authenticationViewModel::resetResetHideDialog,
+                resetIsLoading = authenticationUiState.resetPassword == PasswordChangement.IsLoading,
+                onResetPassword = authenticationViewModel::resetResetShowDialog
+            )
         }
 
         composable<CurrentDestination.SignUpPage> {
@@ -556,11 +561,16 @@ fun Navigation(
                         confirmNewPassword = confirmPassword
                     )
                 },
-                onResetPassword = settingsViewModel::resetShowDialog,
-                resetShowDialog = settingsUiState.resetShowDialog,
-                resetPassword = settingsViewModel::resetPassword,
-                resetDismiss = settingsViewModel::resetHideDialog,
-                resetIsLoading = settingsUiState.resetPassword == PasswordChangement.IsLoading,
+                resetShowDialog = authenticationUiState.resetShowDialog,
+                resetPassword = {
+                    Log.d("MyTag", "hey")
+                    authenticationViewModel.resetPassword(
+                        email = "",
+                        resetPage = ResetPage.SettingsPage)
+                },
+                resetDismiss = authenticationViewModel::resetResetHideDialog,
+                resetIsLoading = authenticationUiState.resetPassword == PasswordChangement.IsLoading,
+                onResetPassword = authenticationViewModel::resetResetShowDialog,
                 onSignOut = authenticationViewModel::resetShowDialog,
                 signOutShowDialog = authenticationUiState.signOutShowDialog,
                 signOutConfirm = authenticationViewModel::signOut,

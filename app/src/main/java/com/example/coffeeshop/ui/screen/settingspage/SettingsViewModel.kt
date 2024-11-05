@@ -8,10 +8,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.coffeeshop.domain.usecase.firebaseAuthenticationUseCase.ChangePasswordUseCase
-import com.example.coffeeshop.domain.usecase.firebaseAuthenticationUseCase.GetCurrentUserUseCase
-import com.example.coffeeshop.domain.usecase.firebaseAuthenticationUseCase.ResetPasswordUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -24,9 +21,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val changePasswordUseCase: ChangePasswordUseCase,
-    private val resetPasswordUseCase: ResetPasswordUseCase,
-    private val getCurrentUserUseCase: GetCurrentUserUseCase
+    private val changePasswordUseCase: ChangePasswordUseCase
 ) : ViewModel() {
     private val _settingsUiState: MutableStateFlow<SettingsUiState> =
         MutableStateFlow(SettingsUiState())
@@ -44,21 +39,6 @@ class SettingsViewModel @Inject constructor(
         Log.d("ViewModelInitialization", "settings destroyed")
     }
 
-    fun resetShowDialog() {
-        viewModelScope.launch {
-            _settingsUiState.update { newState ->
-                newState.copy(resetShowDialog = true)
-            }
-        }
-    }
-
-    fun resetHideDialog() {
-        viewModelScope.launch {
-            _settingsUiState.update { newState ->
-                newState.copy(resetShowDialog = false)
-            }
-        }
-    }
 
     fun newPasswordValueChange(newPassword: String) {
         viewModelScope.launch {
@@ -142,29 +122,6 @@ class SettingsViewModel @Inject constructor(
                     else -> {}
                 }
             }
-        }
-    }
-
-    fun resetPassword() {
-        viewModelScope.launch {
-            _settingsUiState.update { newState ->
-                newState.copy(resetPassword = PasswordChangement.IsLoading)
-            }
-            val resetPassword = resetPasswordUseCase.resetPassword(getCurrentUserUseCase.getCurrentUser()!!)
-
-            Log.d("MyTag", "resetPassword $resetPassword")
-            _settingsUiState.update { newState ->
-                newState.copy(
-                    resetPassword = resetPassword,
-                    resetShowDialog = false
-                )
-            }
-            when (resetPassword) {
-                is PasswordChangement.Error -> emitValue(resetPassword.errorMessage)
-                is PasswordChangement.Success -> emitValue(resetPassword.successMessage)
-                else -> {}
-            }
-            Log.d("MyTag", _settingsUiState.value.resetPassword.toString())
         }
     }
 

@@ -1,7 +1,6 @@
 package com.example.coffeeshop.ui.screen.login
 
 import android.util.Log
-import android.util.Patterns
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -10,9 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.coffeeshop.domain.usecase.firebaseAuthenticationUseCase.GetCurrentUserUseCase
 import com.example.coffeeshop.domain.usecase.firebaseAuthenticationUseCase.LogInUseCase
-import com.example.coffeeshop.domain.usecase.firebaseAuthenticationUseCase.ResetPasswordUseCase
 import com.example.coffeeshop.domain.usecase.sharedprefrenceUsecase.SaveSharedPrefUsernameUseCase
-import com.example.coffeeshop.ui.screen.settingspage.PasswordChangement
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -29,8 +26,7 @@ import javax.inject.Inject
 class LogInViewModel @Inject constructor(
     private val logInUseCase: LogInUseCase,
     private val saveSharedPrefUsernameUseCase: SaveSharedPrefUsernameUseCase,
-    private val getCurrentUserUseCase: GetCurrentUserUseCase,
-    private val resetPasswordUseCase: ResetPasswordUseCase
+    private val getCurrentUserUseCase: GetCurrentUserUseCase
 ) : ViewModel() {
     private val _logInUiState: MutableStateFlow<LogInUiState> = MutableStateFlow(LogInUiState())
     val logInUiState: StateFlow<LogInUiState> = _logInUiState.asStateFlow()
@@ -91,66 +87,6 @@ class LogInViewModel @Inject constructor(
                         newState.copy(authState = AuthState.LoggedIn)
                     }
                 }
-            }
-        }
-    }
-
-    fun resetShowDialog() {
-        viewModelScope.launch {
-            _logInUiState.update { newState ->
-                newState.copy(resetShowDialog = true)
-            }
-        }
-    }
-
-    fun resetHideDialog() {
-        viewModelScope.launch {
-            _logInUiState.update { newState ->
-                newState.copy(resetShowDialog = false)
-            }
-        }
-    }
-
-    fun onResetEmailValue(email: String){
-        viewModelScope.launch {
-            _logInUiState.update { newState->
-                newState.copy(resetEmailValue = email)
-            }
-        }
-    }
-
-    fun resetPassword(email: String) {
-        viewModelScope.launch {
-            if (Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                _logInUiState.update { newState ->
-                    newState.copy(resetPassword = PasswordChangement.IsLoading)
-                }
-                val resetPassword = resetPasswordUseCase.resetPassword(email)
-
-                Log.d("MyTag", "resetPassword $resetPassword")
-                _logInUiState.update { newState ->
-                    newState.copy(
-                        resetPassword = resetPassword,
-                        resetShowDialog = false
-                    )
-                }
-                when (resetPassword) {
-                    is PasswordChangement.Error -> emitSharedFlow(resetPassword.errorMessage)
-                    is PasswordChangement.Success -> {
-                        Log.d("MyTag",_sharedFlow.toString())
-                        emitSharedFlow(resetPassword.successMessage)
-                        Log.d("MyTag",_sharedFlow.toString())
-                        _logInUiState.update { newState->
-                            newState.copy(resetEmailValue = "")
-                        }
-                    }
-                    else -> {
-                        emitSharedFlow("Check if email exists!")
-                    }
-                }
-                Log.d("MyTag", _logInUiState.value.resetPassword.toString())
-            } else {
-                emitSharedFlow("Email not valid")
             }
         }
     }
