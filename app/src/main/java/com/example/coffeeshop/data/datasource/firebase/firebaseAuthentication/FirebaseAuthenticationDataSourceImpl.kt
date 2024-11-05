@@ -10,10 +10,13 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Named
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class FirebaseAuthenticationDataSourceImpl @Inject constructor(
     private val auth: FirebaseAuth,
@@ -33,7 +36,20 @@ class FirebaseAuthenticationDataSourceImpl @Inject constructor(
 
     override suspend fun changePassword(email: String, newPassword: String): PasswordChangement =
         withContext(coroutineDispatcher) {
-            var passwordChangement: PasswordChangement = PasswordChangement.InitialState
+            suspendCoroutine { continuation->
+                try {
+                    auth.currentUser?.updatePassword(newPassword)?.addOnCompleteListener { task ->
+                         if (task.isSuccessful) {
+                            continuation.resume(PasswordChangement.Success("Password changed successfully!"))
+                        } else {
+                            continuation.resume(PasswordChangement.Error("Password didnt change!"))
+                        }
+                    }
+                } catch (e: Exception) {
+                    continuation.resume(PasswordChangement.Error(e.message ?: "Check your internet"))
+                }
+            }
+/*            var passwordChangement: PasswordChangement = PasswordChangement.InitialState
             try {
                 auth.currentUser?.updatePassword(newPassword)?.addOnCompleteListener { task ->
                     passwordChangement = if (task.isSuccessful) {
@@ -46,14 +62,32 @@ class FirebaseAuthenticationDataSourceImpl @Inject constructor(
             } catch (e: Exception) {
                 passwordChangement = PasswordChangement.Error(e.message ?: "Check your internet")
             }
-            return@withContext passwordChangement
+            return@withContext passwordChangement*/
         }
 
     override suspend fun resetPassword(email: String): PasswordChangement = withContext(coroutineDispatcher) {
-        var resetPassword: PasswordChangement = PasswordChangement.InitialState
+        suspendCoroutine { continuation ->
+            try {
+                Log.d("MyTag", "f1")
+                auth.sendPasswordResetEmail(email).addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        continuation.resume(PasswordChangement.Success("Check your email, to reset your password ! "))
+                    } else {
+                        continuation.resume(PasswordChangement.Error("Failed to reset password, check internet!"))
+                    }
+                }
+            } catch (e: Exception) {
+                continuation.resume(
+                    PasswordChangement.Error(
+                        e.message ?: "Check your internet"
+                    )
+                )
+            }
+        }
+        /*        var resetPassword: PasswordChangement = PasswordChangement.InitialState
         try {
             Log.d("MyTag","f1")
-            auth.sendPasswordResetEmail(email).addOnCompleteListener { task->
+            auth.sendPasswordResetEmail(email).addOnCompleteListener{ task->
                 resetPassword = if (task.isSuccessful) {
                     PasswordChangement.Success("Check your email, to reset your password ! ")
                 } else {
@@ -63,8 +97,7 @@ class FirebaseAuthenticationDataSourceImpl @Inject constructor(
         }catch (e: Exception){
             resetPassword = PasswordChangement.Error(e.message ?: "Check your internet")
         }
-        Log.d("MyTag","f2")
-        return@withContext resetPassword
+        return@withContext resetPassword*/
     }
 
     //firebase login is asynchronous using await ensuring that it has to wait
