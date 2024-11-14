@@ -30,24 +30,13 @@ class CategoryItemViewModel @Inject constructor() : ViewModel() {
 
     fun setCategoryItems(categoryItems: CategoryItems) {
         viewModelScope.launch {
+            val firstTotalPrice = categoryItems.price
             _categoryItemUiState.update { newState ->
                 newState.copy(
                     categoryItemsCart = newState.categoryItemsCart.copy(
-                        categoryItems = categoryItems
-                    )
-                )
-            }
-        }
-    }
-
-    fun setCountAndTotalFirstValues(count: Int = 1, price: Double) {
-        val firstTotal: Double = (count * price)
-        viewModelScope.launch {
-            _categoryItemUiState.update { newState ->
-                newState.copy(
-                    categoryItemsCart = newState.categoryItemsCart.copy(
-                        count = count,
-                        totalPrice = formatTotal(firstTotal)
+                        categoryItems = categoryItems,
+                        count = 1,
+                        totalPrice = firstTotalPrice,
                     )
                 )
             }

@@ -20,4 +20,4 @@ data class HomePageUiState(
 
 
 @Stable
-data class CurrentCategory(val key: String,val categoryList: List<CategoryItems>)
+data class CurrentCategory(val key: String = "",val categoryList: List<CategoryItems> = emptyList())

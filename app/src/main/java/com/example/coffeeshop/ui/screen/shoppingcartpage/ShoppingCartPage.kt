@@ -55,6 +55,7 @@ import com.example.coffeeshop.ui.util.CoffeeImage
 @Composable
 fun ShoppingCartPage(
     modifier: Modifier,
+    checkOutEnabled: Boolean,
     shoppingCart: ShoppingCart,
     onCategoryCountDecrease: (index: Int, categoryItemsCart: CategoryItemsCart) -> Unit,
     onCategoryCountIncrease: (index: Int, categoryItemsCart: CategoryItemsCart) -> Unit,
@@ -173,7 +174,9 @@ fun ShoppingCartPage(
                     onClick = onCheckOut,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Orange,
-                    )
+                        disabledContainerColor = Color.Gray
+                    ),
+                    enabled = checkOutEnabled
                 ) {
                     Text(
                         text = stringResource(R.string.checkout),

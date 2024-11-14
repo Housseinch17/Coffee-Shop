@@ -31,8 +31,10 @@ class HomePageViewModel @Inject constructor(
     val responseError: SharedFlow<String> = _responseError.asSharedFlow()
 
     init {
-        readData()
         Log.d("ViewModelInitialization", "Home created")
+        viewModelScope.launch {
+            readData()
+        }
     }
 
     override fun onCleared() {
@@ -40,18 +42,24 @@ class HomePageViewModel @Inject constructor(
         Log.d("ViewModelInitialization", "home destroyed")
     }
 
-    private fun readData() {
+    private suspend fun readData() {
         readCategoryData()
         readOffersData()
+        viewModelScope.launch {
+            if(_homepageUiState.value.isLoading) {
+                _homepageUiState.update { newState ->
+                    newState.copy(isLoading = false)
+                }
+                Log.d("MyTag","isLoading set false finished")
+            }
+        }
+        Log.d("MyTag","readData() finished")
     }
 
     fun refreshData() {
         val homePageUiState = _homepageUiState.value
         viewModelScope.launch {
-            if (homePageUiState.currentCategory == CurrentCategory(
-                    "",
-                    emptyList()
-                ) && homePageUiState.offersList.isEmpty()
+            if (homePageUiState.currentCategory == CurrentCategory() && homePageUiState.offersList.isEmpty()
             ) {
                 _homepageUiState.update { newState ->
                     newState.copy(
@@ -105,6 +113,7 @@ class HomePageViewModel @Inject constructor(
         }
     }
 
+    //get the category keys from the received data
     private fun getCategoriesKey(response: FirebaseCategoryResponse.Success) {
         viewModelScope.launch {
             _homepageUiState.update { newState ->
@@ -119,57 +128,57 @@ class HomePageViewModel @Inject constructor(
 
 
     //isLoading is set in readOffersData() because we are reading it after
-    //readCategoryData() loader should show until both finishes
-    private fun readOffersData() {
-        viewModelScope.launch {
+    //readCategoryData() loader should show when both finishes
+    //we can refactor the function to use coroutine that waits all children to finis to complete
+    //so we can use isLoading inside the parent scope and not in readOffersData()
+    //since viewmodelScope will suspend it and doesn't wait children to finish to complete
+    private suspend fun readOffersData() {
             val response = readOffersDataFromFirebase.readOffersData()
             if (response is FirebaseOffersResponse.Success) {
-                _homepageUiState.update { newState ->
-                    newState.copy(
-                        offersList = response.offers,
-                        filteredOffersList = response.offers,
-                        isLoading = false
-                    )
+                viewModelScope.launch {
+                    _homepageUiState.update { newState ->
+                        newState.copy(
+                            offersList = response.offers,
+                            filteredOffersList = response.offers,
+                        )
+                    }
                 }
             } else if (response is FirebaseOffersResponse.Error) {
-                _homepageUiState.update { newState ->
-                    newState.copy(
-                        isLoading = false
-                    )
-                }
                 Log.d("MyTag", "readOffersData() ${response.message}")
                 emitError(response.message)
             }
-        }
+        Log.d("MyTag","readOffersData() finished")
     }
 
-    fun setSeeAllClicked(isClicked: Boolean){
+    fun setSeeAllClicked(isClicked: Boolean) {
         viewModelScope.launch {
-            _homepageUiState.update { newState->
-                newState.copy(seeAllClicked =  isClicked)
+            _homepageUiState.update { newState ->
+                newState.copy(seeAllClicked = isClicked)
             }
         }
     }
 
 
-    private fun readCategoryData() {
-        viewModelScope.launch {
-            val response = readCategoryDataFromFirebase.readCategoryData()
-            if (response is FirebaseCategoryResponse.Success) {
-                //set category map we use it in setCurrentCategory
+    private suspend fun readCategoryData() {
+        val response = readCategoryDataFromFirebase.readCategoryData()
+        if (response is FirebaseCategoryResponse.Success) {
+            viewModelScope.launch {
                 _homepageUiState.update { newState ->
                     newState.copy(categoryMap = response.categoryMap)
                 }
-                //update categoriesKey
-                getCategoriesKey(response)
-
-                //set currentCategory as first key
-                setCurrentCategory(response.categoryMap.keys.first())
-
-            } else if (response is FirebaseCategoryResponse.Error) {
-                emitError(response.message)
             }
+            //set category map we use it in setCurrentCategory
+            //category map contains all keys with their lists
+            //update categoriesKey
+            getCategoriesKey(response)
+
+            //set currentCategory as first key
+            setCurrentCategory(response.categoryMap.keys.first())
+
+        } else if (response is FirebaseCategoryResponse.Error) {
+            emitError(response.message)
         }
+        Log.d("MyTag","readCategoryData() finished")
     }
 
 

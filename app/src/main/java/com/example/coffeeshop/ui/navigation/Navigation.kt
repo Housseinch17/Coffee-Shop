@@ -63,6 +63,7 @@ import com.example.coffeeshop.ui.util.CustomNavType
 import com.example.coffeeshop.ui.util.navigateSingleTopTo
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -83,7 +84,9 @@ fun Navigation(
 
     val currentUsername = authenticationUiState.username
 
-    Log.d("MyTag", currentUsername.toString())
+    LaunchedEffect(Unit) {
+        Log.d("MyTag", currentUsername.toString())
+    }
 
     val context = LocalContext.current
 
@@ -418,7 +421,6 @@ fun Navigation(
 
                 LaunchedEffect(Unit) {
                     categoryItemViewModel.setCategoryItems(categoryItems)
-                    categoryItemViewModel.setCountAndTotalFirstValues(price = categoryItems.price)
                 }
 
                 CategoryItemPage(modifier = Modifier.fillMaxSize(),
@@ -501,9 +503,12 @@ fun Navigation(
 
                 //here if the shoppingCartViewModel already in BackStackEntry it will use the old one
                 //if not it will create it
-                val shoppingCartViewModel = hiltViewModel<ShoppingCartViewModel>(parentBackStackEntry)
+                val shoppingCartViewModel =
+                    hiltViewModel<ShoppingCartViewModel>(parentBackStackEntry)
 
                 val shoppingCartUiState by shoppingCartViewModel.shoppingCartUiState.collectAsStateWithLifecycle()
+
+                val scope = rememberCoroutineScope()
 
                 LaunchedEffect(categoryItemsCart, offerCart) {
                     shoppingCartViewModel.updateShoppingCartLists(
@@ -511,8 +516,13 @@ fun Navigation(
                     )
                 }
 
-
+                LaunchedEffect(shoppingCartViewModel.shoppingCartSharedFlow) {
+                    shoppingCartViewModel.shoppingCartSharedFlow.collect { message ->
+                        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                    }
+                }
                 ShoppingCartPage(modifier = Modifier.fillMaxSize(),
+                    checkOutEnabled = shoppingCartUiState.shoppingCart.totalPrice != 0.0,
                     shoppingCart = shoppingCartUiState.shoppingCart,
                     onCategoryCountDecrease = { index, categoryItemCart ->
                         shoppingCartViewModel.onCategoryCountDecrease(index, categoryItemCart)
@@ -529,7 +539,9 @@ fun Navigation(
                     },
                     onCheckOut = {
                         val currentShoppingCart = shoppingCartUiState.shoppingCart
-                        shoppingCartViewModel.saveShoppingCartItems(shoppingCart = currentShoppingCart)
+                        scope.launch {
+                            shoppingCartViewModel.saveShoppingCartItems(shoppingCart = currentShoppingCart)
+                        }
                     })
             }
 

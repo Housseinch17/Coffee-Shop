@@ -11,8 +11,11 @@ import com.example.coffeeshop.data.model.shoppingCart.OfferCart
 import com.example.coffeeshop.domain.usecase.localDataBaseUseCase.SaveShoppingCartItemsUseCase
 import com.example.coffeeshop.ui.util.DataSource.formatTotal
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -26,6 +29,8 @@ class ShoppingCartViewModel @Inject constructor(
         MutableStateFlow(ShoppingCartUiState())
     val shoppingCartUiState: StateFlow<ShoppingCartUiState> = _shoppingCartUiState.asStateFlow()
 
+    private val _shoppingCartSharedFlow: MutableSharedFlow<String> = MutableSharedFlow()
+    val shoppingCartSharedFlow: SharedFlow<String> = _shoppingCartSharedFlow.asSharedFlow()
 
     init {
         Log.d("ViewModelInitialization", "Shopping created")
@@ -36,6 +41,13 @@ class ShoppingCartViewModel @Inject constructor(
         Log.d("ViewModelInitialization", "shopping destroyed")
     }
 
+    private fun emitMessage(message: String = "Your order successfully completed!"){
+        viewModelScope.launch {
+            _shoppingCartSharedFlow.emit(message)
+        }
+    }
+
+    //check if the category item sent is already in the shopping cart list
     private fun isCategoryItemsInList(
         categoryItemsList: List<CategoryItemsCart>,
         categoryItems: CategoryItems
@@ -43,6 +55,7 @@ class ShoppingCartViewModel @Inject constructor(
         return categoryItemsList.any { it.categoryItems == categoryItems }
     }
 
+    //check if the offer item sent is already in the shopping cart list
     private fun isOfferCartInList(
         offerCartList: List<OfferCart>,
         offers: Offers
@@ -50,18 +63,17 @@ class ShoppingCartViewModel @Inject constructor(
         return offerCartList.any { it.offers == offers }
     }
 
-    fun saveShoppingCartItems(shoppingCart: ShoppingCart){
-        viewModelScope.launch {
-            saveShoppingCartItemsUseCase.saveShoppingCartItems(shoppingCart)
-            Log.d("MyTag","successfully saved!")
-            resetState()
-            Log.d("MyTag","reset")
-        }
+    suspend fun saveShoppingCartItems(shoppingCart: ShoppingCart) {
+        saveShoppingCartItemsUseCase.saveShoppingCartItems(shoppingCart)
+        Log.d("MyTag", "successfully saved!")
+        resetState()
+        Log.d("MyTag", "reset")
+        emitMessage()
     }
 
-    private fun resetState(){
+    private fun resetState() {
         viewModelScope.launch {
-            _shoppingCartUiState.update { newState->
+            _shoppingCartUiState.update { newState ->
                 newState.copy(
                     shoppingCart = ShoppingCart()
                 )
@@ -73,24 +85,26 @@ class ShoppingCartViewModel @Inject constructor(
         viewModelScope.launch {
             val shoppingCartUiState = _shoppingCartUiState.value.shoppingCart
 
+            //check if category item is empty
             val addCategoryItemsCart: Boolean = categoryItemsCart != CategoryItemsCart()
+            //check if offer item is empty
             val addOfferCart: Boolean = offerCart != OfferCart()
 
             // Modify the categoryItemsCartList
             val categoryItemsList = shoppingCartUiState.categoryItemsList.toMutableList()
-            //check categoryItemsCart if exists
-            val categoryItemsCartExist =
-                isCategoryItemsInList(categoryItemsList, categoryItemsCart.categoryItems)
+            //check categoryItemsCart if exists in the list
+            val categoryItemsCartExist = isCategoryItemsInList(categoryItemsList, categoryItemsCart.categoryItems)
 
             //Modify the existing offerCartList
             val offersList = shoppingCartUiState.offersList.toMutableList()
-            //check offerCart if exists
+            //check offerCart if exists exist in the list
             val offerCartExists = isOfferCartInList(offersList, offerCart.offers)
 
-            // Add the new category item cart if not already present
+            // Add the new category item cart if not already exist and if not empty
             if (addCategoryItemsCart && !categoryItemsCartExist) {
                 categoryItemsList.add(categoryItemsCart)
             }
+            // Add the new offer item cart if not already exist and if not empty
             if (addOfferCart && !offerCartExists) {
                 offersList.add(offerCart)
             }
