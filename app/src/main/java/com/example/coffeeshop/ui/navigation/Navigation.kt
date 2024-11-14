@@ -101,7 +101,6 @@ fun Navigation(
                     }
                 }
             }
-
             else -> {}
         }
     }
@@ -616,7 +615,7 @@ fun Navigation(
 
                 MyOrdersPage(
                     modifier = Modifier.fillMaxSize(),
-                    myOrdersList = myOrdersUiState.myOrdersUiState,
+                    myOrdersList = myOrdersUiState.myOrdersList,
                     onExpand = { index ->
                         myOrdersViewModel.setExpanded(index)
                     },

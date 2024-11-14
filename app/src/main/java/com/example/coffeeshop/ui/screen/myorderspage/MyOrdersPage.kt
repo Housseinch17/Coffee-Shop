@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -85,7 +86,13 @@ fun MyOrdersPage(
                     )
                 )
             }
-        } else {
+        }else if(myOrdersList.isEmpty() && isRefreshing){
+            Box(modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center){
+                CircularProgressIndicator(modifier = Modifier.size(200.dp))
+            }
+        }
+        else {
             if (isLoading) {
                 Column(
                     modifier = modifier,
