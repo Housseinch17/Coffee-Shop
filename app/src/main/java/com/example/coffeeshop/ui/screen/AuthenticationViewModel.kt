@@ -46,7 +46,7 @@ class AuthenticationViewModel @Inject constructor(
         viewModelScope.launch {
             updateCurrentUserName()
         }
-        Log.d("ViewModelInitialization", "authentication")
+        Log.d("ViewModelInitialization", "Authentication created")
     }
 
     override fun onCleared() {

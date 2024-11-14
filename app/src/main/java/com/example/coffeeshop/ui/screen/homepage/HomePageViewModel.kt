@@ -32,7 +32,7 @@ class HomePageViewModel @Inject constructor(
 
     init {
         readData()
-        Log.d("ViewModelInitialization", "Home")
+        Log.d("ViewModelInitialization", "Home created")
     }
 
     override fun onCleared() {

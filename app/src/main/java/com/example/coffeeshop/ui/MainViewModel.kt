@@ -24,7 +24,7 @@ class MainViewModel @Inject constructor(
 
     init {
         checkSharedPreferUsername()
-            Log.d("ViewModelInitialization","main")
+            Log.d("ViewModelInitialization","Main created")
     }
 
     private suspend fun getCurrentUserName(): String? {

@@ -36,6 +36,7 @@ class LogInViewModel @Inject constructor(
 
 
     init {
+        Log.d("ViewModelInitialization","Login created")
         showLoader()
     }
 

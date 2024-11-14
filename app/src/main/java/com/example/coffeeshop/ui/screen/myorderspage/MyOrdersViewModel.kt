@@ -22,13 +22,13 @@ class MyOrdersViewModel @Inject constructor(
 
 
     init {
-        Log.d("ViewModelInitialization", "MyOrders")
+        Log.d("ViewModelInitialization", "MyOrders created")
         getAllOrders()
     }
 
     override fun onCleared() {
         super.onCleared()
-        Log.d("ViewModelInitialization", "myorders destroyed")
+        Log.d("ViewModelInitialization", "Myorders destroyed")
     }
 
     fun setExpanded(index: Int) {

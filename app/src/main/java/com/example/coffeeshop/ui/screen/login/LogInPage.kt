@@ -13,10 +13,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,6 +30,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.coffeeshop.R
+import com.example.coffeeshop.ui.theme.Orange
 import com.example.coffeeshop.ui.util.AccountButton
 import com.example.coffeeshop.ui.util.AccountTextButton
 import com.example.coffeeshop.ui.util.EmailAndPassword
@@ -202,7 +205,8 @@ fun LogInScreen(
                     onSignUpClick = onSignUpClick
                 )
                 Spacer(Modifier.height(20.dp))
-                Button(onClick = onResetPassword) {
+                Button(onClick = onResetPassword,
+                    colors = ButtonDefaults.buttonColors(containerColor = Orange)) {
                     Text(text = stringResource(R.string.reset_password))
                 }
                 Spacer(Modifier.height(30.dp))

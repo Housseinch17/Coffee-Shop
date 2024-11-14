@@ -32,7 +32,7 @@ class SignUpViewModel @Inject constructor(
     val signUpSharedFlow: SharedFlow<String> = _signUpSharedFlow.asSharedFlow()
 
     init {
-        Log.d("ViewModelInitialization", "signup destroyed")
+        Log.d("ViewModelInitialization", "Signup created")
     }
 
     override fun onCleared() {

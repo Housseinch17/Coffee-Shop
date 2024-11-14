@@ -20,7 +20,7 @@ class AllCategoriesViewModel @Inject constructor() : ViewModel() {
     val allCategoriesUiState: StateFlow<AllCategoriesUiState> = _allCategoriesUiState.asStateFlow()
 
     init {
-        Log.d("ViewModelInitialization", "AllCategories")
+        Log.d("ViewModelInitialization", "AllCategories created")
         showLoader()
     }
 

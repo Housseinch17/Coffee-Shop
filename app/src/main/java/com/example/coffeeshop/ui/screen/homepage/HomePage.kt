@@ -252,12 +252,14 @@ fun HomePage(
                 }
             }
         }
+
         // Adding the PullRefreshIndicator
         PullRefreshIndicator(
             refreshing = isRefreshing,
             state = pullRefreshState,
             modifier = Modifier.align(Alignment.TopCenter)
         )
+
         if(seeAllClicked) {
             CircularProgressIndicator(
                 modifier = Modifier.size(100.dp).align(Alignment.Center)

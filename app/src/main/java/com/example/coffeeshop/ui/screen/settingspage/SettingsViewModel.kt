@@ -31,7 +31,7 @@ class SettingsViewModel @Inject constructor(
     val emitValue: SharedFlow<String> = _emitValue.asSharedFlow()
 
     init {
-        Log.d("ViewModelInitialization", "settings")
+        Log.d("ViewModelInitialization", "Settings created")
     }
 
     override fun onCleared() {

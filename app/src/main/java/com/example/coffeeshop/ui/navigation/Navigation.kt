@@ -18,10 +18,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigation
 import androidx.navigation.toRoute
 import com.example.coffeeshop.R
 import com.example.coffeeshop.data.model.categoryItems.CategoryItems
@@ -83,10 +85,6 @@ fun Navigation(
 
     Log.d("MyTag", currentUsername.toString())
 
-    //avoid initializing viewmodel everytime i navigate to shopping cart
-    //instead of using local data to save the current orders of shopping cart
-    val shoppingCartViewModel = hiltViewModel<ShoppingCartViewModel>()
-
     val context = LocalContext.current
 
     LaunchedEffect(signOut) {
@@ -94,6 +92,7 @@ fun Navigation(
             SignOutResponse.Success -> {
                 authenticationViewModel.resetSignOutState()
                 navController.navigate(CurrentDestination.LogInPage) {
+                    //popUpTo(0) here 0 means we will remove all the old stacks in BackStackEntry
                     popUpTo(0) {
                         inclusive = true
                     }
@@ -111,7 +110,7 @@ fun Navigation(
     }
 
     NavHost(
-        navController = navController, startDestination = startDestination,
+        navController = navController, startDestination = CurrentDestination.CoffeeShop,
         modifier = modifier,
         enterTransition = {
             slideIntoContainer(
@@ -124,488 +123,510 @@ fun Navigation(
             )
         },
     ) {
-        composable<CurrentDestination.LogInPage> {
-            Log.d("BackStack", navController.currentBackStack.value.toString())
-            val logInViewModel = hiltViewModel<LogInViewModel>()
-            val logInUiState by logInViewModel.logInUiState.collectAsStateWithLifecycle()
+        navigation<CurrentDestination.CoffeeShop>(
+            startDestination = startDestination
+        ) {
+            composable<CurrentDestination.LogInPage> {
+                Log.d("BackStack", navController.currentBackStack.value.toString())
+                val logInViewModel = hiltViewModel<LogInViewModel>()
+                val logInUiState by logInViewModel.logInUiState.collectAsStateWithLifecycle()
 
-            val scope = rememberCoroutineScope()
+                val scope = rememberCoroutineScope()
 
-            LaunchedEffect(logInViewModel.sharedFlow) {
-                logInViewModel.sharedFlow.collect { message ->
-                    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                LaunchedEffect(logInViewModel.sharedFlow) {
+                    logInViewModel.sharedFlow.collect { message ->
+                        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                    }
                 }
-            }
 
-            LaunchedEffect(logInUiState.authState) {
-                when (logInUiState.authState) {
-                    AuthState.LoggedIn -> {
-                        //update currentUsername before navigating
-                        authenticationViewModel.updateCurrentUserName()
-                        navController.navigate(CurrentDestination.HomePage) {
-                            //remove LogInPage from currentBackStack
-                            popUpTo(CurrentDestination.LogInPage) {
-                                inclusive = true
+                LaunchedEffect(logInUiState.authState) {
+                    when (logInUiState.authState) {
+                        AuthState.LoggedIn -> {
+                            //update currentUsername before navigating
+                            authenticationViewModel.updateCurrentUserName()
+                            navController.navigate(CurrentDestination.HomePage) {
+                                //remove LogInPage from currentBackStack
+                                popUpTo(CurrentDestination.LogInPage) {
+                                    inclusive = true
+                                }
                             }
                         }
-                    }
 
-                    else -> {}
-                }
-            }
-            LogInScreen(
-                modifier = Modifier.fillMaxSize(),
-                textPage = stringResource(R.string.welcome_back),
-                emailValue = logInUiState.emailValue,
-                onEmailChange = { newEmail ->
-                    logInViewModel.setEmail(newEmail)
-                },
-                imageVector = logInViewModel.getIconVisibility(),
-                onIconClick = logInViewModel::setShowPassword,
-                showPassword = logInUiState.showPassword,
-                passwordValue = logInUiState.passwordValue,
-                onPasswordChange = { newPassword ->
-                    logInViewModel.setPassword(newPassword)
-                },
-                "LogIn",
-                "Don't have an account, SignUp!",
-                logInEnabled = logInUiState.authState == AuthState.NotLoggedIn,
-                signUpEnabled = logInUiState.authState == AuthState.NotLoggedIn,
-                isLoading = logInUiState.isLoading,
-                onLogInClick = { email, password ->
-                    scope.launch {
-                        logInViewModel.logIn(email, password)
-                    }
-                },
-                onSignUpClick = {
-                    navController.navigate(CurrentDestination.SignUpPage)
-                },
-                onResetEmailValue = authenticationUiState.resetEmailValue,
-                onResetEmailChange = { newEmail ->
-                    authenticationViewModel.onResetEmailValue(newEmail)
-                },
-                resetShowDialog = authenticationUiState.resetShowDialog,
-                resetPassword = {
-                    Log.d("MyTag", "hey")
-                    authenticationViewModel.resetPassword(
-                        email = authenticationUiState.resetEmailValue,
-                        resetPage = ResetPage.LogInPage)
-                },
-                resetDismiss = authenticationViewModel::resetResetHideDialog,
-                resetIsLoading = authenticationUiState.resetPassword == PasswordChangement.IsLoading,
-                onResetPassword = authenticationViewModel::resetResetShowDialog
-            )
-        }
-
-        composable<CurrentDestination.SignUpPage> {
-            Log.d("BackStack", navController.currentBackStack.value.toString())
-            val signUpViewModel = hiltViewModel<SignUpViewModel>()
-            val signUpUiState by signUpViewModel.signupUiState.collectAsStateWithLifecycle()
-
-
-            LaunchedEffect(signUpViewModel.signUpSharedFlow) {
-                signUpViewModel.signUpSharedFlow.collect { error ->
-                    Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
-                }
-            }
-
-            LaunchedEffect(signUpUiState.accountStatus) {
-                Log.d("MyTag", "launch")
-                when (signUpUiState.accountStatus) {
-                    is AccountStatus.IsCreated -> {
-                        Log.d("MyTag", "IsCreated")
-                        navController.navigate(CurrentDestination.LogInPage)
-                    }
-
-                    else -> {
-                        Log.d(
-                            "MyTag", signUpUiState.accountStatus.toString()
-                        )
-                    }
-                }
-            }
-
-            //set delay for signup button to avoid spamming it
-            val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
-            DisposableEffect(key1 = lifecycleOwner) {
-                val observer = LifecycleEventObserver { _, event ->
-                    when (event) {
-                        Lifecycle.Event.ON_RESUME -> signUpViewModel.setAlreadyHaveAccountButton()
                         else -> {}
                     }
                 }
-
-                lifecycleOwner.lifecycle.addObserver(observer)
-                onDispose {
-                    lifecycleOwner.lifecycle.removeObserver(observer)
-                }
-            }
-
-            SignUpScreen(Modifier.fillMaxSize(),
-                textPage = "SignUp Page",
-                emailValue = signUpUiState.email,
-                onEmailChange = { newEmail ->
-                    signUpViewModel.setEmail(newEmail)
-                },
-                imageVector = signUpViewModel.getIconVisibility(),
-                onIconClick = signUpViewModel::setShowPassword,
-                showPassword = signUpUiState.showPassword,
-                passwordValue = signUpUiState.password,
-                onPasswordChange = { newPassword ->
-                    signUpViewModel.setPassword(newPassword)
-                },
-                buttonText = "Create Account",
-                accountTextButton = "Already have an account? Login!",
-                createAccountEnabled = signUpUiState.accountStatus == AccountStatus.NotCreated,
-                alreadyExistingEnabled = signUpUiState.alreadyHaveAccountButton && (signUpUiState.accountStatus == AccountStatus.NotCreated),
-                onCreateAccount = { email, password ->
-                    signUpViewModel.signUp(email, password)
-                },
-                onExistingAccount = {
-                    navController.navigateUp()
-                })
-        }
-        composable<CurrentDestination.HomePage> {
-            Log.d("BackStack", navController.currentBackStack.value.toString())
-            val homePageViewModel = hiltViewModel<HomePageViewModel>()
-            val homePageUiState by homePageViewModel.homePageUiState.collectAsStateWithLifecycle()
-
-            val scope = rememberCoroutineScope()
-
-            LaunchedEffect(homePageViewModel.responseError) {
-                homePageViewModel.responseError.collect { error ->
-                    Toast.makeText(context, error, Toast.LENGTH_LONG).show()
-                }
-            }
-
-            HomePage(
-                modifier = Modifier.fillMaxSize(),
-                isLoading = homePageUiState.isLoading,
-                seeAllClicked = homePageUiState.seeAllClicked,
-                searchText = homePageUiState.searchText,
-                onClear = homePageViewModel::onClearSearchText,
-                onSearch = { newText ->
-                    homePageViewModel.onSearchTextChange(newText)
-                },
-                username = currentUsername,
-                categoriesKey = homePageUiState.categoriesKey,
-                onCategoryClick = { newKey ->
-                    homePageViewModel.setCurrentCategory(newKey)
-                },
-                currentCategory = homePageUiState.filteredCategoryList,
-                onFirstSeeAllClick = { categoryItemsList ->
-                    scope.launch {
-                        async {
-                            homePageViewModel.setSeeAllClicked(true)
-                            delay(500)
-                        }.await()
-                        navController.navigateSingleTopTo(
-                            CurrentDestination.AllCategories(categoryItemsList),
-                            navHostController = navController
-                        )
-                        homePageViewModel.setSeeAllClicked(false)
-                    }
-                },
-                onItemClick = { categoryItems ->
-                    navController.navigateSingleTopTo(
-                        CurrentDestination.CategoryItemPage(categoryItems = categoryItems),
-                        navHostController = navController
-                    )
-                },
-                offersList = homePageUiState.filteredOffersList,
-                onSecondSeeAllClick = { offersList ->
-                    scope.launch {
-                        async {
-                            homePageViewModel.setSeeAllClicked(true)
-                            delay(500)
-                        }.await()
-                        navController.navigateSingleTopTo(
-                            CurrentDestination.AllOffers(
-                                allOffers = offersList
-                            ),
-                            navHostController = navController
-                        )
-                        homePageViewModel.setSeeAllClicked(false)
-                    }
-
-                },
-                onOffersClick = { offers ->
-                    navController.navigateSingleTopTo(
-                        CurrentDestination.OfferItemPage(offers = offers),
-                        navHostController = navController
-                    )
-                },
-                isRefreshing = homePageUiState.isRefreshing,
-                onRefresh = homePageViewModel::refreshData
-            )
-        }
-
-        composable<CurrentDestination.AllCategories>(
-            typeMap = mapOf(
-                typeOf<List<CategoryItems>>() to CustomNavType.allCategories
-            )
-        ) { entry ->
-            Log.d("BackStack", navController.currentBackStack.value.toString())
-            val args = entry.toRoute<CurrentDestination.AllCategories>()
-            val allCategories = args.allCategories
-
-            val allCategoriesViewModel = hiltViewModel<AllCategoriesViewModel>()
-            val allCategoriesUiState by allCategoriesViewModel.allCategoriesUiState.collectAsStateWithLifecycle()
-
-            LaunchedEffect(Unit) {
-                allCategoriesViewModel.setData(allCategories)
-            }
-
-            AllCategoriesPage(modifier = Modifier.fillMaxSize(),
-                isLoading = allCategoriesUiState.isLoading,
-                categoriesList = allCategoriesUiState.allCategoriesList,
-                onItemClick = { categoryItem ->
-                    navController.navigateSingleTopTo(
-                        CurrentDestination.CategoryItemPage(
-                            categoryItems = categoryItem
-                        ), navHostController = navController
-                    )
-                })
-        }
-
-        composable<CurrentDestination.AllOffers>(
-            typeMap = mapOf(
-                typeOf<List<Offers>>() to CustomNavType.allOffers
-            )
-        ) { entry ->
-            val args = entry.toRoute<CurrentDestination.AllOffers>()
-            val allOffers = args.allOffers
-
-            val allOffersViewModel = hiltViewModel<AllOffersViewModel>()
-            val allOffersUiState by allOffersViewModel.allOffersUiState.collectAsStateWithLifecycle()
-
-            LaunchedEffect(Unit) {
-                allOffersViewModel.setData(allOffers)
-            }
-
-            AllOffersPage(
-                modifier = Modifier.fillMaxSize(),
-                isLoading = allOffersUiState.isLoading,
-                offersList = allOffersUiState.allOffersList,
-                onItemClick = { offers ->
-                    navController.navigateSingleTopTo(
-                        CurrentDestination.OfferItemPage(
-                            offers = offers
-                        ),
-                        navHostController = navController
-                    )
-                }
-            )
-        }
-
-        composable<CurrentDestination.CategoryItemPage>(
-            typeMap = mapOf(
-                typeOf<CategoryItems>() to CustomNavType.categoryItems,
-            )
-        ) { entry ->
-            Log.d("BackStack", navController.currentBackStack.value.toString())
-            val args = entry.toRoute<CurrentDestination.CategoryItemPage>()
-            val categoryItems = args.categoryItems
-
-            val categoryItemViewModel = hiltViewModel<CategoryItemViewModel>()
-            val categoryItemUiState by categoryItemViewModel.categoryItemUiState.collectAsStateWithLifecycle()
-
-
-            LaunchedEffect(Unit) {
-                categoryItemViewModel.setCategoryItems(categoryItems)
-                categoryItemViewModel.setCountAndTotalFirstValues(price = categoryItems.price)
-            }
-
-            CategoryItemPage(modifier = Modifier.fillMaxSize(),
-                categoryItemsCart = categoryItemUiState.categoryItemsCart,
-                onCountRemove = {
-                    categoryItemViewModel.decreaseCount(categoryItemUiState.categoryItemsCart.count)
-                },
-                onCountAdd = {
-                    categoryItemViewModel.increaseCount(categoryItemUiState.categoryItemsCart.count)
-                },
-                addToCard = { categoryItemCart ->
-                    navController.navigate(
-                        CurrentDestination.ShoppingCartPage(
-                            categoryItemsCart = categoryItemCart, offerCart = OfferCart()
-                        )
-                    ) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            inclusive = false
+                LogInScreen(
+                    modifier = Modifier.fillMaxSize(),
+                    textPage = stringResource(R.string.welcome_back),
+                    emailValue = logInUiState.emailValue,
+                    onEmailChange = { newEmail ->
+                        logInViewModel.setEmail(newEmail)
+                    },
+                    imageVector = logInViewModel.getIconVisibility(),
+                    onIconClick = logInViewModel::setShowPassword,
+                    showPassword = logInUiState.showPassword,
+                    passwordValue = logInUiState.passwordValue,
+                    onPasswordChange = { newPassword ->
+                        logInViewModel.setPassword(newPassword)
+                    },
+                    "LogIn",
+                    "Don't have an account, SignUp!",
+                    logInEnabled = logInUiState.authState == AuthState.NotLoggedIn,
+                    signUpEnabled = logInUiState.authState == AuthState.NotLoggedIn,
+                    isLoading = logInUiState.isLoading,
+                    onLogInClick = { email, password ->
+                        scope.launch {
+                            logInViewModel.logIn(email, password)
                         }
-                        launchSingleTop = true
-                    }
-                })
-        }
-
-        //Offer Item Page might be similar to CategoryItemPage but it was added for later use
-        //Offers data class structure might change which lead to error having single page for
-        //both CategoryItems and OffersItem
-        composable<CurrentDestination.OfferItemPage>(
-            typeMap = mapOf(
-                typeOf<Offers>() to CustomNavType.offers
-            )
-        ) { entry ->
-            Log.d("BackStack", navController.currentBackStack.value.toString())
-            val args = entry.toRoute<CurrentDestination.OfferItemPage>()
-            val offer = args.offers
-
-            val offerItemViewModel = hiltViewModel<OfferItemViewModel>()
-            val offerItemUiState by offerItemViewModel.offerItemUiState.collectAsStateWithLifecycle()
-
-            LaunchedEffect(Unit) {
-                offerItemViewModel.setOffer(offer)
-                offerItemViewModel.setCountAndTotalFirstValues(price = offer.price)
-            }
-
-            OfferItemPage(modifier = Modifier.fillMaxSize(),
-                offerCart = offerItemUiState.offerCart,
-                onCountRemove = {
-                    offerItemViewModel.decreaseCount(offerItemUiState.offerCart.count)
-                },
-                onCountAdd = {
-                    offerItemViewModel.increaseCount(offerItemUiState.offerCart.count)
-                },
-                addToCard = { offerCart ->
-                    navController.navigate(
-                        CurrentDestination.ShoppingCartPage(
-                            categoryItemsCart = CategoryItemsCart(), offerCart = offerCart
+                    },
+                    onSignUpClick = {
+                        navController.navigate(CurrentDestination.SignUpPage)
+                    },
+                    onResetEmailValue = authenticationUiState.resetEmailValue,
+                    onResetEmailChange = { newEmail ->
+                        authenticationViewModel.onResetEmailValue(newEmail)
+                    },
+                    resetShowDialog = authenticationUiState.resetShowDialog,
+                    resetPassword = {
+                        Log.d("MyTag", "hey")
+                        authenticationViewModel.resetPassword(
+                            email = authenticationUiState.resetEmailValue,
+                            resetPage = ResetPage.LogInPage
                         )
-                    ) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            inclusive = false
-                        }
-                        launchSingleTop = true
-                    }
-                })
-        }
-
-
-        composable<CurrentDestination.ShoppingCartPage>(
-            typeMap = mapOf(
-                typeOf<OfferCart>() to CustomNavType.offerCart,
-                typeOf<CategoryItemsCart>() to CustomNavType.categoryItemsCart
-            )
-        ) { entry ->
-            Log.d("BackStack", navController.currentBackStack.value.toString())
-            val args = entry.toRoute<CurrentDestination.ShoppingCartPage>()
-            val categoryItemsCart = args.categoryItemsCart
-            val offerCart = args.offerCart
-
-            val shoppingCartUiState by shoppingCartViewModel.shoppingCartUiState.collectAsStateWithLifecycle()
-
-            LaunchedEffect(categoryItemsCart, offerCart) {
-                shoppingCartViewModel.updateShoppingCartLists(
-                    categoryItemsCart = categoryItemsCart, offerCart = offerCart
+                    },
+                    resetDismiss = authenticationViewModel::resetResetHideDialog,
+                    resetIsLoading = authenticationUiState.resetPassword == PasswordChangement.IsLoading,
+                    onResetPassword = authenticationViewModel::resetResetShowDialog
                 )
             }
 
-
-            ShoppingCartPage(modifier = Modifier.fillMaxSize(),
-                shoppingCart = shoppingCartUiState.shoppingCart,
-                onCategoryCountDecrease = { index, categoryItemCart ->
-                    shoppingCartViewModel.onCategoryCountDecrease(index, categoryItemCart)
-                },
-                onCategoryCountIncrease = { index, categoryItemCart ->
-                    shoppingCartViewModel.onCategoryCountIncrease(index, categoryItemCart)
-                },
-                onOfferCountDecrease = { index, offerDecrease ->
-                    shoppingCartViewModel.onOfferCountDecrease(index, offerDecrease)
-                },
-
-                onOfferCountIncrease = { index, offerIncrease ->
-                    shoppingCartViewModel.onOfferCountIncrease(index, offerIncrease)
-                },
-                onCheckOut = {
-                    val currentShoppingCart = shoppingCartUiState.shoppingCart
-                    shoppingCartViewModel.saveShoppingCartItems(shoppingCart = currentShoppingCart)
-                })
-        }
+            composable<CurrentDestination.SignUpPage> {
+                Log.d("BackStack", navController.currentBackStack.value.toString())
+                val signUpViewModel = hiltViewModel<SignUpViewModel>()
+                val signUpUiState by signUpViewModel.signupUiState.collectAsStateWithLifecycle()
 
 
-        composable<CurrentDestination.SettingsPage> {
-            Log.d("BackStack", navController.currentBackStack.value.toString())
-            val settingsViewModel = hiltViewModel<SettingsViewModel>()
-            val settingsUiState by settingsViewModel.settingsUiState.collectAsStateWithLifecycle()
-
-            LaunchedEffect(settingsViewModel.emitValue) {
-                settingsViewModel.emitValue.collectLatest { message ->
-                    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                LaunchedEffect(signUpViewModel.signUpSharedFlow) {
+                    signUpViewModel.signUpSharedFlow.collect { error ->
+                        Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+                    }
                 }
+
+                LaunchedEffect(signUpUiState.accountStatus) {
+                    Log.d("MyTag", "launch")
+                    when (signUpUiState.accountStatus) {
+                        is AccountStatus.IsCreated -> {
+                            Log.d("MyTag", "IsCreated")
+                            navController.navigate(CurrentDestination.LogInPage)
+                        }
+
+                        else -> {
+                            Log.d(
+                                "MyTag", signUpUiState.accountStatus.toString()
+                            )
+                        }
+                    }
+                }
+
+                //set delay for signup button to avoid spamming it
+                val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+                DisposableEffect(key1 = lifecycleOwner) {
+                    val observer = LifecycleEventObserver { _, event ->
+                        when (event) {
+                            Lifecycle.Event.ON_RESUME -> signUpViewModel.setAlreadyHaveAccountButton()
+                            else -> {}
+                        }
+                    }
+
+                    lifecycleOwner.lifecycle.addObserver(observer)
+                    onDispose {
+                        lifecycleOwner.lifecycle.removeObserver(observer)
+                    }
+                }
+
+                SignUpScreen(Modifier.fillMaxSize(),
+                    textPage = "SignUp Page",
+                    emailValue = signUpUiState.email,
+                    onEmailChange = { newEmail ->
+                        signUpViewModel.setEmail(newEmail)
+                    },
+                    imageVector = signUpViewModel.getIconVisibility(),
+                    onIconClick = signUpViewModel::setShowPassword,
+                    showPassword = signUpUiState.showPassword,
+                    passwordValue = signUpUiState.password,
+                    onPasswordChange = { newPassword ->
+                        signUpViewModel.setPassword(newPassword)
+                    },
+                    buttonText = "Create Account",
+                    accountTextButton = "Already have an account? Login!",
+                    createAccountEnabled = signUpUiState.accountStatus == AccountStatus.NotCreated,
+                    alreadyExistingEnabled = signUpUiState.alreadyHaveAccountButton && (signUpUiState.accountStatus == AccountStatus.NotCreated),
+                    onCreateAccount = { email, password ->
+                        signUpViewModel.signUp(email, password)
+                    },
+                    onExistingAccount = {
+                        navController.navigateUp()
+                    })
+            }
+            composable<CurrentDestination.HomePage> {
+                val parentBackStackEntry: NavBackStackEntry =
+                    navController.getBackStackEntry(CurrentDestination.CoffeeShop)
+                Log.d("BackStack", navController.currentBackStack.value.toString())
+                val homePageViewModel = hiltViewModel<HomePageViewModel>(parentBackStackEntry)
+                val homePageUiState by homePageViewModel.homePageUiState.collectAsStateWithLifecycle()
+
+                val scope = rememberCoroutineScope()
+
+                LaunchedEffect(homePageViewModel.responseError) {
+                    homePageViewModel.responseError.collect { error ->
+                        Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+                    }
+                }
+
+                HomePage(
+                    modifier = Modifier.fillMaxSize(),
+                    isLoading = homePageUiState.isLoading,
+                    seeAllClicked = homePageUiState.seeAllClicked,
+                    searchText = homePageUiState.searchText,
+                    onClear = homePageViewModel::onClearSearchText,
+                    onSearch = { newText ->
+                        homePageViewModel.onSearchTextChange(newText)
+                    },
+                    username = currentUsername,
+                    categoriesKey = homePageUiState.categoriesKey,
+                    onCategoryClick = { newKey ->
+                        homePageViewModel.setCurrentCategory(newKey)
+                    },
+                    currentCategory = homePageUiState.filteredCategoryList,
+                    onFirstSeeAllClick = { categoryItemsList ->
+                        scope.launch {
+                            async {
+                                homePageViewModel.setSeeAllClicked(true)
+                                delay(500)
+                            }.await()
+                            navController.navigateSingleTopTo(
+                                CurrentDestination.AllCategories(categoryItemsList),
+                                navHostController = navController
+                            )
+                            homePageViewModel.setSeeAllClicked(false)
+                        }
+                    },
+                    onItemClick = { categoryItems ->
+                        navController.navigateSingleTopTo(
+                            CurrentDestination.CategoryItemPage(categoryItems = categoryItems),
+                            navHostController = navController
+                        )
+                    },
+                    offersList = homePageUiState.filteredOffersList,
+                    onSecondSeeAllClick = { offersList ->
+                        scope.launch {
+                            async {
+                                homePageViewModel.setSeeAllClicked(true)
+                                delay(500)
+                            }.await()
+                            navController.navigateSingleTopTo(
+                                CurrentDestination.AllOffers(
+                                    allOffers = offersList
+                                ),
+                                navHostController = navController
+                            )
+                            homePageViewModel.setSeeAllClicked(false)
+                        }
+
+                    },
+                    onOffersClick = { offers ->
+                        navController.navigateSingleTopTo(
+                            CurrentDestination.OfferItemPage(offers = offers),
+                            navHostController = navController
+                        )
+                    },
+                    isRefreshing = homePageUiState.isRefreshing,
+                    onRefresh = homePageViewModel::refreshData
+                )
             }
 
-            SettingsPage(
-                modifier = Modifier.fillMaxSize(),
-                newPasswordValue = settingsUiState.newPasswordValue,
-                confirmPasswordValue = settingsUiState.confirmNewPasswordValue,
-                newPasswordValueChange = { newPassword ->
-                    settingsViewModel.newPasswordValueChange(newPassword)
-                },
-                confirmPasswordValueChange = { confirmPassword ->
-                    settingsViewModel.confirmNewPasswordValueChange(confirmPassword)
-                },
-                imageVector = settingsViewModel.getIconVisibility(
-                    settingsUiState.showPassword
-                ),
-                confirmImageVector = settingsViewModel.getIconVisibility(settingsUiState.confirmShowPassword),
-                onIconClick = settingsViewModel::setShowPassword,
-                confirmOnIconClick = settingsViewModel::setConfirmShowPassword,
-                showPassword = settingsUiState.showPassword,
-                confirmShowPassword = settingsUiState.confirmShowPassword,
-                showText = settingsUiState.showText,
-                confirmShowText = settingsUiState.confirmShowText,
-                onPasswordChange = { newPassword, confirmPassword ->
-                    settingsViewModel.changePassword(
-                        email = currentUsername!!,
-                        newPassword = newPassword,
-                        confirmNewPassword = confirmPassword
+            composable<CurrentDestination.AllCategories>(
+                typeMap = mapOf(
+                    typeOf<List<CategoryItems>>() to CustomNavType.allCategories
+                )
+            ) { entry ->
+                Log.d("BackStack", navController.currentBackStack.value.toString())
+                val args = entry.toRoute<CurrentDestination.AllCategories>()
+                val allCategories = args.allCategories
+
+                val allCategoriesViewModel = hiltViewModel<AllCategoriesViewModel>()
+                val allCategoriesUiState by allCategoriesViewModel.allCategoriesUiState.collectAsStateWithLifecycle()
+
+                LaunchedEffect(Unit) {
+                    allCategoriesViewModel.setData(allCategories)
+                }
+
+                AllCategoriesPage(modifier = Modifier.fillMaxSize(),
+                    isLoading = allCategoriesUiState.isLoading,
+                    categoriesList = allCategoriesUiState.allCategoriesList,
+                    onItemClick = { categoryItem ->
+                        navController.navigateSingleTopTo(
+                            CurrentDestination.CategoryItemPage(
+                                categoryItems = categoryItem
+                            ), navHostController = navController
+                        )
+                    })
+            }
+
+            composable<CurrentDestination.AllOffers>(
+                typeMap = mapOf(
+                    typeOf<List<Offers>>() to CustomNavType.allOffers
+                )
+            ) { entry ->
+                val args = entry.toRoute<CurrentDestination.AllOffers>()
+                val allOffers = args.allOffers
+
+                val allOffersViewModel = hiltViewModel<AllOffersViewModel>()
+                val allOffersUiState by allOffersViewModel.allOffersUiState.collectAsStateWithLifecycle()
+
+                LaunchedEffect(Unit) {
+                    allOffersViewModel.setData(allOffers)
+                }
+
+                AllOffersPage(
+                    modifier = Modifier.fillMaxSize(),
+                    isLoading = allOffersUiState.isLoading,
+                    offersList = allOffersUiState.allOffersList,
+                    onItemClick = { offers ->
+                        navController.navigateSingleTopTo(
+                            CurrentDestination.OfferItemPage(
+                                offers = offers
+                            ),
+                            navHostController = navController
+                        )
+                    }
+                )
+            }
+
+            composable<CurrentDestination.CategoryItemPage>(
+                typeMap = mapOf(
+                    typeOf<CategoryItems>() to CustomNavType.categoryItems,
+                )
+            ) { entry ->
+                Log.d("BackStack", navController.currentBackStack.value.toString())
+                val args = entry.toRoute<CurrentDestination.CategoryItemPage>()
+                val categoryItems = args.categoryItems
+
+                val categoryItemViewModel = hiltViewModel<CategoryItemViewModel>()
+                val categoryItemUiState by categoryItemViewModel.categoryItemUiState.collectAsStateWithLifecycle()
+
+
+                LaunchedEffect(Unit) {
+                    categoryItemViewModel.setCategoryItems(categoryItems)
+                    categoryItemViewModel.setCountAndTotalFirstValues(price = categoryItems.price)
+                }
+
+                CategoryItemPage(modifier = Modifier.fillMaxSize(),
+                    categoryItemsCart = categoryItemUiState.categoryItemsCart,
+                    onCountRemove = {
+                        categoryItemViewModel.decreaseCount(categoryItemUiState.categoryItemsCart.count)
+                    },
+                    onCountAdd = {
+                        categoryItemViewModel.increaseCount(categoryItemUiState.categoryItemsCart.count)
+                    },
+                    addToCard = { categoryItemCart ->
+                        navController.navigate(
+                            CurrentDestination.ShoppingCartPage(
+                                categoryItemsCart = categoryItemCart, offerCart = OfferCart()
+                            )
+                        ) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                inclusive = false
+                            }
+                            launchSingleTop = true
+                        }
+                    })
+            }
+
+            //Offer Item Page might be similar to CategoryItemPage but it was added for later use
+            //Offers data class structure might change which lead to error having single page for
+            //both CategoryItems and OffersItem
+            composable<CurrentDestination.OfferItemPage>(
+                typeMap = mapOf(
+                    typeOf<Offers>() to CustomNavType.offers
+                )
+            ) { entry ->
+                Log.d("BackStack", navController.currentBackStack.value.toString())
+                val args = entry.toRoute<CurrentDestination.OfferItemPage>()
+                val offer = args.offers
+
+                val offerItemViewModel = hiltViewModel<OfferItemViewModel>()
+                val offerItemUiState by offerItemViewModel.offerItemUiState.collectAsStateWithLifecycle()
+
+                LaunchedEffect(Unit) {
+                    offerItemViewModel.setOffer(offer)
+                    offerItemViewModel.setCountAndTotalFirstValues(price = offer.price)
+                }
+
+                OfferItemPage(modifier = Modifier.fillMaxSize(),
+                    offerCart = offerItemUiState.offerCart,
+                    onCountRemove = {
+                        offerItemViewModel.decreaseCount(offerItemUiState.offerCart.count)
+                    },
+                    onCountAdd = {
+                        offerItemViewModel.increaseCount(offerItemUiState.offerCart.count)
+                    },
+                    addToCard = { offerCart ->
+                        navController.navigate(
+                            CurrentDestination.ShoppingCartPage(
+                                categoryItemsCart = CategoryItemsCart(), offerCart = offerCart
+                            )
+                        ) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                inclusive = false
+                            }
+                            launchSingleTop = true
+                        }
+                    })
+            }
+
+            composable<CurrentDestination.ShoppingCartPage>(
+                typeMap = mapOf(
+                    typeOf<OfferCart>() to CustomNavType.offerCart,
+                    typeOf<CategoryItemsCart>() to CustomNavType.categoryItemsCart
+                )
+            ) { entry ->
+                Log.d("BackStack", navController.currentBackStack.value.toString())
+                val args = entry.toRoute<CurrentDestination.ShoppingCartPage>()
+                val categoryItemsCart = args.categoryItemsCart
+                val offerCart = args.offerCart
+
+                val parentBackStackEntry: NavBackStackEntry =
+                    navController.getBackStackEntry(CurrentDestination.CoffeeShop)
+
+                //here if the shoppingCartViewModel already in BackStackEntry it will use the old one
+                //if not it will create it
+                val shoppingCartViewModel = hiltViewModel<ShoppingCartViewModel>(parentBackStackEntry)
+
+                val shoppingCartUiState by shoppingCartViewModel.shoppingCartUiState.collectAsStateWithLifecycle()
+
+                LaunchedEffect(categoryItemsCart, offerCart) {
+                    shoppingCartViewModel.updateShoppingCartLists(
+                        categoryItemsCart = categoryItemsCart, offerCart = offerCart
                     )
-                },
-                resetShowDialog = authenticationUiState.resetShowDialog,
-                resetPassword = {
-                    Log.d("MyTag", "hey")
-                    authenticationViewModel.resetPassword(
-                        email = "",
-                        resetPage = ResetPage.SettingsPage)
-                },
-                resetDismiss = authenticationViewModel::resetResetHideDialog,
-                resetIsLoading = authenticationUiState.resetPassword == PasswordChangement.IsLoading,
-                onResetPassword = authenticationViewModel::resetResetShowDialog,
-                onSignOut = authenticationViewModel::resetShowDialog,
-                signOutShowDialog = authenticationUiState.signOutShowDialog,
-                signOutConfirm = authenticationViewModel::signOut,
-                signOutDismiss = authenticationViewModel::resetHideDialog,
-                signOutIsLoading = authenticationUiState.signOut == SignOutResponse.isLoading,
-            )
+                }
+
+
+                ShoppingCartPage(modifier = Modifier.fillMaxSize(),
+                    shoppingCart = shoppingCartUiState.shoppingCart,
+                    onCategoryCountDecrease = { index, categoryItemCart ->
+                        shoppingCartViewModel.onCategoryCountDecrease(index, categoryItemCart)
+                    },
+                    onCategoryCountIncrease = { index, categoryItemCart ->
+                        shoppingCartViewModel.onCategoryCountIncrease(index, categoryItemCart)
+                    },
+                    onOfferCountDecrease = { index, offerDecrease ->
+                        shoppingCartViewModel.onOfferCountDecrease(index, offerDecrease)
+                    },
+
+                    onOfferCountIncrease = { index, offerIncrease ->
+                        shoppingCartViewModel.onOfferCountIncrease(index, offerIncrease)
+                    },
+                    onCheckOut = {
+                        val currentShoppingCart = shoppingCartUiState.shoppingCart
+                        shoppingCartViewModel.saveShoppingCartItems(shoppingCart = currentShoppingCart)
+                    })
+            }
+
+
+            composable<CurrentDestination.SettingsPage> {
+                Log.d("BackStack", navController.currentBackStack.value.toString())
+                val settingsViewModel = hiltViewModel<SettingsViewModel>()
+                val settingsUiState by settingsViewModel.settingsUiState.collectAsStateWithLifecycle()
+
+                LaunchedEffect(settingsViewModel.emitValue) {
+                    settingsViewModel.emitValue.collectLatest { message ->
+                        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                    }
+                }
+
+                SettingsPage(
+                    modifier = Modifier.fillMaxSize(),
+                    newPasswordValue = settingsUiState.newPasswordValue,
+                    confirmPasswordValue = settingsUiState.confirmNewPasswordValue,
+                    newPasswordValueChange = { newPassword ->
+                        settingsViewModel.newPasswordValueChange(newPassword)
+                    },
+                    confirmPasswordValueChange = { confirmPassword ->
+                        settingsViewModel.confirmNewPasswordValueChange(confirmPassword)
+                    },
+                    imageVector = settingsViewModel.getIconVisibility(
+                        settingsUiState.showPassword
+                    ),
+                    confirmImageVector = settingsViewModel.getIconVisibility(settingsUiState.confirmShowPassword),
+                    onIconClick = settingsViewModel::setShowPassword,
+                    confirmOnIconClick = settingsViewModel::setConfirmShowPassword,
+                    showPassword = settingsUiState.showPassword,
+                    confirmShowPassword = settingsUiState.confirmShowPassword,
+                    showText = settingsUiState.showText,
+                    confirmShowText = settingsUiState.confirmShowText,
+                    onPasswordChange = { newPassword, confirmPassword ->
+                        settingsViewModel.changePassword(
+                            email = currentUsername!!,
+                            newPassword = newPassword,
+                            confirmNewPassword = confirmPassword
+                        )
+                    },
+                    resetShowDialog = authenticationUiState.resetShowDialog,
+                    resetPassword = {
+                        Log.d("MyTag", "hey")
+                        authenticationViewModel.resetPassword(
+                            email = "",
+                            resetPage = ResetPage.SettingsPage
+                        )
+                    },
+                    resetDismiss = authenticationViewModel::resetResetHideDialog,
+                    resetIsLoading = authenticationUiState.resetPassword == PasswordChangement.IsLoading,
+                    onResetPassword = authenticationViewModel::resetResetShowDialog,
+                    onSignOut = authenticationViewModel::resetShowDialog,
+                    signOutShowDialog = authenticationUiState.signOutShowDialog,
+                    signOutConfirm = authenticationViewModel::signOut,
+                    signOutDismiss = authenticationViewModel::resetHideDialog,
+                    signOutIsLoading = authenticationUiState.signOut == SignOutResponse.isLoading,
+                )
+            }
+
+            composable<CurrentDestination.ProfilePage> {
+                Log.d("BackStack", navController.currentBackStack.value.toString())
+                val profileViewModel = hiltViewModel<ProfileViewModel>()
+                ProfilePage(modifier = Modifier.fillMaxSize())
+            }
+
+            composable<CurrentDestination.MyOrders> {
+                Log.d("BackStack", navController.currentBackStack.value.toString())
+                val myOrdersViewModel = hiltViewModel<MyOrdersViewModel>()
+                val myOrdersUiState by myOrdersViewModel.myOrdersUiState.collectAsStateWithLifecycle()
+
+                MyOrdersPage(
+                    modifier = Modifier.fillMaxSize(),
+                    myOrdersList = myOrdersUiState.myOrdersUiState,
+                    onExpand = { index ->
+                        myOrdersViewModel.setExpanded(index)
+                    },
+                    isLoading = myOrdersUiState.orderState == OrderStatus.IsLoading,
+                    isRefreshing = myOrdersUiState.isRefreshing,
+                    onRefresh = myOrdersViewModel::loadNewOrders
+                )
+            }
         }
 
-        composable<CurrentDestination.ProfilePage> {
-            Log.d("BackStack", navController.currentBackStack.value.toString())
-            val profileViewModel = hiltViewModel<ProfileViewModel>()
-            ProfilePage(modifier = Modifier.fillMaxSize())
-        }
-
-        composable<CurrentDestination.MyOrders> {
-            Log.d("BackStack", navController.currentBackStack.value.toString())
-            val myOrdersViewModel = hiltViewModel<MyOrdersViewModel>()
-            val myOrdersUiState by myOrdersViewModel.myOrdersUiState.collectAsStateWithLifecycle()
-
-            MyOrdersPage(
-                modifier = Modifier.fillMaxSize(),
-                myOrdersList = myOrdersUiState.myOrdersUiState,
-                onExpand = { index ->
-                    myOrdersViewModel.setExpanded(index)
-                },
-                isLoading = myOrdersUiState.orderState == OrderStatus.IsLoading,
-                isRefreshing = myOrdersUiState.isRefreshing,
-                onRefresh = myOrdersViewModel::loadNewOrders
-            )
-        }
     }
 }
 
 @Serializable
 sealed interface CurrentDestination {
+
+    //NavGraph
+    @Serializable
+    data object CoffeeShop : CurrentDestination
+
+
+    //CoffeeShop Screens
     @Serializable
     data object LogInPage : CurrentDestination {
         const val ROUTE = "LogInPage"
@@ -617,64 +638,36 @@ sealed interface CurrentDestination {
     }
 
     @Serializable
-    data object HomePage : CurrentDestination {
-        const val ROUTE = "HomePage"
-    }
+    data object HomePage : CurrentDestination
 
     @Serializable
     data class CategoryItemPage(val categoryItems: CategoryItems = CategoryItems()) :
-        CurrentDestination {
-        companion object {
-            const val ROUTE = "CategoryItemPage"
-        }
-    }
+        CurrentDestination
 
     @Serializable
-    data class OfferItemPage(val offers: Offers = Offers()) : CurrentDestination {
-        companion object {
-            const val ROUTE = "OfferItemPage"
-        }
-    }
+    data class OfferItemPage(val offers: Offers = Offers()) : CurrentDestination
 
     @Serializable
-    data object ProfilePage : CurrentDestination {
-        const val ROUTE = "ProfilePage"
-    }
+    data object ProfilePage : CurrentDestination
 
     @Serializable
     data class ShoppingCartPage(
         val categoryItemsCart: CategoryItemsCart = CategoryItemsCart(),
         val offerCart: OfferCart = OfferCart(),
-    ) : CurrentDestination {
-        companion object {
-            const val ROUTE = "ShoppingCartPage"
-        }
-    }
+    ) : CurrentDestination
 
     @Serializable
-    data object SettingsPage : CurrentDestination {
-        const val ROUTE = "SettingsPage"
-    }
+    data object SettingsPage : CurrentDestination
 
     @Serializable
-    data object MyOrders : CurrentDestination {
-        const val ROUTE = "MyOrders"
-    }
+    data object MyOrders : CurrentDestination
 
     @Serializable
     data class AllCategories(val allCategories: List<CategoryItems> = emptyList()) :
-        CurrentDestination {
-        companion object {
-            const val ROUTE = "AllCategories"
-        }
-    }
+        CurrentDestination
 
     @Serializable
-    data class AllOffers(val allOffers: List<Offers> = emptyList()) : CurrentDestination {
-        companion object {
-            const val ROUTE = "AllOffers"
-        }
-    }
+    data class AllOffers(val allOffers: List<Offers> = emptyList()) : CurrentDestination
 
     @Serializable
     data object Loading : CurrentDestination

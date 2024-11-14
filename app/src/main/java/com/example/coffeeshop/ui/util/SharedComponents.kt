@@ -123,8 +123,11 @@ fun ShimmerEffect(
 fun CoffeeImage(modifier: Modifier, imageUrl: String?) {
     if (imageUrl != null) {
         AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current).data(imageUrl).crossfade(true)
-                .placeholder(R.drawable.loading).error(R.drawable.connectionerror).build(),
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(imageUrl).crossfade(true)
+                .placeholder(R.drawable.loading)
+                .error(R.drawable.connectionerror)
+                .build(),
             contentDescription = null,
             contentScale = ContentScale.FillBounds,
             modifier = modifier

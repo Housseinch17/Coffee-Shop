@@ -28,7 +28,7 @@ class ShoppingCartViewModel @Inject constructor(
 
 
     init {
-        Log.d("ViewModelInitialization", "shopping")
+        Log.d("ViewModelInitialization", "Shopping created")
     }
 
     override fun onCleared() {

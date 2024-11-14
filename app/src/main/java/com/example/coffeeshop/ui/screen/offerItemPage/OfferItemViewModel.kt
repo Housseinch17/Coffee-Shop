@@ -20,7 +20,7 @@ class OfferItemViewModel @Inject constructor(): ViewModel() {
 
 
     init {
-        Log.d("ViewModelInitialization","offer")
+        Log.d("ViewModelInitialization","Offer created")
     }
 
     override fun onCleared() {

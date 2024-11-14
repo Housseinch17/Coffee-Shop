@@ -9,7 +9,7 @@ import javax.inject.Inject
 class ProfileViewModel @Inject constructor(): ViewModel() {
 
     init {
-        Log.d("ViewModelInitialization","profile")
+        Log.d("ViewModelInitialization","Profile created")
     }
 
     override fun onCleared() {

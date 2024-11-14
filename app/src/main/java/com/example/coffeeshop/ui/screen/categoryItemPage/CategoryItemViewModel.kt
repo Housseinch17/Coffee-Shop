@@ -20,7 +20,7 @@ class CategoryItemViewModel @Inject constructor() : ViewModel() {
     val categoryItemUiState: StateFlow<CategoryItemUiState> = _categoryItemUiState.asStateFlow()
 
     init {
-        Log.d("ViewModelInitialization","category")
+        Log.d("ViewModelInitialization","Category created")
     }
 
     override fun onCleared() {
