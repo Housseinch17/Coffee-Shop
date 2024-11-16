@@ -7,10 +7,8 @@ import com.example.coffeeshop.ui.screen.settingspage.PasswordChangement
 import com.example.coffeeshop.ui.screen.signup.AccountStatus
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -21,7 +19,7 @@ import kotlin.coroutines.suspendCoroutine
 class FirebaseAuthenticationDataSourceImpl @Inject constructor(
     private val auth: FirebaseAuth,
     private val firebaseWriteDataDataSourceImpl: FirebaseWriteDataDataSourceImpl,
-    @Named("DispatchersIO") private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    @Named("DispatchersIO") private val coroutineDispatcher: CoroutineDispatcher,
 
     ) : FirebaseAuthenticationDataSource {
 
@@ -42,7 +40,7 @@ class FirebaseAuthenticationDataSourceImpl @Inject constructor(
                          if (task.isSuccessful) {
                             continuation.resume(PasswordChangement.Success("Password changed successfully!"))
                         } else {
-                            continuation.resume(PasswordChangement.Error("Password didnt change!"))
+                            continuation.resume(PasswordChangement.Error("Password didn't change!"))
                         }
                     }
                 } catch (e: Exception) {
@@ -56,7 +54,7 @@ class FirebaseAuthenticationDataSourceImpl @Inject constructor(
                         PasswordChangement.Success("Password changed successfully!")
 
                     } else {
-                        PasswordChangement.Error("Password didnt change!")
+                        PasswordChangement.Error("Password didn't change!")
                     }
                 }?.await()
             } catch (e: Exception) {

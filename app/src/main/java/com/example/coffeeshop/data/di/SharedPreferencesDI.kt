@@ -11,6 +11,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineDispatcher
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -20,19 +22,22 @@ object SharedPreferencesDI {
 
     @Provides
     @Singleton
-    fun provideSharedPreferences(@ApplicationContext  context: Context): SharedPreferences {
+    fun provideSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
         return context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
     }
 
     @Provides
     @Singleton
-    fun provideSharedPreferencesManager(sharedPreferences: SharedPreferences): SharedPreferencesManager {
-        return SharedPreferencesManagerImpl(sharedPreferences)
+    fun provideSharedPreferencesManager(
+        sharedPreferences: SharedPreferences,
+        @Named("DispatchersIO") coroutineDispatcher: CoroutineDispatcher
+    ): SharedPreferencesManager {
+        return SharedPreferencesManagerImpl(sharedPreferences, coroutineDispatcher)
     }
 
     @Provides
     @Singleton
-    fun provideSharedPreferencesRepository(sharedPreferencesManagerImpl: SharedPreferencesManagerImpl): SharedPreferencesRepository{
+    fun provideSharedPreferencesRepository(sharedPreferencesManagerImpl: SharedPreferencesManagerImpl): SharedPreferencesRepository {
         return SharedPreferencesRepositoryImpl(sharedPreferencesManagerImpl)
     }
 }

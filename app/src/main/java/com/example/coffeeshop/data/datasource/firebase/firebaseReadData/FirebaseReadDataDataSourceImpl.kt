@@ -11,7 +11,6 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -22,7 +21,7 @@ class FirebaseReadDataDataSourceImpl @Inject constructor(
     @Named("menuReference") private val databaseReference: DatabaseReference,
     @ApplicationContext private val context: Context,
     @Named("DispatchersIO")
-    private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val coroutineDispatcher: CoroutineDispatcher,
 ) : FirebaseReadDataDataSource {
 
     override suspend fun readCategoryDataFromFirebase(): FirebaseCategoryResponse =

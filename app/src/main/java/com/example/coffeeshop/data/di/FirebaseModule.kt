@@ -19,6 +19,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Named
 import javax.inject.Singleton
 
@@ -34,9 +35,10 @@ object FirebaseModule {
     @Singleton
     fun provideFirebaseAuthenticationDataSource(
         firebaseAuth: FirebaseAuth,
-        firebaseWriteDataDataSourceImpl: FirebaseWriteDataDataSourceImpl
+        firebaseWriteDataDataSourceImpl: FirebaseWriteDataDataSourceImpl,
+        @Named("DispatchersIO") coroutineDispatcher: CoroutineDispatcher
     ): FirebaseAuthenticationDataSource {
-        return FirebaseAuthenticationDataSourceImpl(firebaseAuth,firebaseWriteDataDataSourceImpl)
+        return FirebaseAuthenticationDataSourceImpl(firebaseAuth, firebaseWriteDataDataSourceImpl, coroutineDispatcher)
     }
 
     @Provides
@@ -49,8 +51,12 @@ object FirebaseModule {
 
     @Provides
     @Singleton
-    fun provideFirebaseReadDataDataSource(databaseReference: DatabaseReference,@ApplicationContext  context: Context): FirebaseReadDataDataSource {
-        return FirebaseReadDataDataSourceImpl(databaseReference,context)
+    fun provideFirebaseReadDataDataSource(
+        @Named("usersReference") databaseReference: DatabaseReference,
+        @ApplicationContext context: Context,
+        @Named("DispatchersIO") coroutineDispatcher: CoroutineDispatcher
+    ): FirebaseReadDataDataSource {
+        return FirebaseReadDataDataSourceImpl(databaseReference, context, coroutineDispatcher)
     }
 
     @Provides
@@ -63,8 +69,11 @@ object FirebaseModule {
 
     @Provides
     @Singleton
-    fun provideFirebaseWriteDataDataSource(databaseReference: DatabaseReference): FirebaseWriteDataDataSource{
-        return FirebaseWriteDataDataSourceImpl(databaseReference)
+    fun provideFirebaseWriteDataDataSource(
+        @Named("usersReference") databaseReference: DatabaseReference,
+        @Named("DispatchersIO") coroutineDispatcher: CoroutineDispatcher
+    ): FirebaseWriteDataDataSource {
+        return FirebaseWriteDataDataSourceImpl(databaseReference,coroutineDispatcher)
     }
 
     @Provides

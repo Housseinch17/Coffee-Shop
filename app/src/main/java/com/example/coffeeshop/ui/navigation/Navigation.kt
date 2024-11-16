@@ -63,7 +63,6 @@ import com.example.coffeeshop.ui.util.CustomNavType
 import com.example.coffeeshop.ui.util.navigateSingleTopTo
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -652,8 +651,7 @@ sealed interface CurrentDestination {
     data object HomePage : CurrentDestination
 
     @Serializable
-    data class CategoryItemPage(val categoryItems: CategoryItems = CategoryItems()) :
-        CurrentDestination
+    data class CategoryItemPage(val categoryItems: CategoryItems = CategoryItems()) : CurrentDestination
 
     @Serializable
     data class OfferItemPage(val offers: Offers = Offers()) : CurrentDestination

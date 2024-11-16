@@ -9,6 +9,8 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineDispatcher
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -17,8 +19,11 @@ object LocalDataBaseModule {
 
     @Singleton
     @Provides
-    fun provideLocalDataBaseRepository(shoppingCartDAO: ShoppingCartDAO): LocalDataBaseDataSource {
-        return LocalDataBaseDataSourceImpl(shoppingCartDAO)
+    fun provideLocalDataBaseRepository(
+        shoppingCartDAO: ShoppingCartDAO,
+        @Named("DispatchersIO") coroutineDispatcher: CoroutineDispatcher
+    ): LocalDataBaseDataSource {
+        return LocalDataBaseDataSourceImpl(shoppingCartDAO, coroutineDispatcher)
     }
 
     @Singleton

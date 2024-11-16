@@ -11,7 +11,7 @@ import javax.inject.Named
 
 class LocalDataBaseDataSourceImpl @Inject constructor(
     private val shoppingCartDAO: ShoppingCartDAO,
-    @Named("DispatchersIO") private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    @Named("DispatchersIO") private val coroutineDispatcher: CoroutineDispatcher,
 ) : LocalDataBaseDataSource {
     override suspend fun saveShoppingCartItems(shoppingCart: ShoppingCart) =
         withContext(coroutineDispatcher) {
