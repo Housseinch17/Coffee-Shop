@@ -65,7 +65,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -88,18 +87,22 @@ fun HomePage(
     modifier: Modifier,
     isLoading: Boolean,
     seeAllClicked: Boolean,
+    //HomeTopPage parameters
     searchText: String,
     onClear: () -> Unit,
     onSearch: (String) -> Unit,
     username: String?,
+    //HomeCenterPage parameters
     categoriesKey: List<String>,
     onCategoryClick: (String) -> Unit,
     currentCategory: CurrentCategory,
     onFirstSeeAllClick: (List<CategoryItems>) -> Unit,
     onItemClick: (CategoryItems) -> Unit,
+    //HomeBottomPage parameters
     offersList: List<Offers>,
     onSecondSeeAllClick: (List<Offers>) -> Unit,
     onOffersClick: (Offers) -> Unit,
+    //pull refresh
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
 ) {
@@ -110,12 +113,8 @@ fun HomePage(
     Box(
         modifier = modifier.pullRefresh(pullRefreshState)
     ) {
-        Image(
-            painterResource(id = R.drawable.coffee_bean),
-            contentDescription = stringResource(R.string.background_image),
-            modifier = modifier,
-            contentScale = ContentScale.FillBounds,
-        )
+        HomeBackground(modifier = modifier)
+
         Column(
             modifier = modifier
                 .padding(horizontal = 20.dp)
@@ -124,132 +123,30 @@ fun HomePage(
                 ),
         ) {
             Spacer(modifier = Modifier.height(16.dp))
+
             if (isLoading) {
-                ShimmerEffect(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp)
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                ShimmerEffect(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(20.dp)
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-                ShimmerEffect(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(14.dp)
-                )
-                Spacer(modifier = Modifier.height(20.dp))
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    items(5) {
-                        ShimmerEffect(
-                            modifier = Modifier
-                                .width(60.dp)
-                                .height(40.dp)
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.height(20.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    ShimmerEffect(
-                        modifier = Modifier
-                            .width(120.dp)
-                            .height(40.dp)
-                    )
-                    ShimmerEffect(
-                        modifier = Modifier
-                            .width(80.dp)
-                            .height(30.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.height(20.dp))
-                LazyRow(
-                    contentPadding = PaddingValues(top = 20.dp, bottom = 10.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    items(3) {
-                        ShimmerEffect(modifier = Modifier.size(140.dp))
-                    }
-                }
-                Spacer(modifier = Modifier.height(20.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    ShimmerEffect(
-                        modifier = Modifier
-                            .width(120.dp)
-                            .height(40.dp)
-                    )
-                    ShimmerEffect(
-                        modifier = Modifier
-                            .width(80.dp)
-                            .height(30.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.height(20.dp))
-                LazyRow(
-                    contentPadding = PaddingValues(vertical = 10.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    items(3) {
-                        ShimmerEffect(
-                            modifier = Modifier
-                                .width(200.dp)
-                                .height(140.dp)
-                                .clip(RoundedCornerShape(12.dp)),
-                        )
-                    }
-                }
-                Spacer(Modifier.height(24.dp))
+                HomeShimmer()
             } else {
-                SearchView(
-                    modifier = Modifier.fillMaxWidth(),
+                HomeTopPage(
                     searchText = searchText,
                     onClear = onClear,
-                    onSearch = onSearch
+                    onSearch = onSearch,
+                    username = username
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-                TopText(modifier = Modifier.fillMaxWidth(), username = username.toString())
                 Spacer(modifier = Modifier.height(20.dp))
-                TabRow(
-                    currentSelected = currentCategory.key,
+                HomeCenterPage(
                     categoriesKey = categoriesKey,
-                    onCategoryClick = onCategoryClick
-                )
-                Spacer(modifier = Modifier.height(20.dp))
-                SeeAll(modifier = Modifier.fillMaxWidth(),
-                    title = stringResource(R.string.popular),
-                    onSeeAllClick = { onFirstSeeAllClick(currentCategory.categoryList) })
-                Spacer(modifier = Modifier.height(20.dp))
-                CurrentCategoryList(
-                    currentCategoryList = currentCategory.categoryList, onItemClick = onItemClick
+                    onCategoryClick = onCategoryClick,
+                    currentCategory = currentCategory,
+                    onFirstSeeAllClick = onFirstSeeAllClick,
+                    onItemClick = onItemClick
                 )
                 Spacer(modifier = Modifier.height(10.dp))
-                SeeAll(modifier = Modifier.fillMaxWidth(),
-                    title = stringResource(R.string.available_offers),
-                    onSeeAllClick = { onSecondSeeAllClick(offersList) })
-                //no need for spacer padding because we used contentPadding for OffersList
-                OffersList(offersList = offersList) { offers ->
-                    onOffersClick(
-                        offers.copy(
-                            price = DataSource.calculateTotal(
-                                offers.price,
-                                offers.discount
-                            )
-                        )
-                    )
-                }
+                HomeBottomPage(
+                    offersList = offersList,
+                    onSecondSeeAllClick = onSecondSeeAllClick,
+                    onOffersClick = onOffersClick
+                )
             }
         }
 
@@ -260,12 +157,89 @@ fun HomePage(
             modifier = Modifier.align(Alignment.TopCenter)
         )
 
-        if(seeAllClicked) {
+        if (seeAllClicked) {
             CircularProgressIndicator(
-                modifier = Modifier.size(100.dp).align(Alignment.Center)
+                modifier = Modifier
+                    .size(100.dp)
+                    .align(Alignment.Center),
+                color = Color.Gray
             )
         }
 
+    }
+}
+
+@Composable
+fun HomeBackground(
+    modifier: Modifier
+) {
+    Image(
+        painterResource(id = R.drawable.coffee_bean),
+        contentDescription = stringResource(R.string.background_image),
+        modifier = modifier,
+        contentScale = ContentScale.FillBounds,
+    )
+}
+
+@Composable
+fun HomeTopPage(
+    searchText: String,
+    onClear: () -> Unit,
+    onSearch: (String) -> Unit,
+    username: String?,
+) {
+    SearchView(
+        modifier = Modifier.fillMaxWidth(),
+        searchText = searchText,
+        onClear = onClear,
+        onSearch = onSearch
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+    TopText(modifier = Modifier.fillMaxWidth(), username = username.toString())
+}
+
+@Composable
+fun HomeCenterPage(
+    categoriesKey: List<String>,
+    onCategoryClick: (String) -> Unit,
+    currentCategory: CurrentCategory,
+    onFirstSeeAllClick: (List<CategoryItems>) -> Unit,
+    onItemClick: (CategoryItems) -> Unit,
+) {
+    TabRow(
+        currentSelected = currentCategory.key,
+        categoriesKey = categoriesKey,
+        onCategoryClick = onCategoryClick
+    )
+    Spacer(modifier = Modifier.height(20.dp))
+    SeeAll(modifier = Modifier.fillMaxWidth(),
+        title = stringResource(R.string.popular),
+        onSeeAllClick = { onFirstSeeAllClick(currentCategory.categoryList) })
+    Spacer(modifier = Modifier.height(20.dp))
+    CurrentCategoryList(
+        currentCategoryList = currentCategory.categoryList, onItemClick = onItemClick
+    )
+}
+
+@Composable
+fun HomeBottomPage(
+    offersList: List<Offers>,
+    onSecondSeeAllClick: (List<Offers>) -> Unit,
+    onOffersClick: (Offers) -> Unit,
+) {
+    SeeAll(modifier = Modifier.fillMaxWidth(),
+        title = stringResource(R.string.available_offers),
+        onSeeAllClick = { onSecondSeeAllClick(offersList) })
+    //no need for spacer padding because we used contentPadding for OffersList
+    OffersList(offersList = offersList) { offers ->
+        onOffersClick(
+            offers.copy(
+                price = DataSource.calculateTotal(
+                    offers.price,
+                    offers.discount
+                )
+            )
+        )
     }
 }
 
@@ -306,37 +280,46 @@ fun OffersItem(modifier: Modifier, offers: Offers, onOffersClick: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             //text align used for the second line to show in center
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = offers.description,
-                    minLines = 2,
-                    maxLines = 2,
-                    textAlign = TextAlign.Center,
-                    style = DescriptionTypography.copy(color = Color.Black)
-                )
-                Text(
-                    text = (stringResource(R.string.discount) + ": " + offers.discount + "%"),
-                    style = BodyTypography,
-                    maxLines = 1
-                )
-                Text(
-                    text = stringResource(R.string.total) + ": " + DataSource.calculateTotal(
-                        offers.price,
-                        offers.discount
-                    ) + "$",
-                    style = TitleTypography.copy(color = Orange),
-                    maxLines = 1,
-                )
-            }
+
+            OffersText(offers = offers)
+
             Spacer(modifier = Modifier.height(8.dp))
 
         }
+    }
+}
+
+@Composable
+fun OffersText(
+    offers: Offers,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = offers.description,
+            minLines = 2,
+            maxLines = 2,
+            textAlign = TextAlign.Center,
+            style = DescriptionTypography.copy(color = Color.Black)
+        )
+        Text(
+            text = (stringResource(R.string.discount) + ": " + offers.discount + "%"),
+            style = BodyTypography,
+            maxLines = 1
+        )
+        Text(
+            text = stringResource(R.string.total) + ": " + DataSource.calculateTotal(
+                offers.price,
+                offers.discount
+            ) + "$",
+            style = TitleTypography.copy(color = Orange),
+            maxLines = 1,
+        )
     }
 }
 
@@ -446,7 +429,7 @@ fun CategoryCardItem(
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
     ) {
         Column(
-            //here top = 50.dp because we coffee image size is 80.dp its taking 40 top 40 bottom
+            //here top = 50.dp because coffee image size is 80.dp its taking 40 top 40 bottom
             //those 40 bottom are inside the card
             modifier = Modifier
                 .fillMaxWidth()
@@ -455,32 +438,35 @@ fun CategoryCardItem(
             verticalArrangement = Arrangement.SpaceEvenly
         ) {
             RatingBar(ratingIndex = ratingIndex, smallSize = 18.dp, largeSize = 26.dp)
-            Text(
-                modifier = Modifier
-                    .widthIn(max = 100.dp),
+            CategoryCardText(
                 text = categoryItem.title,
-                maxLines = 1,
-                style = TitleTypography,
-                overflow = TextOverflow.Ellipsis
+                textStyle = TitleTypography
             )
-            Text(
-                modifier = Modifier.widthIn(max = 100.dp),
+            CategoryCardText(
                 text = categoryItem.extra,
-                maxLines = 1,
-                style = DescriptionTypography,
-                overflow = TextOverflow.Ellipsis
+                textStyle = DescriptionTypography
             )
-            Text(
-                modifier = Modifier
-                    .widthIn(max = 100.dp),
-                text = "$${categoryItem.price}",
-                maxLines = 1,
-                style = BodyTypography.copy(color = Orange),
-                overflow = TextOverflow.Ellipsis
+            CategoryCardText(
+                text = "${categoryItem.price}",
+                textStyle = BodyTypography.copy(color = Orange)
             )
             Spacer(modifier = Modifier.height(10.dp))
         }
     }
+}
+
+@Composable
+fun CategoryCardText(
+    text: String, textStyle: TextStyle,
+) {
+    Text(
+        modifier = Modifier
+            .widthIn(max = 100.dp),
+        text = text,
+        maxLines = 1,
+        style = textStyle,
+        overflow = TextOverflow.Ellipsis
+    )
 }
 
 @Composable
@@ -603,4 +589,118 @@ fun SearchView(
             Text(text = stringResource(R.string.search), color = Color.White)
         },
     )
+}
+
+@Composable
+fun HomeShimmer() {
+    Column {
+        HomeTopShimmer()
+        HomeCenterShimmer()
+        HomeBottomShimmer()
+    }
+}
+
+@Composable
+fun HomeTopShimmer() {
+    ShimmerEffect(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp)
+            .clip(RoundedCornerShape(25.dp))
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+    ShimmerEffect(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(20.dp)
+    )
+    Spacer(modifier = Modifier.height(10.dp))
+    ShimmerEffect(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(14.dp)
+    )
+    Spacer(modifier = Modifier.height(20.dp))
+}
+
+@Composable
+fun HomeCenterShimmer() {
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        items(5) {
+            ShimmerEffect(
+                modifier = Modifier
+                    .width(60.dp)
+                    .height(40.dp)
+                    .clip(RoundedCornerShape(25.dp))
+            )
+        }
+    }
+    Spacer(modifier = Modifier.height(20.dp))
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        ShimmerEffect(
+            modifier = Modifier
+                .width(120.dp)
+                .height(40.dp)
+        )
+        ShimmerEffect(
+            modifier = Modifier
+                .width(80.dp)
+                .height(30.dp)
+        )
+    }
+    Spacer(modifier = Modifier.height(20.dp))
+    LazyRow(
+        contentPadding = PaddingValues(top = 20.dp, bottom = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        items(3) {
+            ShimmerEffect(
+                modifier = Modifier
+                    .size(140.dp)
+                    .clip(RoundedCornerShape(25.dp))
+            )
+        }
+    }
+    Spacer(modifier = Modifier.height(20.dp))
+}
+
+@Composable
+fun HomeBottomShimmer() {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        ShimmerEffect(
+            modifier = Modifier
+                .width(120.dp)
+                .height(40.dp)
+        )
+        ShimmerEffect(
+            modifier = Modifier
+                .width(80.dp)
+                .height(30.dp)
+        )
+    }
+    Spacer(modifier = Modifier.height(20.dp))
+    LazyRow(
+        contentPadding = PaddingValues(vertical = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        items(3) {
+            ShimmerEffect(
+                modifier = Modifier
+                    .width(200.dp)
+                    .height(140.dp)
+                    .clip(RoundedCornerShape(12.dp)),
+            )
+        }
+    }
+    Spacer(Modifier.height(24.dp))
 }

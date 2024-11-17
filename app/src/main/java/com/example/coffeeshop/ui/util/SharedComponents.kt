@@ -219,6 +219,9 @@ fun EmailAndPassword(
     onPasswordChange: (String) -> Unit,
     trailingIcon: @Composable () -> Unit,
 ) {
+    //imeAction = ImeAction.Done here we say that when we click on the button on keyboard
+    //that is in bottom right its like the enter button or something
+    //it will perform the onDone function that we will implement in keyboardAction
     Column(modifier) {
         EmailTextField(
             modifier = modifier, label = stringResource(R.string.email), value = emailValue,
