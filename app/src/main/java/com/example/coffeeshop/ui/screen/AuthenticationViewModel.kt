@@ -102,7 +102,6 @@ class AuthenticationViewModel @Inject constructor(
             Log.d("hasInternet", "$hasInternet")
             if (hasInternet) {
                 signOutUseCase.signOut()
-                delay(10000L)
                 _authenticationUiState.update { newState ->
                     newState.copy(
                         signOut = SignOutResponse.Success,

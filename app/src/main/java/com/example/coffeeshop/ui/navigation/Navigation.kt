@@ -39,6 +39,7 @@ import com.example.coffeeshop.ui.screen.allOffersDetail.AllOffersPage
 import com.example.coffeeshop.ui.screen.allOffersDetail.AllOffersViewModel
 import com.example.coffeeshop.ui.screen.categoryItemPage.CategoryItemPage
 import com.example.coffeeshop.ui.screen.categoryItemPage.CategoryItemViewModel
+import com.example.coffeeshop.ui.screen.homepage.HomeEvents
 import com.example.coffeeshop.ui.screen.homepage.HomePage
 import com.example.coffeeshop.ui.screen.homepage.HomePageViewModel
 import com.example.coffeeshop.ui.screen.login.AuthState
@@ -61,8 +62,6 @@ import com.example.coffeeshop.ui.screen.signup.SignUpScreen
 import com.example.coffeeshop.ui.screen.signup.SignUpViewModel
 import com.example.coffeeshop.ui.util.CustomNavType
 import com.example.coffeeshop.ui.util.navigateSingleTopTo
-import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -100,6 +99,7 @@ fun Navigation(
                     }
                 }
             }
+
             else -> {}
         }
     }
@@ -111,7 +111,7 @@ fun Navigation(
     }
 
     NavHost(
-        navController = navController, startDestination = CurrentDestination.CoffeeShop,
+        navController = navController, startDestination = startDestination,
         modifier = modifier,
         enterTransition = {
             slideIntoContainer(
@@ -124,9 +124,9 @@ fun Navigation(
             )
         },
     ) {
-        navigation<CurrentDestination.CoffeeShop>(
-            startDestination = startDestination
-        ) {
+        navigation<CurrentDestination.Register>(
+            startDestination = CurrentDestination.LogInPage
+        ){
             composable<CurrentDestination.LogInPage> {
                 Log.d("BackStack", navController.currentBackStack.value.toString())
                 val logInViewModel = hiltViewModel<LogInViewModel>()
@@ -197,6 +197,7 @@ fun Navigation(
                     },
                     resetDismiss = authenticationViewModel::resetResetHideDialog,
                     resetIsLoading = authenticationUiState.resetPassword == PasswordChangement.IsLoading,
+                    resetPasswordEnabled = logInUiState.authState == AuthState.NotLoggedIn,
                     onResetPassword = authenticationViewModel::resetResetShowDialog
                 )
             }
@@ -269,7 +270,12 @@ fun Navigation(
                         navController.navigateUp()
                     })
             }
-            composable<CurrentDestination.HomePage> {
+
+        }
+        navigation<CurrentDestination.CoffeeShop>(
+            startDestination = CurrentDestination.HomePage
+        ) {
+                       composable<CurrentDestination.HomePage> {
                 val parentBackStackEntry: NavBackStackEntry =
                     navController.getBackStackEntry(CurrentDestination.CoffeeShop)
                 Log.d("BackStack", navController.currentBackStack.value.toString())
@@ -301,15 +307,12 @@ fun Navigation(
                     currentCategory = homePageUiState.filteredCategoryList,
                     onFirstSeeAllClick = { categoryItemsList ->
                         scope.launch {
-                            async {
-                                homePageViewModel.setSeeAllClicked(true)
-                                delay(500)
-                            }.await()
-                            navController.navigateSingleTopTo(
-                                CurrentDestination.AllCategories(categoryItemsList),
-                                navHostController = navController
+                            homePageViewModel.homeEvents(
+                                HomeEvents.OnSeeAllClick(
+                                    navHostController = navController,
+                                    route = CurrentDestination.AllCategories(categoryItemsList)
+                                )
                             )
-                            homePageViewModel.setSeeAllClicked(false)
                         }
                     },
                     onItemClick = { categoryItems ->
@@ -321,19 +324,15 @@ fun Navigation(
                     offersList = homePageUiState.filteredOffersList,
                     onSecondSeeAllClick = { offersList ->
                         scope.launch {
-                            async {
-                                homePageViewModel.setSeeAllClicked(true)
-                                delay(500)
-                            }.await()
-                            navController.navigateSingleTopTo(
-                                CurrentDestination.AllOffers(
-                                    allOffers = offersList
-                                ),
-                                navHostController = navController
+                            homePageViewModel.homeEvents(
+                                HomeEvents.OnSeeAllClick(
+                                    navHostController = navController,
+                                    route = CurrentDestination.AllOffers(
+                                        allOffers = offersList
+                                    )
+                                )
                             )
-                            homePageViewModel.setSeeAllClicked(false)
                         }
-
                     },
                     onOffersClick = { offers ->
                         navController.navigateSingleTopTo(
@@ -630,13 +629,11 @@ fun Navigation(
 
 @Serializable
 sealed interface CurrentDestination {
-
-    //NavGraph
+    //Register NavGraph
     @Serializable
-    data object CoffeeShop : CurrentDestination
+    data object Register : CurrentDestination
 
-
-    //CoffeeShop Screens
+    //Register Screens
     @Serializable
     data object LogInPage : CurrentDestination {
         const val ROUTE = "LogInPage"
@@ -647,11 +644,18 @@ sealed interface CurrentDestination {
         const val ROUTE = "SignUpPage"
     }
 
+    //CoffeeShop NavGraph
+    @Serializable
+    data object CoffeeShop : CurrentDestination
+
+
+    //CoffeeShop screens
     @Serializable
     data object HomePage : CurrentDestination
 
     @Serializable
-    data class CategoryItemPage(val categoryItems: CategoryItems = CategoryItems()) : CurrentDestination
+    data class CategoryItemPage(val categoryItems: CategoryItems = CategoryItems()) :
+        CurrentDestination
 
     @Serializable
     data class OfferItemPage(val offers: Offers = Offers()) : CurrentDestination

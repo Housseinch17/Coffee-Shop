@@ -3,11 +3,15 @@ package com.example.coffeeshop.ui.screen.homepage
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavHostController
 import com.example.coffeeshop.data.model.categoryItems.CategoryItems
 import com.example.coffeeshop.data.model.offers.Offers
 import com.example.coffeeshop.domain.usecase.firebaseReadAndWriteUsecase.ReadCategoryDataFromFirebase
 import com.example.coffeeshop.domain.usecase.firebaseReadAndWriteUsecase.ReadOffersDataFromFirebase
+import com.example.coffeeshop.ui.navigation.CurrentDestination
+import com.example.coffeeshop.ui.util.navigateSingleTopTo
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -42,18 +46,39 @@ class HomePageViewModel @Inject constructor(
         Log.d("ViewModelInitialization", "home destroyed")
     }
 
+    suspend fun homeEvents(homeEvents: HomeEvents) {
+        when (homeEvents) {
+            is HomeEvents.OnSeeAllClick -> {
+                onSecondSeeAllClick(
+                    navHostController = homeEvents.navHostController,
+                    route = homeEvents.route
+                )
+            }
+        }
+    }
+
+    private suspend fun onSecondSeeAllClick(
+        navHostController: NavHostController,
+        route: CurrentDestination,
+    ) {
+        setSeeAllClicked(true)
+        delay(500)
+        navHostController.navigateSingleTopTo(navHostController = navHostController, route = route)
+        setSeeAllClicked(false)
+    }
+
     private suspend fun readData() {
         readCategoryData()
         readOffersData()
         viewModelScope.launch {
-            if(_homepageUiState.value.isLoading) {
+            if (_homepageUiState.value.isLoading) {
                 _homepageUiState.update { newState ->
                     newState.copy(isLoading = false)
                 }
-                Log.d("MyTag","isLoading set false finished")
+                Log.d("MyTag", "isLoading set false finished")
             }
         }
-        Log.d("MyTag","readData() finished")
+        Log.d("MyTag", "readData() finished")
     }
 
     fun refreshData() {
@@ -133,21 +158,21 @@ class HomePageViewModel @Inject constructor(
     //so we can use isLoading inside the parent scope and not in readOffersData()
     //since viewmodelScope will suspend it and doesn't wait children to finish to complete
     private suspend fun readOffersData() {
-            val response = readOffersDataFromFirebase.readOffersData()
-            if (response is FirebaseOffersResponse.Success) {
-                viewModelScope.launch {
-                    _homepageUiState.update { newState ->
-                        newState.copy(
-                            offersList = response.offers,
-                            filteredOffersList = response.offers,
-                        )
-                    }
+        val response = readOffersDataFromFirebase.readOffersData()
+        if (response is FirebaseOffersResponse.Success) {
+            viewModelScope.launch {
+                _homepageUiState.update { newState ->
+                    newState.copy(
+                        offersList = response.offers,
+                        filteredOffersList = response.offers,
+                    )
                 }
-            } else if (response is FirebaseOffersResponse.Error) {
-                Log.d("MyTag", "readOffersData() ${response.message}")
-                emitError(response.message)
             }
-        Log.d("MyTag","readOffersData() finished")
+        } else if (response is FirebaseOffersResponse.Error) {
+            Log.d("MyTag", "readOffersData() ${response.message}")
+            emitError(response.message)
+        }
+        Log.d("MyTag", "readOffersData() finished")
     }
 
     fun setSeeAllClicked(isClicked: Boolean) {
@@ -178,7 +203,7 @@ class HomePageViewModel @Inject constructor(
         } else if (response is FirebaseCategoryResponse.Error) {
             emitError(response.message)
         }
-        Log.d("MyTag","readCategoryData() finished")
+        Log.d("MyTag", "readCategoryData() finished")
     }
 
 

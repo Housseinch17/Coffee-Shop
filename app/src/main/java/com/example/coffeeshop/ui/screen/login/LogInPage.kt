@@ -18,7 +18,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,6 +62,7 @@ fun LogInScreen(
     resetPassword: () -> Unit,
     resetDismiss: () -> Unit,
     resetIsLoading: Boolean,
+    resetPasswordEnabled: Boolean,
     onResetPassword: () -> Unit,
 ) {
     Box(
@@ -85,23 +85,22 @@ fun LogInScreen(
                     isProgressBar = resetIsLoading,
                     description = {
                         if (!resetIsLoading) {
-                            Column(
-                            ) {
-                            Text(
-                                text = stringResource(R.string.are_you____reset),
-                                style = MaterialTheme.typography.titleMedium.copy(Color.Black)
-                            )
-                            Spacer(Modifier.height(16.dp))
-                            TextField(
-                                value = onResetEmailValue,
-                                onValueChange = {
-                                    onResetEmailChange(it)
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                placeholder = {
-                                    Text(text = stringResource(R.string.reset_password_email))
-                                }
-                            )
+                            Column {
+                                Text(
+                                    text = stringResource(R.string.are_you____reset),
+                                    style = MaterialTheme.typography.titleMedium.copy(Color.Black)
+                                )
+                                Spacer(Modifier.height(16.dp))
+                                TextField(
+                                    value = onResetEmailValue,
+                                    onValueChange = {
+                                        onResetEmailChange(it)
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    placeholder = {
+                                        Text(text = stringResource(R.string.reset_password_email))
+                                    }
+                                )
                             }
                         } else {
                             Row(
@@ -134,11 +133,16 @@ fun LogInScreen(
             if (isLoading) {
                 // Shimmer for textPage
                 ShimmerEffect(
-                    modifier = Modifier.padding(horizontal = 80.dp)
+                    modifier = Modifier
+                        .padding(horizontal = 80.dp)
                         .fillMaxWidth()
                         .height(36.dp)
                 )
-                Spacer(Modifier.fillMaxWidth().height(16.dp))
+                Spacer(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(16.dp)
+                )
                 // Shimmer for email field
                 ShimmerEffect(
                     modifier = Modifier
@@ -146,7 +150,11 @@ fun LogInScreen(
                         .height(56.dp)
                         .clip(RoundedCornerShape(12.dp))
                 )
-                Spacer(Modifier.fillMaxWidth().height(16.dp))
+                Spacer(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(16.dp)
+                )
                 // Shimmer for password field
                 ShimmerEffect(
                     modifier = Modifier
@@ -154,7 +162,11 @@ fun LogInScreen(
                         .height(56.dp)
                         .clip(RoundedCornerShape(12.dp))
                 )
-                Spacer(Modifier.fillMaxWidth().height(16.dp))
+                Spacer(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(16.dp)
+                )
                 // Shimmer for button
                 ShimmerEffect(
                     modifier = Modifier
@@ -162,10 +174,15 @@ fun LogInScreen(
                         .height(26.dp)
                         .clip(RoundedCornerShape(25.dp))
                 )
-                Spacer(Modifier.fillMaxWidth().height(24.dp))
+                Spacer(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(24.dp)
+                )
                 // Shimmer for text button
                 ShimmerEffect(
-                    modifier = Modifier.padding(horizontal = 60.dp)
+                    modifier = Modifier
+                        .padding(horizontal = 60.dp)
                         .fillMaxWidth()
                         .height(26.dp)
                         .clip(RoundedCornerShape(12.dp))
@@ -175,9 +192,14 @@ fun LogInScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    ShimmerEffect(modifier = Modifier.height(30.dp).width(150.dp).clip(
-                        RoundedCornerShape(25.dp)
-                    ))
+                    ShimmerEffect(
+                        modifier = Modifier
+                            .height(30.dp)
+                            .width(150.dp)
+                            .clip(
+                                RoundedCornerShape(25.dp)
+                            )
+                    )
                 }
 
             } else {
@@ -205,8 +227,14 @@ fun LogInScreen(
                     onSignUpClick = onSignUpClick
                 )
                 Spacer(Modifier.height(20.dp))
-                Button(onClick = onResetPassword,
-                    colors = ButtonDefaults.buttonColors(containerColor = Orange)) {
+                Button(
+                    enabled = resetPasswordEnabled,
+                    onClick = onResetPassword,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Orange,
+                        disabledContainerColor = Color.Gray
+                    )
+                ) {
                     Text(text = stringResource(R.string.reset_password))
                 }
                 Spacer(Modifier.height(30.dp))

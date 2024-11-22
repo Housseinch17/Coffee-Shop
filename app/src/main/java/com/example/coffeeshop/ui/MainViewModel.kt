@@ -36,9 +36,9 @@ class MainViewModel @Inject constructor(
             //read username from sharedPreference
             val currentUsername = getCurrentUserName()
             if (currentUsername == null) {
-                _status.value = CurrentDestination.LogInPage
+                _status.value = CurrentDestination.Register
             } else {
-                _status.value = CurrentDestination.HomePage
+                _status.value = CurrentDestination.CoffeeShop
                 //save the new username
                 saveSharedPrefUsernameUseCase.saveUsername(currentUsername)
             }
