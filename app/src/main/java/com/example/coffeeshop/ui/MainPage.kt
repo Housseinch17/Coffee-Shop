@@ -52,8 +52,9 @@ fun MainPage(navController: NavHostController) {
     //get current screen route without (com.example.coffee...)
     val currentScreenRoute = getScreenName(currentScreenDestination)
 
-    Log.d("currentScreen", "current screen $currentScreenDestination")
-    Log.d("currentScreen", "current home ${CurrentDestination.HomePage}")
+    Log.d("currentScreen", "current screen ${navController.currentDestination?.route}")
+    Log.d("currentScreen", "current home ${CurrentDestination.CategoryItemPage}")
+
 
 
     //not hideBottomBar
@@ -64,7 +65,23 @@ fun MainPage(navController: NavHostController) {
         androidx.compose.material.Scaffold(
             floatingActionButton = {
                 if (showBottomBar) {
+                    //check if currentScreen is CategoryItemPage or OfferItemPage
+                    val currentScreenIsItemPage: Boolean =
+                        (navController.currentDestination?.route!!.startsWith("com.example.coffeeshop.ui.navigation.CurrentDestination.CategoryItemPage")
+                                || navController.currentDestination?.route!!.startsWith("com.example.coffeeshop.ui.navigation.CurrentDestination.OfferItemPage"))
                     FloatingButtonBar(onShoppingCartClick = {
+                        if(currentScreenIsItemPage){
+                            navController.navigate(CurrentDestination.HomePage){
+                                popUpTo(navController.currentDestination?.route!!){
+                                    inclusive = true
+                                }
+                            }
+                        } else {
+                            navController.navigateSingleTopTo(
+                                route = CurrentDestination.ShoppingCartPage(),
+                                navController
+                            )
+                        }
                         navController.navigateSingleTopTo(
                             route = CurrentDestination.ShoppingCartPage(),
                             navController
@@ -77,6 +94,10 @@ fun MainPage(navController: NavHostController) {
             floatingActionButtonPosition = FabPosition.Center,
             bottomBar = {
                 if (showBottomBar) {
+                    //check if currentScreen is CategoryItemPage or OfferItemPage
+                    val currentScreenIsItemPage: Boolean = (navController.currentDestination?.route!!.startsWith("com.example.coffeeshop.ui.navigation.CurrentDestination.CategoryItemPage")
+                            || navController.currentDestination?.route!!.startsWith("com.example.coffeeshop.ui.navigation.CurrentDestination.OfferItemPage"))
+
                     BottomAppBar(
                         backgroundColor = MatteBlack,
                         modifier = Modifier
@@ -88,28 +109,60 @@ fun MainPage(navController: NavHostController) {
                         content = {
                             BottomAppBar(
                                 onHomeClick = {
-                                    navController.navigateSingleTopTo(
-                                        route = CurrentDestination.HomePage,
-                                        navController
-                                    )
+                                    if(currentScreenIsItemPage){
+                                        navController.navigate(CurrentDestination.HomePage){
+                                            popUpTo(navController.currentDestination?.route!!){
+                                                inclusive = true
+                                            }
+                                        }
+                                    } else {
+                                        navController.navigateSingleTopTo(
+                                            route = CurrentDestination.HomePage,
+                                            navController
+                                        )
+                                    }
                                 },
                                 onProfileClick = {
-                                    navController.navigateSingleTopTo(
-                                        route = CurrentDestination.ProfilePage,
-                                        navController
-                                    )
+                                    if (currentScreenIsItemPage) {
+                                        navController.navigate(CurrentDestination.ProfilePage){
+                                            popUpTo(navController.currentDestination?.route!!){
+                                                inclusive = true
+                                            }
+                                        }
+                                    } else {
+                                        navController.navigateSingleTopTo(
+                                            route = CurrentDestination.ProfilePage,
+                                            navController
+                                        )
+                                    }
                                 },
                                 onMyOrdersClick = {
-                                    navController.navigateSingleTopTo(
-                                        route = CurrentDestination.MyOrders,
-                                        navController
-                                    )
+                                    if (currentScreenIsItemPage) {
+                                        navController.navigate(CurrentDestination.MyOrders){
+                                            popUpTo(navController.currentDestination?.route!!){
+                                                inclusive = true
+                                            }
+                                        }
+                                    } else {
+                                        navController.navigateSingleTopTo(
+                                            route = CurrentDestination.MyOrders,
+                                            navController
+                                        )
+                                    }
                                 },
                                 onSettingsClick = {
-                                    navController.navigateSingleTopTo(
-                                        route = CurrentDestination.SettingsPage,
-                                        navController
-                                    )
+                                    if (currentScreenIsItemPage) {
+                                        navController.navigate(CurrentDestination.SettingsPage){
+                                            popUpTo(navController.currentDestination?.route!!){
+                                                inclusive = true
+                                            }
+                                        }
+                                    } else {
+                                        navController.navigateSingleTopTo(
+                                            route = CurrentDestination.SettingsPage,
+                                            navController
+                                        )
+                                    }
                                 }
                             )
                         }
