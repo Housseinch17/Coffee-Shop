@@ -8,7 +8,7 @@ import com.example.coffeeshop.data.model.categoryItems.CategoryItems
 import com.example.coffeeshop.data.model.offers.Offers
 import com.example.coffeeshop.domain.usecase.firebaseReadAndWriteUsecase.ReadCategoryDataFromFirebase
 import com.example.coffeeshop.domain.usecase.firebaseReadAndWriteUsecase.ReadOffersDataFromFirebase
-import com.example.coffeeshop.ui.navigation.CurrentDestination
+import com.example.coffeeshop.ui.navigation.NavigationScreens
 import com.example.coffeeshop.ui.util.navigateSingleTopTo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -59,7 +59,7 @@ class HomePageViewModel @Inject constructor(
 
     private suspend fun onSecondSeeAllClick(
         navHostController: NavHostController,
-        route: CurrentDestination,
+        route: NavigationScreens,
     ) {
         setSeeAllClicked(true)
         delay(500)
@@ -175,7 +175,7 @@ class HomePageViewModel @Inject constructor(
         Log.d("MyTag", "readOffersData() finished")
     }
 
-    fun setSeeAllClicked(isClicked: Boolean) {
+    private fun setSeeAllClicked(isClicked: Boolean) {
         viewModelScope.launch {
             _homepageUiState.update { newState ->
                 newState.copy(seeAllClicked = isClicked)
@@ -219,6 +219,11 @@ class HomePageViewModel @Inject constructor(
 
     // Filter the list based on the search text
     private fun filterList(query: String) {
+        filterCategoryItems(query)
+        filterOffersList(query)
+    }
+
+    private fun filterCategoryItems(query: String) {
         viewModelScope.launch {
             _homepageUiState.update { newState ->
                 //filter categories
@@ -229,6 +234,18 @@ class HomePageViewModel @Inject constructor(
                         category.title.contains(query, ignoreCase = true)
                     }
                 }
+                newState.copy(
+                    filteredCategoryList = newState.filteredCategoryList.copy(
+                        categoryList = filteredCategoryItems
+                    )
+                )
+            }
+        }
+    }
+
+    private fun filterOffersList(query: String) {
+        viewModelScope.launch {
+            _homepageUiState.update { newState ->
                 //filter offers
                 val filteredOffersItems = if (query.isEmpty()) {
                     newState.offersList
@@ -238,9 +255,6 @@ class HomePageViewModel @Inject constructor(
                     }
                 }
                 newState.copy(
-                    filteredCategoryList = newState.filteredCategoryList.copy(
-                        categoryList = filteredCategoryItems
-                    ),
                     filteredOffersList = filteredOffersItems
                 )
             }

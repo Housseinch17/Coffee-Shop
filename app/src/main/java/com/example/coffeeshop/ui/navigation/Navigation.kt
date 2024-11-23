@@ -27,7 +27,7 @@ import kotlinx.coroutines.flow.collectLatest
 fun Navigation(
     modifier: Modifier,
     navController: NavHostController,
-    startDestination: CurrentDestination,
+    startDestination: NavigationScreens,
 ) {
     val authenticationViewModel = hiltViewModel<AuthenticationViewModel>()
     val authenticationUiState by authenticationViewModel.authenticationUiState.collectAsStateWithLifecycle()
@@ -46,14 +46,13 @@ fun Navigation(
         when (signOut) {
             SignOutResponse.Success -> {
                 authenticationViewModel.resetSignOutState()
-                navController.navigate(CurrentDestination.LogInPage) {
+                navController.navigate(NavigationScreens.LogInPage) {
                     //popUpTo(0) here 0 means we will remove all the old stacks in BackStackEntry
                     popUpTo(0) {
                         inclusive = true
                     }
                 }
             }
-
             else -> {}
         }
     }
@@ -78,6 +77,7 @@ fun Navigation(
             )
         },
     ) {
+
         registerGraph(
             navHostController = navController,
             authenticationViewModel = authenticationViewModel,

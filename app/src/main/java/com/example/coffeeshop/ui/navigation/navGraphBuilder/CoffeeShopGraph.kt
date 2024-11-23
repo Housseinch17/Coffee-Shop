@@ -21,7 +21,7 @@ import com.example.coffeeshop.data.model.categoryItems.CategoryItems
 import com.example.coffeeshop.data.model.offers.Offers
 import com.example.coffeeshop.data.model.shoppingCart.CategoryItemsCart
 import com.example.coffeeshop.data.model.shoppingCart.OfferCart
-import com.example.coffeeshop.ui.navigation.CurrentDestination
+import com.example.coffeeshop.ui.navigation.NavigationScreens
 import com.example.coffeeshop.ui.screen.AuthenticationViewModel
 import com.example.coffeeshop.ui.screen.ResetPage
 import com.example.coffeeshop.ui.screen.allCategoriesDetail.AllCategoriesPage
@@ -30,9 +30,12 @@ import com.example.coffeeshop.ui.screen.allOffersDetail.AllOffersPage
 import com.example.coffeeshop.ui.screen.allOffersDetail.AllOffersViewModel
 import com.example.coffeeshop.ui.screen.categoryItemPage.CategoryItemPage
 import com.example.coffeeshop.ui.screen.categoryItemPage.CategoryItemViewModel
+import com.example.coffeeshop.ui.screen.homepage.HomeBottomPageState
+import com.example.coffeeshop.ui.screen.homepage.HomeCenterPageState
 import com.example.coffeeshop.ui.screen.homepage.HomeEvents
 import com.example.coffeeshop.ui.screen.homepage.HomePage
 import com.example.coffeeshop.ui.screen.homepage.HomePageViewModel
+import com.example.coffeeshop.ui.screen.homepage.HomeTopPageState
 import com.example.coffeeshop.ui.screen.myorderspage.MyOrdersPage
 import com.example.coffeeshop.ui.screen.myorderspage.MyOrdersViewModel
 import com.example.coffeeshop.ui.screen.myorderspage.OrderStatus
@@ -59,14 +62,14 @@ fun NavGraphBuilder.coffeeShop(
     signOutShowDialog: Boolean,
     signOutIsLoading: Boolean
 ) {
-    navigation<CurrentDestination.CoffeeShop>(
-        startDestination = CurrentDestination.HomePage
+    navigation<NavigationScreens.CoffeeShop>(
+        startDestination = NavigationScreens.HomePage
     ) {
-        composable<CurrentDestination.HomePage> {
+        composable<NavigationScreens.HomePage> {
             Log.d("BackStack","${navHostController.currentBackStackEntry}")
             val context = LocalContext.current
             val parentBackStackEntry: NavBackStackEntry =
-                navHostController.getBackStackEntry(CurrentDestination.CoffeeShop)
+                navHostController.getBackStackEntry(NavigationScreens.CoffeeShop)
             val homePageViewModel = hiltViewModel<HomePageViewModel>(parentBackStackEntry)
             val homePageUiState by homePageViewModel.homePageUiState.collectAsStateWithLifecycle()
 
@@ -82,64 +85,70 @@ fun NavGraphBuilder.coffeeShop(
                 modifier = Modifier.fillMaxSize(),
                 isLoading = homePageUiState.isLoading,
                 seeAllClicked = homePageUiState.seeAllClicked,
-                searchText = homePageUiState.searchText,
-                onClear = homePageViewModel::onClearSearchText,
-                onSearch = { newText ->
-                    homePageViewModel.onSearchTextChange(newText)
-                },
-                username = username,
-                categoriesKey = homePageUiState.categoriesKey,
-                onCategoryClick = { newKey ->
-                    homePageViewModel.setCurrentCategory(newKey)
-                },
-                currentCategory = homePageUiState.filteredCategoryList,
-                onFirstSeeAllClick = { categoryItemsList ->
-                    scope.launch {
-                        homePageViewModel.homeEvents(
-                            HomeEvents.OnSeeAllClick(
-                                navHostController = navHostController,
-                                route = CurrentDestination.AllCategories(categoryItemsList)
-                            )
-                        )
-                    }
-                },
-                onItemClick = { categoryItems ->
-                    navHostController.navigateSingleTopTo(
-                        CurrentDestination.CategoryItemPage(categoryItems = categoryItems),
-                        navHostController = navHostController
-                    )
-                },
-                offersList = homePageUiState.filteredOffersList,
-                onSecondSeeAllClick = { offersList ->
-                    scope.launch {
-                        homePageViewModel.homeEvents(
-                            HomeEvents.OnSeeAllClick(
-                                navHostController = navHostController,
-                                route = CurrentDestination.AllOffers(
-                                    allOffers = offersList
+                topPageState = HomeTopPageState(
+                    searchText = homePageUiState.searchText,
+                    username = username,
+                    onClear = homePageViewModel::onClearSearchText,
+                    onSearch = { newText ->
+                        homePageViewModel.onSearchTextChange(newText)
+                    },
+                ),
+                centerPageState = HomeCenterPageState(
+                    categoriesKey = homePageUiState.categoriesKey,
+                    onCategoryClick = { newKey ->
+                        homePageViewModel.setCurrentCategory(newKey)
+                    },
+                    currentCategory = homePageUiState.filteredCategoryList,
+                    onFirstSeeAllClick = { categoryItemsList ->
+                        scope.launch {
+                            homePageViewModel.homeEvents(
+                                HomeEvents.OnSeeAllClick(
+                                    navHostController = navHostController,
+                                    route = NavigationScreens.AllCategories(categoryItemsList)
                                 )
                             )
+                        }
+                    },
+                    onItemClick = { categoryItems ->
+                        navHostController.navigateSingleTopTo(
+                            NavigationScreens.CategoryItemPage(categoryItems = categoryItems),
+                            navHostController = navHostController
                         )
                     }
-                },
-                onOffersClick = { offers ->
-                    navHostController.navigateSingleTopTo(
-                        CurrentDestination.OfferItemPage(offers = offers),
-                        navHostController = navHostController
-                    )
-                },
+                ),
+                bottomPageState = HomeBottomPageState(
+                    offersList = homePageUiState.filteredOffersList,
+                    onSecondSeeAllClick = { offersList ->
+                        scope.launch {
+                            homePageViewModel.homeEvents(
+                                HomeEvents.OnSeeAllClick(
+                                    navHostController = navHostController,
+                                    route = NavigationScreens.AllOffers(
+                                        allOffers = offersList
+                                    )
+                                )
+                            )
+                        }
+                    },
+                    onOffersClick = { offers ->
+                        navHostController.navigateSingleTopTo(
+                            NavigationScreens.OfferItemPage(offers = offers),
+                            navHostController = navHostController
+                        )
+                    }
+                ),
                 isRefreshing = homePageUiState.isRefreshing,
                 onRefresh = homePageViewModel::refreshData
             )
         }
 
-        composable<CurrentDestination.AllCategories>(
+        composable<NavigationScreens.AllCategories>(
             typeMap = mapOf(
                 typeOf<List<CategoryItems>>() to CustomNavType.allCategories
             )
         ) { entry ->
             Log.d("BackStack","${navHostController.currentBackStackEntry}")
-            val args = entry.toRoute<CurrentDestination.AllCategories>()
+            val args = entry.toRoute<NavigationScreens.AllCategories>()
             val allCategories = args.allCategories
 
             val allCategoriesViewModel = hiltViewModel<AllCategoriesViewModel>()
@@ -154,20 +163,20 @@ fun NavGraphBuilder.coffeeShop(
                 categoriesList = allCategoriesUiState.allCategoriesList,
                 onItemClick = { categoryItem ->
                     navHostController.navigateSingleTopTo(
-                        CurrentDestination.CategoryItemPage(
+                        NavigationScreens.CategoryItemPage(
                             categoryItems = categoryItem
                         ), navHostController = navHostController
                     )
                 })
         }
 
-        composable<CurrentDestination.AllOffers>(
+        composable<NavigationScreens.AllOffers>(
             typeMap = mapOf(
                 typeOf<List<Offers>>() to CustomNavType.allOffers
             )
         ) { entry ->
             Log.d("BackStack","${navHostController.currentBackStackEntry}")
-            val args = entry.toRoute<CurrentDestination.AllOffers>()
+            val args = entry.toRoute<NavigationScreens.AllOffers>()
             val allOffers = args.allOffers
 
             val allOffersViewModel = hiltViewModel<AllOffersViewModel>()
@@ -183,7 +192,7 @@ fun NavGraphBuilder.coffeeShop(
                 offersList = allOffersUiState.allOffersList,
                 onItemClick = { offers ->
                     navHostController.navigateSingleTopTo(
-                        CurrentDestination.OfferItemPage(
+                        NavigationScreens.OfferItemPage(
                             offers = offers
                         ),
                         navHostController = navHostController
@@ -192,13 +201,13 @@ fun NavGraphBuilder.coffeeShop(
             )
         }
 
-        composable<CurrentDestination.CategoryItemPage>(
+        composable<NavigationScreens.CategoryItemPage>(
             typeMap = mapOf(
                 typeOf<CategoryItems>() to CustomNavType.categoryItems,
             )
         ) { entry ->
             Log.d("BackStack","${navHostController.currentBackStackEntry}")
-            val args = entry.toRoute<CurrentDestination.CategoryItemPage>()
+            val args = entry.toRoute<NavigationScreens.CategoryItemPage>()
             val categoryItems = args.categoryItems
 
             val categoryItemViewModel = hiltViewModel<CategoryItemViewModel>()
@@ -219,7 +228,7 @@ fun NavGraphBuilder.coffeeShop(
                 },
                 addToCard = { categoryItemCart ->
                     navHostController.navigate(
-                        CurrentDestination.ShoppingCartPage(
+                        NavigationScreens.ShoppingCartPage(
                             categoryItemsCart = categoryItemCart, offerCart = OfferCart()
                         )
                     ) {
@@ -234,13 +243,13 @@ fun NavGraphBuilder.coffeeShop(
         //Offer Item Page might be similar to CategoryItemPage but it was added for later use
         //Offers data class structure might change which lead to error having single page for
         //both CategoryItems and OffersItem
-        composable<CurrentDestination.OfferItemPage>(
+        composable<NavigationScreens.OfferItemPage>(
             typeMap = mapOf(
                 typeOf<Offers>() to CustomNavType.offers
             )
         ) { entry ->
             Log.d("BackStack","${navHostController.currentBackStackEntry}")
-            val args = entry.toRoute<CurrentDestination.OfferItemPage>()
+            val args = entry.toRoute<NavigationScreens.OfferItemPage>()
             val offer = args.offers
 
             val offerItemViewModel = hiltViewModel<OfferItemViewModel>()
@@ -261,7 +270,7 @@ fun NavGraphBuilder.coffeeShop(
                 },
                 addToCard = { offerCart ->
                     navHostController.navigate(
-                        CurrentDestination.ShoppingCartPage(
+                        NavigationScreens.ShoppingCartPage(
                             categoryItemsCart = CategoryItemsCart(), offerCart = offerCart
                         )
                     ) {
@@ -273,7 +282,7 @@ fun NavGraphBuilder.coffeeShop(
                 })
         }
 
-        composable<CurrentDestination.ShoppingCartPage>(
+        composable<NavigationScreens.ShoppingCartPage>(
             typeMap = mapOf(
                 typeOf<OfferCart>() to CustomNavType.offerCart,
                 typeOf<CategoryItemsCart>() to CustomNavType.categoryItemsCart
@@ -281,12 +290,12 @@ fun NavGraphBuilder.coffeeShop(
         ) { entry ->
             val context = LocalContext.current
             Log.d("BackStack","${navHostController.currentBackStackEntry}")
-            val args = entry.toRoute<CurrentDestination.ShoppingCartPage>()
+            val args = entry.toRoute<NavigationScreens.ShoppingCartPage>()
             val categoryItemsCart = args.categoryItemsCart
             val offerCart = args.offerCart
 
             val parentBackStackEntry: NavBackStackEntry =
-                navHostController.getBackStackEntry(CurrentDestination.CoffeeShop)
+                navHostController.getBackStackEntry(NavigationScreens.CoffeeShop)
 
             //here if the shoppingCartViewModel already in BackStackEntry it will use the old one
             //if not it will create it
@@ -333,7 +342,7 @@ fun NavGraphBuilder.coffeeShop(
         }
 
 
-        composable<CurrentDestination.SettingsPage> {
+        composable<NavigationScreens.SettingsPage> {
             Log.d("BackStack","${navHostController.currentBackStackEntry}")
             val context = LocalContext.current
             val settingsViewModel = hiltViewModel<SettingsViewModel>()
@@ -391,13 +400,13 @@ fun NavGraphBuilder.coffeeShop(
             )
         }
 
-        composable<CurrentDestination.ProfilePage> {
+        composable<NavigationScreens.ProfilePage> {
             Log.d("BackStack","${navHostController.currentBackStackEntry}")
             val profileViewModel = hiltViewModel<ProfileViewModel>()
             ProfilePage(modifier = Modifier.fillMaxSize())
         }
 
-        composable<CurrentDestination.MyOrders> {
+        composable<NavigationScreens.MyOrders> {
             Log.d("BackStack","${navHostController.currentBackStackEntry}")
             val myOrdersViewModel = hiltViewModel<MyOrdersViewModel>()
             val myOrdersUiState by myOrdersViewModel.myOrdersUiState.collectAsStateWithLifecycle()

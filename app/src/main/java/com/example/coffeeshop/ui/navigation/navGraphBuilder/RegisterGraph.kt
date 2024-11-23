@@ -19,7 +19,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.example.coffeeshop.R
-import com.example.coffeeshop.ui.navigation.CurrentDestination
+import com.example.coffeeshop.ui.navigation.NavigationScreens
 import com.example.coffeeshop.ui.screen.AuthenticationViewModel
 import com.example.coffeeshop.ui.screen.ResetPage
 import com.example.coffeeshop.ui.screen.login.AuthState
@@ -37,10 +37,10 @@ fun NavGraphBuilder.registerGraph(
     email: String,
     resetIsLoading: Boolean,
     ){
-    navigation<CurrentDestination.Register>(
-        startDestination = CurrentDestination.LogInPage
+    navigation<NavigationScreens.Register>(
+        startDestination = NavigationScreens.LogInPage
     ){
-        composable<CurrentDestination.LogInPage> {
+        composable<NavigationScreens.LogInPage> {
             Log.d("BackStack","${navHostController.currentBackStackEntry}")
             val context = LocalContext.current
             val logInViewModel = hiltViewModel<LogInViewModel>()
@@ -59,9 +59,9 @@ fun NavGraphBuilder.registerGraph(
                     AuthState.LoggedIn -> {
                         //update currentUsername before navigating
                         authenticationViewModel.updateCurrentUserName()
-                        navHostController.navigate(CurrentDestination.HomePage) {
+                        navHostController.navigate(NavigationScreens.HomePage) {
                             //remove LogInPage from currentBackStack
-                            popUpTo(CurrentDestination.LogInPage) {
+                            popUpTo(NavigationScreens.LogInPage) {
                                 inclusive = true
                             }
                         }
@@ -95,7 +95,7 @@ fun NavGraphBuilder.registerGraph(
                     }
                 },
                 onSignUpClick = {
-                    navHostController.navigate(CurrentDestination.SignUpPage)
+                    navHostController.navigate(NavigationScreens.SignUpPage)
                 },
                 onResetEmailValue = onResetEmailValue,
                 onResetEmailChange = { newEmail ->
@@ -116,7 +116,7 @@ fun NavGraphBuilder.registerGraph(
             )
         }
 
-        composable<CurrentDestination.SignUpPage> {
+        composable<NavigationScreens.SignUpPage> {
             Log.d("BackStack","${navHostController.currentBackStackEntry}")
             val context = LocalContext.current
             val signUpViewModel = hiltViewModel<SignUpViewModel>()
@@ -134,7 +134,7 @@ fun NavGraphBuilder.registerGraph(
                 when (signUpUiState.accountStatus) {
                     is AccountStatus.IsCreated -> {
                         Log.d("MyTag", "IsCreated")
-                        navHostController.navigate(CurrentDestination.LogInPage)
+                        navHostController.navigate(NavigationScreens.LogInPage)
                     }
 
                     else -> {

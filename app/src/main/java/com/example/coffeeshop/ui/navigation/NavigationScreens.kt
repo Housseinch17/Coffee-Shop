@@ -7,60 +7,60 @@ import com.example.coffeeshop.data.model.shoppingCart.OfferCart
 import kotlinx.serialization.Serializable
 
 @Serializable
-sealed interface CurrentDestination {
+sealed interface NavigationScreens {
     //Register NavGraph
     @Serializable
-    data object Register : CurrentDestination
+    data object Register : NavigationScreens
 
     //Register Screens
     @Serializable
-    data object LogInPage : CurrentDestination {
+    data object LogInPage : NavigationScreens {
         const val ROUTE = "LogInPage"
     }
 
     @Serializable
-    data object SignUpPage : CurrentDestination {
+    data object SignUpPage : NavigationScreens {
         const val ROUTE = "SignUpPage"
     }
 
     //CoffeeShop NavGraph
     @Serializable
-    data object CoffeeShop : CurrentDestination
+    data object CoffeeShop : NavigationScreens
 
 
     //CoffeeShop screens
     @Serializable
-    data object HomePage : CurrentDestination
+    data object HomePage : NavigationScreens
 
     @Serializable
     data class CategoryItemPage(val categoryItems: CategoryItems = CategoryItems()) :
-        CurrentDestination
+        NavigationScreens
 
     @Serializable
-    data class OfferItemPage(val offers: Offers = Offers()) : CurrentDestination
+    data class OfferItemPage(val offers: Offers = Offers()) : NavigationScreens
 
     @Serializable
-    data object ProfilePage : CurrentDestination
+    data object ProfilePage : NavigationScreens
 
     @Serializable
     data class ShoppingCartPage(
         val categoryItemsCart: CategoryItemsCart = CategoryItemsCart(),
         val offerCart: OfferCart = OfferCart(),
-    ) : CurrentDestination
+    ) : NavigationScreens
 
     @Serializable
-    data object SettingsPage : CurrentDestination
+    data object SettingsPage : NavigationScreens
 
     @Serializable
-    data object MyOrders : CurrentDestination
+    data object MyOrders : NavigationScreens
 
     @Serializable
     data class AllCategories(val allCategories: List<CategoryItems> = emptyList()) :
-        CurrentDestination
+        NavigationScreens
 
     @Serializable
-    data class AllOffers(val allOffers: List<Offers> = emptyList()) : CurrentDestination
+    data class AllOffers(val allOffers: List<Offers> = emptyList()) : NavigationScreens
 
     @Serializable
-    data object Loading : CurrentDestination
+    data object Loading : NavigationScreens
 }

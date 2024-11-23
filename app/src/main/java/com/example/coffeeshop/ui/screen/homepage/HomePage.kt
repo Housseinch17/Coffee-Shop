@@ -84,27 +84,14 @@ import com.example.coffeeshop.ui.util.ShimmerEffect
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun HomePage(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     isLoading: Boolean,
-    seeAllClicked: Boolean,
-    //HomeTopPage parameters
-    searchText: String,
-    onClear: () -> Unit,
-    onSearch: (String) -> Unit,
-    username: String?,
-    //HomeCenterPage parameters
-    categoriesKey: List<String>,
-    onCategoryClick: (String) -> Unit,
-    currentCategory: CurrentCategory,
-    onFirstSeeAllClick: (List<CategoryItems>) -> Unit,
-    onItemClick: (CategoryItems) -> Unit,
-    //HomeBottomPage parameters
-    offersList: List<Offers>,
-    onSecondSeeAllClick: (List<Offers>) -> Unit,
-    onOffersClick: (Offers) -> Unit,
-    //pull refresh
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
+    seeAllClicked: Boolean,
+    topPageState: HomeTopPageState,
+    centerPageState: HomeCenterPageState,
+    bottomPageState: HomeBottomPageState,
 ) {
     val pullRefreshState = rememberPullRefreshState(
         refreshing = isRefreshing,
@@ -128,24 +115,24 @@ fun HomePage(
                 HomeShimmer()
             } else {
                 HomeTopPage(
-                    searchText = searchText,
-                    onClear = onClear,
-                    onSearch = onSearch,
-                    username = username
+                    searchText = topPageState.searchText,
+                    onClear = topPageState.onClear,
+                    onSearch = topPageState.onSearch,
+                    username = topPageState.username
                 )
                 Spacer(modifier = Modifier.height(20.dp))
                 HomeCenterPage(
-                    categoriesKey = categoriesKey,
-                    onCategoryClick = onCategoryClick,
-                    currentCategory = currentCategory,
-                    onFirstSeeAllClick = onFirstSeeAllClick,
-                    onItemClick = onItemClick
+                    categoriesKey = centerPageState.categoriesKey,
+                    onCategoryClick = centerPageState.onCategoryClick,
+                    currentCategory = centerPageState.currentCategory,
+                    onFirstSeeAllClick = centerPageState.onFirstSeeAllClick,
+                    onItemClick = centerPageState.onItemClick
                 )
                 Spacer(modifier = Modifier.height(10.dp))
                 HomeBottomPage(
-                    offersList = offersList,
-                    onSecondSeeAllClick = onSecondSeeAllClick,
-                    onOffersClick = onOffersClick
+                    offersList = bottomPageState.offersList,
+                    onSecondSeeAllClick = bottomPageState.onSecondSeeAllClick,
+                    onOffersClick = bottomPageState.onOffersClick
                 )
             }
         }

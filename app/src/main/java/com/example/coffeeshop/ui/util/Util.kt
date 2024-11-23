@@ -7,7 +7,7 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
-import com.example.coffeeshop.ui.navigation.CurrentDestination
+import com.example.coffeeshop.ui.navigation.NavigationScreens
 
 
 // Extension function to check internet connectivity
@@ -29,7 +29,7 @@ fun Context.isInternetAvailable(): Boolean {
 
 
 fun NavHostController.navigateSingleTopTo(
-    route: CurrentDestination,
+    route: NavigationScreens,
     navHostController: NavHostController
 ) = this.navigate(route) {
     // If the destination doesn't exist, pop up to the start destination
