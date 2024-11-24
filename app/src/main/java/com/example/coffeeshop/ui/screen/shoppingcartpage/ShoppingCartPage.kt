@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -75,12 +76,12 @@ fun ShoppingCartPage(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .navigationBarsPadding()
                 .verticalScroll(rememberScrollState())
                 .padding(
                     start = 20.dp,
                     end = 20.dp,
                     top = 10.dp,
-                    bottom = 20.dp
                 ),
         ) {
             if (shoppingCart.categoryItemsList.isNotEmpty()) {
@@ -185,7 +186,6 @@ fun ShoppingCartPage(
                 }
             }
         }
-        Spacer(modifier = Modifier.height(20.dp))
     }
 }
 
@@ -195,6 +195,7 @@ fun CategoryItemComponent(
     onCategoryCountDecrease: () -> Unit,
     onCategoryCountIncrease: () -> Unit,
 ) {
+    val scrollState = rememberScrollState()
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -218,8 +219,7 @@ fun CategoryItemComponent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxHeight(),
+                modifier = Modifier.weight(1f).horizontalScroll(scrollState),
                 verticalArrangement = Arrangement.SpaceEvenly,
                 horizontalAlignment = Alignment.Start
             ) {
@@ -233,7 +233,7 @@ fun CategoryItemComponent(
                 )
             }
             AddAndRemoveCount(
-                modifier = Modifier,
+                modifier = Modifier.width(100.dp),
                 count = categoryItemsCart.count,
                 onCountRemove = onCategoryCountDecrease,
                 onCountAdd = onCategoryCountIncrease
@@ -248,6 +248,7 @@ fun OfferCartComponent(
     onOfferCountDecrease: () -> Unit,
     onOfferCountIncrease: () -> Unit,
 ) {
+    val scrollState = rememberScrollState()
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -270,8 +271,7 @@ fun OfferCartComponent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxHeight(),
+                modifier = Modifier.weight(1f).horizontalScroll(scrollState),
                 verticalArrangement = Arrangement.SpaceEvenly,
                 horizontalAlignment = Alignment.Start
             ) {
@@ -289,7 +289,7 @@ fun OfferCartComponent(
                 )
             }
             AddAndRemoveCount(
-                modifier = Modifier,
+                modifier = Modifier.width(100.dp),
                 count = offerCart.count,
                 onCountRemove = onOfferCountDecrease,
                 onCountAdd = onOfferCountIncrease

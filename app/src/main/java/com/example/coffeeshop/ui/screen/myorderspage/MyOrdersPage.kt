@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -86,13 +87,14 @@ fun MyOrdersPage(
                     )
                 )
             }
-        }else if(myOrdersList.isEmpty() && isRefreshing){
-            Box(modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center){
+        } else if (myOrdersList.isEmpty() && isRefreshing) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
                 CircularProgressIndicator(modifier = Modifier.size(200.dp))
             }
-        }
-        else {
+        } else {
             if (isLoading) {
                 Column(
                     modifier = modifier,
@@ -103,7 +105,7 @@ fun MyOrdersPage(
                 }
             } else {
                 MyOrderComponent(
-                    modifier = modifier, myOrdersList = myOrdersList,
+                    modifier = modifier.navigationBarsPadding(), myOrdersList = myOrdersList,
                     onExpand = onExpand
                 )
             }

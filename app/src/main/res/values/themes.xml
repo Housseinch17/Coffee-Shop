@@ -6,10 +6,11 @@
     </style>
 
 
-    <style name="Theme.Splash" parent="Theme.CoffeeShop">
+    <style name="Theme.Activity" parent="Theme.CoffeeShop">
         <!-- Customize your theme here -->
         <item name="android:statusBarColor">@color/black</item>
         <item name="android:windowBackground">@drawable/splash_screen</item>
     </style>
+
 
 </resources>

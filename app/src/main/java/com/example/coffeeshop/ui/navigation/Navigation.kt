@@ -90,7 +90,7 @@ fun Navigation(
         coffeeShop(
             navHostController = navController,
             authenticationViewModel = authenticationViewModel,
-            username = currentUsername!!,
+            username = currentUsername ?: "",
             resetShowDialog = authenticationUiState.resetShowDialog,
             resetIsLoading = authenticationUiState.resetPassword == PasswordChangement.IsLoading,
             signOutShowDialog = authenticationUiState.signOutShowDialog,
