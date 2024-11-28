@@ -59,6 +59,7 @@ fun MainPage(navController: NavHostController) {
     //not hideBottomBar
     val showBottomBar = !(hideBottomBar(currentScreenRoute))
 
+    //here if the status is NavigationScreens.Loading it will show the background image set in the theme
     if (status != NavigationScreens.Loading) {
         //use material not material 3 to use docked
         androidx.compose.material.Scaffold(

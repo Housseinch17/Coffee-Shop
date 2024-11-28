@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.coffeeshop.domain.usecase.sharedprefrenceUsecase.GetSharedPrefUsernameUseCase
-import com.example.coffeeshop.domain.usecase.sharedprefrenceUsecase.SaveSharedPrefUsernameUseCase
 import com.example.coffeeshop.ui.navigation.NavigationScreens
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +14,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val saveSharedPrefUsernameUseCase: SaveSharedPrefUsernameUseCase,
     private val getSharedPrefUsernameUseCase: GetSharedPrefUsernameUseCase,
 ) : ViewModel() {
     private val _status: MutableStateFlow<NavigationScreens> =
@@ -39,8 +37,6 @@ class MainViewModel @Inject constructor(
                 _status.value = NavigationScreens.Register
             } else {
                 _status.value = NavigationScreens.CoffeeShop
-                //save the new username
-                saveSharedPrefUsernameUseCase.saveUsername(currentUsername)
             }
         }
     }
