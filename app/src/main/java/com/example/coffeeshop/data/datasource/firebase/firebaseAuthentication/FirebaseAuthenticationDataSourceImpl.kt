@@ -7,13 +7,11 @@ import com.example.coffeeshop.ui.screen.settingspage.PasswordChangement
 import com.example.coffeeshop.ui.screen.signup.AccountStatus
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Named
 import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 class FirebaseAuthenticationDataSourceImpl @Inject constructor(
@@ -47,20 +45,6 @@ class FirebaseAuthenticationDataSourceImpl @Inject constructor(
                     continuation.resume(PasswordChangement.Error(e.message ?: "Check your internet"))
                 }
             }
-/*            var passwordChangement: PasswordChangement = PasswordChangement.InitialState
-            try {
-                auth.currentUser?.updatePassword(newPassword)?.addOnCompleteListener { task ->
-                    passwordChangement = if (task.isSuccessful) {
-                        PasswordChangement.Success("Password changed successfully!")
-
-                    } else {
-                        PasswordChangement.Error("Password didn't change!")
-                    }
-                }?.await()
-            } catch (e: Exception) {
-                passwordChangement = PasswordChangement.Error(e.message ?: "Check your internet")
-            }
-            return@withContext passwordChangement*/
         }
 
     override suspend fun resetPassword(email: String): PasswordChangement = withContext(coroutineDispatcher) {
@@ -82,33 +66,24 @@ class FirebaseAuthenticationDataSourceImpl @Inject constructor(
                 )
             }
         }
-        /*        var resetPassword: PasswordChangement = PasswordChangement.InitialState
-        try {
-            Log.d("MyTag","f1")
-            auth.sendPasswordResetEmail(email).addOnCompleteListener{ task->
-                resetPassword = if (task.isSuccessful) {
-                    PasswordChangement.Success("Check your email, to reset your password ! ")
-                } else {
-                    PasswordChangement.Error("Password didn't change!")
-                }
-            }.await()
-        }catch (e: Exception){
-            resetPassword = PasswordChangement.Error(e.message ?: "Check your internet")
-        }
-        return@withContext resetPassword*/
     }
 
     //firebase login is asynchronous using await ensuring that it has to wait
     //for  signInWithEmailAndPassword to complete same as using async await
     override suspend fun logIn(email: String, password: String): AuthState =
         withContext(coroutineDispatcher) {
-            return@withContext try {
-                auth.signInWithEmailAndPassword(email, password).await()
-                AuthState.LoggedIn
-
-            } catch (e: Exception) {
-                val errorMessage = e.message ?: "Something went wrong"
-                AuthState.Error(errorMessage)
+            suspendCoroutine { continuation ->
+                try {
+                    auth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task->
+                        if(task.isSuccessful){
+                            continuation.resume(AuthState.LoggedIn)
+                        }else{
+                            continuation.resume(AuthState.Error("error: ${task.exception}"))
+                        }
+                    }
+                }catch (e: Exception){
+                    continuation.resume(AuthState.Error("Error: ${e.message}"))
+                }
             }
         }
 
@@ -116,23 +91,29 @@ class FirebaseAuthenticationDataSourceImpl @Inject constructor(
     //for  createUserWithEmailAndPassword to complete same as using async await
     override suspend fun signUp(email: String, password: String): AccountStatus =
         withContext(coroutineDispatcher) {
-            return@withContext try {
-                //async to run in concurrently
-                val deferred1 = async {
+            try {
+                // Perform the first operation with suspendCoroutine for Firebase Auth
+                suspendCoroutine { continuation ->
                     auth.createUserWithEmailAndPassword(email, password)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                continuation.resume(Unit) // Resume if successful
+                            } else {
+                                continuation.resumeWithException(task.exception ?: Exception("Auth failed"))
+                            }
+                        }
                 }
-                val deferred2 = async {
-                    firebaseWriteDataDataSourceImpl.addEmailToUsers(email)
-                }
-                //waiting for both to finish concurrently
-                awaitAll(deferred1, deferred2)
+                //this is a suspend function so it will perform directly
+                firebaseWriteDataDataSourceImpl.addEmailToUsers(email)
 
+                // If both operations succeed
                 AccountStatus.IsCreated("Account Created")
-
             } catch (e: Exception) {
                 AccountStatus.Error(e.message ?: "Check your Internet")
             }
         }
+
+
 
     override suspend fun signOut() = withContext(coroutineDispatcher) {
         auth.signOut()

@@ -14,7 +14,6 @@ import com.example.coffeeshop.domain.usecase.sharedprefrenceUsecase.SaveSharedPr
 import com.example.coffeeshop.ui.screen.settingspage.PasswordChangement
 import com.example.coffeeshop.ui.util.isInternetAvailable
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -96,7 +95,7 @@ class AuthenticationViewModel @Inject constructor(
     fun signOut() {
         viewModelScope.launch {
             _authenticationUiState.update { newState ->
-                newState.copy(signOut = SignOutResponse.isLoading)
+                newState.copy(signOut = SignOutResponse.IsLoading)
             }
             val hasInternet = getApplication<Application>().isInternetAvailable()
             Log.d("hasInternet", "$hasInternet")
@@ -189,7 +188,7 @@ class AuthenticationViewModel @Inject constructor(
 }
 
 sealed interface SignOutResponse {
-    data object isLoading: SignOutResponse
+    data object IsLoading: SignOutResponse
     data object InitialState : SignOutResponse
     data object Success : SignOutResponse
     data object Error : SignOutResponse

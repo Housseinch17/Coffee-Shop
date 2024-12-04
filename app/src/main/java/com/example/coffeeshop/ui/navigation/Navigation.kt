@@ -94,7 +94,7 @@ fun Navigation(
             resetShowDialog = authenticationUiState.resetShowDialog,
             resetIsLoading = authenticationUiState.resetPassword == PasswordChangement.IsLoading,
             signOutShowDialog = authenticationUiState.signOutShowDialog,
-            signOutIsLoading = authenticationUiState.signOut == SignOutResponse.isLoading,
+            signOutIsLoading = authenticationUiState.signOut == SignOutResponse.IsLoading,
         )
 
     }
