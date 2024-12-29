@@ -78,12 +78,6 @@ dependencies {
     //collectAsStateWithLifecycle()
     implementation(libs.androidx.lifecycle.runtime.compose)
 
-    //Room
-    implementation (libs.androidx.room.runtime)
-    //noinspection KaptUsageInsteadOfKsp
-    kapt (libs.androidx.room.compiler)
-    implementation (libs.androidx.room.ktx)
-
 
     //NavHost()
     implementation(libs.androidx.navigation.compose)
@@ -132,7 +126,6 @@ dependencies {
     implementation (libs.androidx.room.ktx)
     //converters for classes inside room database
     implementation (libs.gson)
-
 
 }
 
